@@ -1,0 +1,21 @@
+.dashboardWrapper {
+  width: 80%;
+  display: block;
+  margin: auto;
+  padding: 1rem;
+  background-color: rgba(256, 256, 256, 0.7);
+}
+
+.showInfo {
+    display: flex;
+}
+
+.showInfo p, .showInfo button {
+    padding: 0.5rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+}
+
+.showInfo p {
+    background-color: aliceblue;
+}
