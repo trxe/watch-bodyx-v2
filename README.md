@@ -2,6 +2,7 @@
 
 ## Client
 
+- [ ] Connect to the server only on login
 - [ ] Setup viewer (copy from original bodyx)
 - [ ] Allow admin to create rooms
 - [ ] Allow admin to create start and end time

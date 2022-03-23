@@ -1,6 +1,9 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { GrAdd } from 'react-icons/gr'
 import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
+import dashboardStyles from '../styles/Dashboard.module.css'
+import styles from '../styles/Rooms.module.css'
 
 export interface IRoom {
     name: string;
@@ -8,37 +11,53 @@ export interface IRoom {
 }
 
 const RoomsContainer = () => {
+    const {socket, show} = useSockets();
+    const newRoomName = useRef(null);
+    const newRoomUrl = useRef(null);
+    const [isAddMode, setAddMode] = useState(false);
+    const [isEditMode, setEditMode] = useState(false);
+    const [rooms, setRooms] = useState([]);
 
-    /*
-    const {socket, roomId, rooms} = useSockets()
-    const newRoomRef = useRef(null);
+    const toggleAddMode = () => {
+        setAddMode(!isAddMode);
+    }
 
     const handleCreateRoom = () => {
-        const roomName = newRoomRef.current.value || "";
-        if (!String(roomName).trim()) return;
-        socket.emit(EVENTS.CLIENT.CREATE_ROOM, {roomName});
-        newRoomRef.current.value = "";
+        const newRoom = {name: newRoomName.current.value, 
+            url: newRoomUrl.current.value};
+        const newShow = {name: show.name, eventId: show.eventId, 
+            rooms: [...show.rooms, newRoom]};
+        socket.emit(EVENTS.CLIENT.UPDATE_SHOW, newShow);
+        console.log(newRoomName.current.value);
+        console.log(newRoomUrl.current.value);
+        newRoomName.current.value = '';
+        newRoomUrl.current.value = '';
+        toggleAddMode();
     }
 
-    const handleJoinRoom = (key: string) => {
-        if (key === roomId) return;
-        socket.emit(EVENTS.CLIENT.JOIN_ROOM, {roomName: key});
-    }
+    socket.off(EVENTS.SERVER.CURRENT_SHOW)
+        .on(EVENTS.SERVER.CURRENT_SHOW, ({rooms}) => {
+            setRooms(rooms);
+            console.log(rooms);
+        })
 
-    return <nav>
-        <div>
-            <input ref={newRoomRef} placeholder="Room Name" />
-            <button onClick={handleCreateRoom}>Create</button>
+    return <div className={dashboardStyles.roomsWrapper}>
+        <div className={styles.roomHeader}>
+            <h2>Rooms</h2>
+            <button className={styles.iconButton} onClick={toggleAddMode}>
+                <GrAdd />
+            </button>
         </div>
-        <h1>Rooms</h1>
-        {Object.keys(rooms).map(key => <div key={key}>
-            <button disabled={key === roomId} 
-                onClick={() => handleJoinRoom(key)}>Join {key}</button>
-        </div>)}
-
-    </nav>;
-    */
-   return <div>Rooms</div>;
+        {isAddMode && <div>
+            <input placeholder="Room Name" ref={newRoomName}/>
+            <input placeholder="URL" ref={newRoomUrl}/>
+            <button onClick={handleCreateRoom}>Create</button>
+            </div>
+        }
+        <div>
+            {rooms.map((room, index) => <p key={index}>{room.name}: {room.url}</p>)}
+        </div>
+    </div>
 }
 
 export default RoomsContainer;

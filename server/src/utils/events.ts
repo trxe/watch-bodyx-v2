@@ -1,4 +1,4 @@
-const EVENTS = {
+export const EVENTS = {
     connect: 'connect',
     disconnect: 'disconnect',
     CLIENT: {
@@ -18,5 +18,3 @@ const EVENTS = {
         // ROOM_MESSAGE: 'ROOM_MESSAGE',
     }
 };
-
-export default EVENTS

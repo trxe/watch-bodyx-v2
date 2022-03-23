@@ -6,16 +6,34 @@
   background-color: rgba(256, 256, 256, 0.7);
 }
 
+.showInfo button {
+  background-color: black;
+  color: white;
+  border: none;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
 .showInfo {
     display: flex;
 }
 
-.showInfo p, .showInfo button {
+.showInfo p {
     padding: 0.5rem;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
+    background-color: aliceblue;
 }
 
-.showInfo p {
-    background-color: aliceblue;
+.bottom {
+  display: flex;
+}
+
+.attendeesWrapper {
+  width: 50%;
+}
+
+.roomsWrapper {
+  width: 50%;
 }

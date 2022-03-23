@@ -3,6 +3,7 @@ import io, { Socket } from 'socket.io-client';
 import { SOCKET_URL } from '../config/default';
 import EVENTS from '../config/events';
 import { IRoom } from '../containers/Rooms';
+import { INotif } from '../containers/Snackbar';
 
 interface ISocketContext {
     socket: Socket;
@@ -10,13 +11,24 @@ interface ISocketContext {
     setTicket: Function;
     isAdmin: boolean;
     show?: {name: string, eventId: string, rooms: Array<IRoom>};
-    // roomId?: string;
-    // rooms: object;
-    // messages: Array<{message: string, time: string, ticket: string}>;
-    // setMessages: Function;
+    error?: INotif;
+    setError: Function;
+    isLoggedIn: boolean;
 }
 
-const socket = io(SOCKET_URL);
+let socket = io(SOCKET_URL);
+
+export const getSocketInfo = () => {
+    console.log('socket', socket);
+}
+
+/*
+export const socketInit = async () => {
+    socket = io(SOCKET_URL);
+    console.log(socket);
+    while (!socket) {}
+}
+*/
 
 /* When React renders a component that subscribes to this Context object 
 * it will read the current context value from the closest matching Provider 
@@ -24,9 +36,11 @@ const socket = io(SOCKET_URL);
 */
 const SocketContext = createContext<ISocketContext>({
     socket, 
-    ticket: "", 
+    ticket: '', 
     setTicket: () => false, 
     isAdmin: false,
+    isLoggedIn: false,
+    setError: () => false,
     // rooms: {}, 
     // messages: [], 
     // setMessages: () => false,
@@ -37,48 +51,33 @@ const SocketContext = createContext<ISocketContext>({
  */
 const SocketsProvider = (props: any) => {
     const [isAdmin, setIsAdmin] = useState(false)
-    const [ticket, setTicket] = useState("");
+    const [isLoggedIn, setLoggedIn] = useState(false)
+    const [ticket, setTicket] = useState('');
     const [show, setShow] = useState({})
-    // const [roomId, setRoomId] = useState("");
-    // const [rooms, setRooms] = useState({});
-    // const [messages, setMessages] = useState([]);
+    const [error, setError] =  useState(null)
 
-    socket.on(EVENTS.SERVER.PRIVILEGE, ({isAdmin, ticket}) => {
-        // set privilege level
-        console.log("am i admin?", isAdmin);
-        setIsAdmin(isAdmin);
-        setTicket(ticket);
-        localStorage.setItem('ticket', ticket);
-    })
+    if (socket != null) {
+        socket.on(EVENTS.SERVER.INVALID_LOGIN, (err) => {
+            setError(err);
+        });
 
-    socket.on(EVENTS.SERVER.CURRENT_SHOW, ({name, eventId, rooms}) => {
-        setShow({ name, eventId, rooms });
-    });
+        socket.on(EVENTS.SERVER.PRIVILEGE, ({isAdmin, ticket}) => {
+            // set privilege level
+            console.log('am i admin?', isAdmin);
+            setLoggedIn(true);
+            setIsAdmin(isAdmin);
+            setTicket(ticket);
+            localStorage.setItem('ticket', ticket);
+        })
 
-    /*
-    socket.on(EVENTS.SERVER.ROOMS, (value) => {
-        setRooms(value);
-    })
+        socket.on(EVENTS.SERVER.CURRENT_SHOW, ({name, eventId, rooms}) => {
+            console.log('update');
+            setShow({ name, eventId, rooms });
+        });
+    }
 
-    socket.on(EVENTS.SERVER.JOINED_ROOM, (value) => {
-        setRoomId(value);
-        setMessages([]);
-    })
-
-    socket.on(EVENTS.SERVER.ROOM_MESSAGE, ({ message, ticket, time }) => {
-        if (!document.hasFocus()) {
-            document.title = "New message";
-        }
-        setMessages([
-            ...messages,
-            {message, ticket, time}
-        ]);
-    })
-    */
-    
     return <SocketContext.Provider 
-        // value={{socket, ticket, setTicket, roomId, rooms, messages, setMessages, isAdmin}} 
-        value={{socket, ticket, setTicket, isAdmin, show}} 
+        value={{socket, ticket, setTicket, isAdmin, show, error, setError, isLoggedIn}} 
         {...props} 
     />
 }
