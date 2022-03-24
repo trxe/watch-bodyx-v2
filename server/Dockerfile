@@ -1,6 +1,6 @@
-FROM node
-WORKDIR /watch-bodyx-v2
-COPY package.json .
-RUN npm install --quiet
-
-COPY . .
+FROM node:9-slim
+WORKDIR /app
+COPY package.json /app
+RUN npm install
+COPY . /app
+CMD ["npm", "run build"]

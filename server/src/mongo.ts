@@ -1,12 +1,14 @@
 import mongoose from "mongoose";
 import { ShowModel } from "./schemas/Show";
 import Logger from './utils/logger';
-const db_url = 'mongodb://127.0.0.1:27017';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 export const mongoInit = () => {
-    mongoose.connect(db_url)
+    mongoose.connect(process.env.DB_URL)
         .then(() => {
-            Logger.info(`MongoDB connected at ${db_url}`);
+            Logger.info(`MongoDB connected at ${process.env.DB_URL}`);
         })
         .catch(err => Logger.error(err))
 }

@@ -35,7 +35,7 @@ async function loadShow() {
     if (size != 1) {
         await ShowModel.deleteMany({});
         await ShowModel.create({
-            name: 'Sample',
+            name: 'Sample Show',
             eventId: '302699441177',
             rooms: [],
         })
