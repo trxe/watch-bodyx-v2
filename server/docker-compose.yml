@@ -1,24 +1,29 @@
-version: '3.8'
-services: 
-  bodyx-database:
-    image: mongo
-    restart: always 
-    environment: 
-      - MONGO_INITDB_ROOT_USERNAME=test-username
-      - MONGO_INITDB_ROOT_PASSWORD=test-root-password
-    volumes: 
-      - my_data:/data/db 
-  node-web:
-    build: 
-      context: ./node-web
-      dockerfile: Dockerfile
-    depends_on: 
-      - bodyx-database
-    volumes: 
-      - /app/node_modules
-      - ./node-web:/app 
-    ports: 
-      - "5000:5000"
-  
-volumes: 
-  my_data: 
+version: '3.9'
+# when containers start, docker-compose creates a network for each container to join and comunicate on.
+
+services:
+  # mongodb service
+  mongo_db:
+    container_name: database_container
+    image: mongo:latest
+    restart: always
+    volumes:
+      # volume is where mongo stores data 
+      # to restore when it fails. 
+      # always volume:/data/db for mongo
+      - mongo_db:/data/db
+  # Node Websockets service
+  sock-server:
+    # look for the Dockerfile in the same directory
+    build: .
+    ports: # local machine port : container machine port
+      - 3000:4000
+    environment:
+      PORT: 4000
+      DB_URL: mongodb://mongo_db:27017 # mongodb://<MONGO-SERVICE-NAME>:27017
+      DB_NAME: bodyx
+    depends_on:
+      - mongo_db
+
+volumes:
+  mongo_db: {}

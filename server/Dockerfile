@@ -1,6 +1,7 @@
-FROM node:9-slim
-WORKDIR /app
-COPY package.json /app
-RUN npm install
-COPY . /app
-CMD ["npm", "run build"]
+FROM node:alpine
+WORKDIR /src/app
+COPY package.json .
+COPY package-lock.json .
+RUN npm ci
+COPY . .
+CMD ["npm", "start"]
