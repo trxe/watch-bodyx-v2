@@ -2,14 +2,15 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import config from 'config';
 import Logger from './utils/logger';
 import socket from './socket';
+import * as dotenv from 'dotenv';
 import { mongoInit } from './mongo';
 
-const port = config.get<number>('port');
-const host = config.get<string>('host');
-const corsOrigin = config.get<string>('corsOrigin');
+dotenv.config();
+
+const port: number = parseInt(process.env.PORT)
+const host: string = process.env.HOST
 // const url = `http://${host}:${port}`;
 
 console.log('port', port, 'host', host);
@@ -20,7 +21,7 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
     cors: {
-        origin: corsOrigin,
+        origin: '*',
         credentials: true
     }
 });
