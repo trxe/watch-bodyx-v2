@@ -16,8 +16,8 @@ services:
   sock-server:
     # look for the Dockerfile in the same directory
     build: .
-    ports: # local machine port : container machine port
-      - 3000:4000
+    ports: # container machine port : local machine port
+      - 4000:4000
     environment:
       PORT: 4000
       DB_URL: mongodb://mongo_db:27017 # mongodb://<MONGO-SERVICE-NAME>:27017
