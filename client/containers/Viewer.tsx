@@ -5,38 +5,49 @@ import styles from '../styles/Viewer.module.css'
 import UserMenu from './UserMenu';
 
 const ViewerContainer = () => {
-    const {socket, show} = useSockets();
-    const [src, setSrc] = useState('')
+    const {socket, ticket, show, setShow} = useSockets();
+    const [roomIndex, setRoomIndex] = useState(0)
     const [isChatNotPoll, setChatNotPoll] = useState(true);
-    // this will encapsulate the Rooms, Messages, Poll, 
-    // and EventInfo, including Time, Duration, Title
-    // return <p>Viewer</p>;
-    if (socket != null) {
-        socket.on(EVENTS.SERVER.CURRENT_SHOW, ({rooms}) => {
-            if (rooms.length == 0) {
-                setSrc('');
-            } else if (src.length == 0) {
-                setSrc(rooms[0].url);
-            }
-        });
+
+    const handleSwitchRooms = (index) => {
+        // move to the response ack
+        // setRoomIndex(index);
+        // console.log(index);
+        console.log(socket.id);
+        socket.emit(EVENTS.CLIENT.JOIN_ROOM, {index}, 
+            (response) => {
+                console.log(response);
+                setRoomIndex(index);
+            });
+    };
+
+    socket.on(EVENTS.SERVER.FORCE_JOIN, ({index}) => {
+        handleSwitchRooms(index);
+    });
+
+    if (!show.rooms || show.rooms.length == 0) {
+        return <div className={styles.viewerWrapper}>
+            <h1>Rooms Not Available</h1>
+        </div>
     }
 
     return <div className={styles.viewerWrapper}>
         <div className={styles.playerWrapper}>
             <div className={styles.greeter}>
                 <UserMenu/>
-                <span>Welcome, Detective X!</span>
+                <span>Welcome, Detective {ticket}!</span>
             </div>
             <div className={styles.mediaPlayer}>
-                {src.length  != 0 &&
-                    <iframe width="100%" height="100%" 
-                        src="https://www.youtube.com/embed/s4BibernJxU" 
-                        title="YouTube video player" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowFullScreen></iframe>}
+                <iframe width="100%" height="100%" 
+                    src={show.rooms[roomIndex].url}
+                    title="YouTube video player" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowFullScreen></iframe>
             </div>
             <div className={styles.roomButtons}>
-                {show.rooms && show.rooms.map && show.rooms.map(({name, url}) => <button key={name}>{name}</button>)}
+                {show.rooms && show.rooms.map && show.rooms.map(({name, url, isLocked}, index) => 
+                    <button onClick={()=> handleSwitchRooms(index)} 
+                        disabled={isLocked} key={name}>{name}</button>)}
             </div>
         </div>
         <div className={styles.chatWrapper}>

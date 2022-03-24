@@ -11,6 +11,7 @@ interface ISocketContext {
     setTicket: Function;
     isAdmin: boolean;
     show?: {name: string, eventId: string, rooms: Array<IRoom>};
+    setShow: Function;
     error?: INotif;
     setError: Function;
     isLoggedIn: boolean;
@@ -21,14 +22,6 @@ let socket = io(SOCKET_URL);
 export const getSocketInfo = () => {
     console.log('socket', socket);
 }
-
-/*
-export const socketInit = async () => {
-    socket = io(SOCKET_URL);
-    console.log(socket);
-    while (!socket) {}
-}
-*/
 
 /* When React renders a component that subscribes to this Context object 
 * it will read the current context value from the closest matching Provider 
@@ -41,6 +34,7 @@ const SocketContext = createContext<ISocketContext>({
     isAdmin: false,
     isLoggedIn: false,
     setError: () => false,
+    setShow: () => false,
     // rooms: {}, 
     // messages: [], 
     // setMessages: () => false,
@@ -61,6 +55,10 @@ const SocketsProvider = (props: any) => {
             setError(err);
         });
 
+        socket.on(EVENTS.SERVER.GENERIC_ERROR, (err) => {
+            setError(err);
+        });
+
         socket.on(EVENTS.SERVER.PRIVILEGE, ({isAdmin, ticket}) => {
             // set privilege level
             console.log('am i admin?', isAdmin);
@@ -71,13 +69,12 @@ const SocketsProvider = (props: any) => {
         })
 
         socket.on(EVENTS.SERVER.CURRENT_SHOW, ({name, eventId, rooms}) => {
-            console.log('update');
             setShow({ name, eventId, rooms });
         });
     }
 
     return <SocketContext.Provider 
-        value={{socket, ticket, setTicket, isAdmin, show, error, setError, isLoggedIn}} 
+        value={{socket, ticket, setTicket, isAdmin, show, setShow, error, setError, isLoggedIn}} 
         {...props} 
     />
 }

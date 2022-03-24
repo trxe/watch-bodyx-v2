@@ -4,8 +4,9 @@ export const EVENTS = {
     CLIENT: {
         LOGIN: 'LOGIN',
         UPDATE_SHOW: 'UPDATE_SHOW',
-        // CREATE_ROOM: 'CREATE_ROOM',
-        // JOIN_ROOM: 'JOIN_ROOM',
+        JOIN_ROOM: 'JOIN_ROOM',
+        CREATE_ROOM: 'CREATE_ROOM',
+        UPDATE_ROOM: 'UPDATE_ROOM'
         // SEND_ROOM_MESSAGE: 'SEND_ROOM_MESSAGE',
     },
     SERVER: {
@@ -13,6 +14,9 @@ export const EVENTS = {
         PRIVILEGE: 'PRIVILEGE',
         CURRENT_SHOW: 'CURRENT_SHOW',
         ATTENDEE_LIST: 'ATTENDEE_LIST',
+        VIEWER_LIST: 'VIEWER_LIST',
+        GENERIC_ERROR: 'GENERIC_ERROR',
+        FORCE_JOIN: 'FORCE_JOIN',
         // ROOMS: 'ROOMS',
         // JOINED_ROOM: 'JOINED_ROOM',
         // ROOM_MESSAGE: 'ROOM_MESSAGE',

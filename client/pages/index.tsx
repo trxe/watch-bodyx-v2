@@ -1,13 +1,12 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
-import { getSocketInfo, useSockets } from '../context/socket.context'
+import { useSockets } from '../context/socket.context'
 
 import { useRef, useState } from 'react'
 import EVENTS from '../config/events'
 import DashboardContainer from '../containers/Dashboard'
 import ViewerContainer from '../containers/Viewer'
 import Snackbar from '../containers/Snackbar'
-import { shouldUseReactRoot } from 'next/dist/server/config'
 
 export default function Home() {
   const {socket, ticket, isAdmin, error, isLoggedIn} = useSockets();
@@ -17,18 +16,13 @@ export default function Home() {
   const handleSetTicket = () => {
     const value = ticketRef.current.value;
     if (!value) return;
-    socket.emit(EVENTS.CLIENT.LOGIN, {ticket: value});
-    // socket.on(EVENTS.SERVER.INVALID_LOGIN, )
+    console.log(socket.id);
+    socket.emit(EVENTS.CLIENT.LOGIN, {socketId: socket.id, ticket: value});
   }
 
   const toggleAdminView = () => {
     setAdminView(!isAdminView);
   }
-
-  const NavBar = <div className={styles.bar}>
-        <button onClick={toggleAdminView}>MODE</button>
-        <h2>BODYX</h2>
-    </div>;
 
   return (
     <div>
@@ -44,7 +38,6 @@ export default function Home() {
         </div>
       }
       {isLoggedIn && isAdmin && <div>
-        {NavBar}
         {isAdminView ? <DashboardContainer /> :
           <div> <ViewerContainer /> </div>}
         </div>

@@ -1,8 +1,8 @@
 import { AiOutlineMenu } from 'react-icons/ai';
-import styles from '../styles/Viewer.module.css';
+import styles from '../styles/UserMenu.module.css';
 
 const UserMenu = () => {
-    return <button className={styles.iconButton}>
+    return <button className='iconButton'>
         <AiOutlineMenu />
     </button>;
 }

@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { FC, useRef, useState } from "react";
 import { GrAdd } from 'react-icons/gr'
+import { AiFillLock, AiFillUnlock } from "react-icons/ai";
 import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
 import dashboardStyles from '../styles/Dashboard.module.css'
@@ -8,6 +9,29 @@ import styles from '../styles/Rooms.module.css'
 export interface IRoom {
     name: string;
     url:  string;
+    isLocked: boolean;
+    index?: number;
+}
+
+const Room:FC<IRoom> = ({name, url, isLocked, index}) => {
+    const {socket, show} = useSockets();
+    
+    const handleToggleLock = () => {
+        const newRooms = [...show.rooms];
+        newRooms[index] = {name, url, isLocked: !isLocked};
+        // console.log(newRooms[index]);
+        const newShow = {name: show.name, eventId: show.eventId, 
+            rooms: newRooms};
+        socket.emit(EVENTS.CLIENT.UPDATE_ROOM, {index, room: newRooms[index]});
+    }
+
+    return <div key={index} className={styles.room}>
+        <button onClick={handleToggleLock} className='iconButton'>
+            {index <= 0 ? 'Main': isLocked ? <AiFillLock/> : <AiFillUnlock/>}
+        </button>
+        <p className={styles.roomName}>{name}</p>
+        <p className={styles.roomUrl}>{url}</p>
+    </div>;
 }
 
 const RoomsContainer = () => {
@@ -16,30 +40,20 @@ const RoomsContainer = () => {
     const newRoomUrl = useRef(null);
     const [isAddMode, setAddMode] = useState(false);
     const [isEditMode, setEditMode] = useState(false);
-    const [rooms, setRooms] = useState([]);
 
     const toggleAddMode = () => {
         setAddMode(!isAddMode);
     }
 
     const handleCreateRoom = () => {
+        console.log(show);
         const newRoom = {name: newRoomName.current.value, 
-            url: newRoomUrl.current.value};
-        const newShow = {name: show.name, eventId: show.eventId, 
-            rooms: [...show.rooms, newRoom]};
-        socket.emit(EVENTS.CLIENT.UPDATE_SHOW, newShow);
-        console.log(newRoomName.current.value);
-        console.log(newRoomUrl.current.value);
+            url: newRoomUrl.current.value, isLocked: true};
+        socket.emit(EVENTS.CLIENT.CREATE_ROOM, newRoom);
         newRoomName.current.value = '';
         newRoomUrl.current.value = '';
         toggleAddMode();
     }
-
-    socket.off(EVENTS.SERVER.CURRENT_SHOW)
-        .on(EVENTS.SERVER.CURRENT_SHOW, ({rooms}) => {
-            setRooms(rooms);
-            console.log(rooms);
-        })
 
     return <div className={dashboardStyles.roomsWrapper}>
         <div className={styles.roomHeader}>
@@ -55,9 +69,11 @@ const RoomsContainer = () => {
             </div>
         }
         <div>
-            {rooms.map((room, index) => <p key={index}>{room.name}: {room.url}</p>)}
+            {show.rooms && 
+                show.rooms.map((room, index) => <Room index={index} name={room.name} url={room.url} isLocked={room.isLocked} />) }
         </div>
     </div>
 }
+                // show.rooms.map((room, index) => <p key={index}>{room.name}: {room.url}</p>)}
 
 export default RoomsContainer;

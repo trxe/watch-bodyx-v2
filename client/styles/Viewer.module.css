@@ -3,16 +3,6 @@
     display: flex;
 }
 
-.iconButton {
-    height: min-content !important;
-    background-color: transparent;
-    color: white;
-    border: none;
-    padding: 2px;
-    margin-top: 0.2rem;
-    margin-right: 1rem;
-}
-
 .greeter {
     height: 5vh;
     vertical-align: middle;
@@ -31,6 +21,11 @@
   border-radius: 4px;
   margin: 0.5rem;
   padding: 0.5rem;
+}
+
+.roomButtons button:disabled {
+    background-color: rgba(256, 256, 256, 0.3);
+    cursor: default;
 }
 
 .mediaPlayer {

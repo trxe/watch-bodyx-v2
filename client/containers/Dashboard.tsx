@@ -1,8 +1,10 @@
-import { useRef, useState } from "react";
+import { FC, useRef, useState } from "react";
 import EVENTS from "../config/events";
 import styles from "../styles/Dashboard.module.css"
 import { useSockets } from "../context/socket.context";
 import RoomsContainer from "./Rooms";
+import UserMenu from "./UserMenu";
+import UsersContainer from "./Users";
 
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
@@ -20,22 +22,17 @@ const DashboardContainer = () => {
                 return;
             }
         socket.emit(EVENTS.CLIENT.UPDATE_SHOW, {
+            ...show,
             name: newShowTitle.current.value,
             eventId: newEventId.current.value,
-            rooms: [],
         });
         setEditMode(false);
         // MUST wait for ack HERE: to be implemented.
     }
-
-    socket.on(EVENTS.SERVER.CURRENT_SHOW, ({name, eventId, rooms}) => {
-        console.log("update inside fashboard");
-    });
     
     socket.on(EVENTS.SERVER.ATTENDEE_LIST, (value) => {
-            console.log(socket.id, value);
-            setAttendees(value); 
-        })
+        setAttendees(value); 
+    });
 
     const mode = isEditMode ?
         <div className={styles.editShowInfo}>
@@ -56,6 +53,7 @@ const DashboardContainer = () => {
         </div>
     
     return <div className={styles.dashboardWrapper}>
+        <UserMenu/>
         <h1>Show Settings</h1>
         {mode}
         <button onClick={() => setEditMode(!isEditMode)}>
@@ -69,6 +67,7 @@ const DashboardContainer = () => {
                         return <li key={element.ticket}>{element.profile.name}</li>
                     })}
                 </ul>
+            <UsersContainer />
             </div>
             <RoomsContainer />
         </div>
