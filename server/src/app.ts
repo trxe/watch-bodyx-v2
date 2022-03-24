@@ -10,7 +10,7 @@ import { mongoInit } from './mongo';
 const port = config.get<number>('port');
 const host = config.get<string>('host');
 const corsOrigin = config.get<string>('corsOrigin');
-const url = `http://${host}:${port}`;
+// const url = `http://${host}:${port}`;
 
 console.log('port', port, 'host', host);
 
@@ -25,9 +25,10 @@ const io = new Server(httpServer, {
     }
 });
 
-app.get('/', (req, res) => res.send(`Server now up at ${url}`));
+app.get('/', (req, res) => res.send('Hello World'));
+
 httpServer.listen(port, host, () => {
-    Logger.info(`Server at ${url} is listening`);
+    Logger.info(`Server is listening`);
     socket({ io });
     mongoInit();
 });
