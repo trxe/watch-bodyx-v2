@@ -13,7 +13,7 @@ services:
       # always volume:/data/db for mongo
       - mongo_db:/data/db
   # Node Websockets service
-  sock-server:
+  bodyx-server:
     # look for the Dockerfile in the same directory
     build: .
     ports: # container machine port : local machine port
