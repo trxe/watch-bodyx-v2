@@ -11,7 +11,6 @@ dotenv.config();
 
 const port: number = parseInt(process.env.PORT)
 const host: string = process.env.HOST
-// const url = `http://${host}:${port}`;
 
 console.log('port', port, 'host', host);
 
@@ -22,7 +21,6 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
         origin: '*',
-        credentials: true
     }
 });
 
