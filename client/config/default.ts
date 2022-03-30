@@ -1,3 +1,3 @@
-export const  SOCKET_URL = process.env.SOCKET_URL || 'http://128.199.189.188/';
+export const  SOCKET_URL = process.env.SOCKET_URL || 'http://localhost:4000/';
 
 // 'http://localhost:4000'
