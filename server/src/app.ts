@@ -22,7 +22,8 @@ const app = express();
 const httpServer = (mode === 'secure') ? 
     https.createServer({
         key: fs.readFileSync(process.env.SSL_KEY),
-        cert: fs.readFileSync(process.env.SSL_CERT)
+        cert: fs.readFileSync(process.env.SSL_CERT),
+        ca: fs.readFileSync(process.env.SSL_CA)
     },app) : 
     http.createServer(app);
 
