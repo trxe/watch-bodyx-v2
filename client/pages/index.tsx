@@ -13,6 +13,8 @@ export default function Home() {
   const [isAdminView, setAdminView] = useState(true);
   const ticketRef = useRef(null);
 
+  console.log(socket.io.opts);
+
   const handleSetTicket = () => {
     const value = ticketRef.current.value;
     if (!value) return;

@@ -81,4 +81,4 @@ const SocketsProvider = (props: any) => {
 
 export const useSockets = () => useContext(SocketContext);
 
-export default SocketsProvider
+export default SocketsProvider;
