@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { IShow, ShowModel } from "./schemas/Show";
+import { IAttendee, IShow, ShowModel } from "./schemas/Show";
 import Logger from "./utils/logger";
 import { createNewRoom, getAttendees, updateRoomList, updateShowEvent, verifyAdmin } from "./admin";
 import { EVENTS } from "./utils/events";
@@ -7,6 +7,7 @@ import { STATUS } from "./utils/ack";
 import { joinRoom, socketRoomIndex } from "./viewer";
 
 interface IUser {
+    name?: string;
     ticket: string;
     isAdmin: boolean;
     eventId?: string;
@@ -21,13 +22,13 @@ let show: IShow = {
     name: "", 
     eventId: "",
     rooms: [],
+    attendees: [],
 };
 
 let connectedClients: Map<string, IUser> = new Map<string, IUser>();
 let connectedTickets: Map<string, string> = new Map<string, string>();
 
-// convert to an indexed set?
-let attendees: Array<{profile: object, ticket: string}> = [];
+let attendees: Map<string, IAttendee> = new Map<string, IAttendee>();
 
 
 async function loadShow() {
@@ -40,10 +41,10 @@ async function loadShow() {
             rooms: [],
         })
     }
-    show = await ShowModel.findOne();
+    const dbShow = await ShowModel.findOne();
+    show = {...dbShow._doc};
     // console.log('show load complete:', show);
-    attendees = await getAttendees(show.eventId);
-    // console.log(attendees);
+    attendees = await getAttendees(show.eventId, show);
 }
 
 loadShow();
@@ -63,17 +64,18 @@ const socket = ({io}: { io: Server }) => {
 
             socket.join(ROOM_HOUSE);
             const isAdmin = ticket === 'admin';
-            const user: IUser = {ticket, isAdmin};
+            const user: IUser = (!attendees || !attendees.has(ticket)) ? 
+                {ticket, isAdmin} : {name: attendees.get(ticket).name, ticket, isAdmin};
             connectedClients.set(socketId, user);
             connectedTickets.set(ticket, socketId);
 
             socket.emit(EVENTS.SERVER.PRIVILEGE, user);
             socket.emit(EVENTS.SERVER.CURRENT_SHOW, show);
+            Logger.info(show);
             if (isAdmin) {
-                socket.emit(EVENTS.SERVER.ATTENDEE_LIST, attendees);
                 const temp = Object.fromEntries(connectedClients);
                 console.log(temp);
-                socket.emit(EVENTS.SERVER.VIEWER_LIST, temp);
+                socket.emit(EVENTS.SERVER.USER_LIST, temp);
             }
         });
 

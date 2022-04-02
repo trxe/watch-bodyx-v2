@@ -5,13 +5,13 @@ import { useSockets } from "../context/socket.context";
 import RoomsContainer from "./Rooms";
 import UserMenu from "./UserMenu";
 import UsersContainer from "./Users";
+import AttendeesContainer from "./Attendees";
 
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
     // and EventInfo, including Time, Duration, Title
     const {socket, show} = useSockets();
     const [isEditMode, setEditMode] = useState(false);
-    const [attendees, setAttendees] = useState([]);
     const newShowTitle = useRef(null);
     const newEventId = useRef(null);
 
@@ -29,10 +29,6 @@ const DashboardContainer = () => {
         setEditMode(false);
         // MUST wait for ack HERE: to be implemented.
     }
-    
-    socket.on(EVENTS.SERVER.ATTENDEE_LIST, (value) => {
-        setAttendees(value); 
-    });
 
     const mode = isEditMode ?
         <div className={styles.editShowInfo}>
@@ -61,13 +57,7 @@ const DashboardContainer = () => {
         </button>
         <div className={styles.bottom}>
             <div className={styles.attendeesWrapper}>
-                <h2>Attendees</h2>
-                <ul>
-                    {attendees.map((element) => {
-                        return <li key={element.ticket}>{element.profile.name}</li>
-                    })}
-                </ul>
-            <UsersContainer />
+                <AttendeesContainer/>
             </div>
             <RoomsContainer />
         </div>

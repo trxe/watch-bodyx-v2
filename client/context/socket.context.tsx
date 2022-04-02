@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
 import { SOCKET_URL } from '../config/default';
 import EVENTS from '../config/events';
+import { IAttendee } from '../containers/Attendees';
 import { IRoom } from '../containers/Rooms';
 import { INotif } from '../containers/Snackbar';
 
@@ -10,7 +11,7 @@ interface ISocketContext {
     ticket: string;
     setTicket: Function;
     isAdmin: boolean;
-    show?: {name: string, eventId: string, rooms: Array<IRoom>};
+    show?: {name: string, eventId: string, rooms: Array<IRoom>, attendees: Array<IAttendee>};
     setShow: Function;
     error?: INotif;
     setError: Function;
@@ -68,8 +69,9 @@ const SocketsProvider = (props: any) => {
             localStorage.setItem('ticket', ticket);
         })
 
-        socket.on(EVENTS.SERVER.CURRENT_SHOW, ({name, eventId, rooms}) => {
-            setShow({ name, eventId, rooms });
+        socket.on(EVENTS.SERVER.CURRENT_SHOW, (show) => {
+            console.log("show attendees:", show);
+            setShow(show);
         });
     }
 

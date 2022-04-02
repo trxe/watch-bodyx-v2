@@ -27,7 +27,7 @@ const Room:FC<IRoom> = ({name, url, isLocked, index}) => {
 
     return <div key={index} className={styles.room}>
         <button onClick={handleToggleLock} className='iconButton'>
-            {index <= 0 ? 'Main': isLocked ? <AiFillLock/> : <AiFillUnlock/>}
+            {index <= 0 ? 'M': isLocked ? <AiFillLock/> : <AiFillUnlock/>}
         </button>
         <p className={styles.roomName}>{name}</p>
         <p className={styles.roomUrl}>{url}</p>

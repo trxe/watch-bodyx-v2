@@ -35,7 +35,7 @@ const io = new Server(httpServer, {
 app.get('/', (req, res) => res.send('Hello World'));
 
 httpServer.listen(port, host, () => {
-    Logger.info(`Listening on ${JSON.stringify(httpServer.address())}`);
+    Logger.info(`Listening at ${JSON.stringify(httpServer.address())}`);
     socket({ io });
     mongoInit();
 });

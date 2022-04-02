@@ -37,6 +37,7 @@ export interface IShow {
     name: string; 
     eventId: string; 
     rooms: Array<IRoom>;
+    attendees: Array<IAttendee>;
 }
 
 
@@ -45,4 +46,13 @@ export interface IRoom {
     url:  string;
     isLocked: boolean;
     _id: string;
+}
+
+export interface IAttendee {
+    ticket: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    name: string;
+    addresses: {};
 }

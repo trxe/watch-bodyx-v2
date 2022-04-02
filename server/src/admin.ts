@@ -3,7 +3,7 @@ import { EVENTS } from "./utils/events";
 import Logger from "./utils/logger";
 import * as dotenv from 'dotenv';
 import { ROOM_HOUSE } from "./socket";
-import { ShowModel } from "./schemas/Show";
+import { IAttendee, IShow, ShowModel } from "./schemas/Show";
 import { STATUS } from "./utils/ack";
 import { socketRoomIndex } from "./viewer";
 
@@ -20,7 +20,8 @@ export const verifyAdmin = (user, socket) => {
     return true;
 }
 
-export async function getAttendees(eventId) {
+export async function getAttendees(eventId, show: IShow) {
+    const attendeeMap = new Map<string, IAttendee>();
     if (!eventId) return;
     eventId = eventId.trim();
     if (eventId.length == 0) return;
@@ -31,14 +32,15 @@ export async function getAttendees(eventId) {
         }}
     ).then((res) => {
         Logger.info(`Attendees from new eventid ${eventId}.`);
-        return res.data.attendees.map(attendee => { return {
-            profile: attendee.profile,
-            ticket: attendee.order_id, }
+        res.data.attendees.forEach(attendee => { 
+            attendeeMap.set(attendee.order_id, {...attendee.profile, ticket: attendee.order_id});
         });
+        show.attendees = Array.from(attendeeMap.values());
+        return attendeeMap;
     }).catch((err) => {
         Logger.error(err);
     })
-    return attendees;
+    return attendeeMap;
 }
 
 async function saveShow(show) {

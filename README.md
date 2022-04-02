@@ -10,11 +10,12 @@ Current functionality:
 - Admin can fetch list of users currently logged in (to clean up)
 
 ## Remote TODO
-- [ ] Make Dockerfile
-- [ ] Figure out NGINX config
+- [x] Make Dockerfile
+- [x] Figure out NGINX config
 
 ## Client TODO
 
+- [ ] Admit only ticketed individuals
 - [ ] Admin edit room details
 - [ ] Admin delete room
 - [ ] Waiting room
