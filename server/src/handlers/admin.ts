@@ -1,10 +1,10 @@
 import axios from "axios";
-import { EVENTS } from "./utils/events";
-import Logger from "./utils/logger";
+import { EVENTS } from "../protocol/events";
+import Logger from "../utils/logger";
 import * as dotenv from 'dotenv';
-import { ROOM_HOUSE } from "./socket";
-import { IAttendee, IShow, ShowModel } from "./schemas/Show";
-import { STATUS } from "./utils/ack";
+import { ROOM_HOUSE } from "../server";
+import { IAttendee, IShow, ShowModel } from "../schemas/showSchema";
+import { STATUS } from "../utils/ack";
 import { socketRoomIndex } from "./viewer";
 
 dotenv.config();
@@ -18,29 +18,6 @@ export const verifyAdmin = (user, socket) => {
         return false;
     }
     return true;
-}
-
-export async function getAttendees(eventId, show: IShow) {
-    const attendeeMap = new Map<string, IAttendee>();
-    if (!eventId) return;
-    eventId = eventId.trim();
-    if (eventId.length == 0) return;
-    let attendees = await axios.get(`https://www.eventbriteapi.com/v3/events/${eventId}/attendees`, 
-        {headers: {
-            'Authorization': `Bearer ${process.env.EVENTBRITE_API_KEY}`,
-            'Content-Type': 'application/json',
-        }}
-    ).then((res) => {
-        Logger.info(`Attendees from new eventid ${eventId}.`);
-        res.data.attendees.forEach(attendee => { 
-            attendeeMap.set(attendee.order_id, {...attendee.profile, ticket: attendee.order_id});
-        });
-        show.attendees = Array.from(attendeeMap.values());
-        return attendeeMap;
-    }).catch((err) => {
-        Logger.error(err);
-    })
-    return attendeeMap;
 }
 
 async function saveShow(show) {

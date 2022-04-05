@@ -10,7 +10,7 @@ import AttendeesContainer from "./Attendees";
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
     // and EventInfo, including Time, Duration, Title
-    const {socket, show} = useSockets();
+    const {socket, show, setError} = useSockets();
     const [isEditMode, setEditMode] = useState(false);
     const newShowTitle = useRef(null);
     const newEventId = useRef(null);
@@ -21,10 +21,13 @@ const DashboardContainer = () => {
                 setEditMode(false);
                 return;
             }
+        setError({messageType: 'warning', title: 'Loading event info...', 
+            message: 'Loading event from server.'})
         socket.emit(EVENTS.CLIENT.UPDATE_SHOW, {
-            ...show,
             name: newShowTitle.current.value,
             eventId: newEventId.current.value,
+        }, (res) => {
+            setError(res);
         });
         setEditMode(false);
         // MUST wait for ack HERE: to be implemented.

@@ -1,5 +1,5 @@
-import { STATUS } from "./utils/ack";
-import { EVENTS } from "./utils/events";
+import { STATUS } from "../utils/ack";
+import { EVENTS } from "../protocol/events";
 
 export const socketRoomIndex = (id: string) :string => `room-${id}`
 

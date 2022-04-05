@@ -3,14 +3,15 @@ import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Users.module.css"
 
-export interface IUser {
-    ticket: string;
-    isAdmin: boolean;
-    eventId?: string;
-    roomIndex?: number;
+export interface User {
+    name: string,
+    email: string,
+    ticket: string,
+    firstName: string,
+    isAdmin: boolean
 }
 
-const User:FC<IUser> = ({ticket, isAdmin, eventId, roomIndex}) => {
+const User:FC<User> = ({name, email, ticket, firstName, isAdmin}) => {
     const kickUser = () => {
         console.log("kicking", ticket);
     };

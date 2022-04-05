@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { ShowModel } from "./schemas/Show";
 import Logger from './utils/logger';
 import * as dotenv from 'dotenv';
 

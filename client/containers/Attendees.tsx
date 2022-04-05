@@ -1,21 +1,11 @@
 import { FC, useRef, useState } from "react";
 import { GrAdd } from 'react-icons/gr'
 import { AiFillLock, AiFillUnlock } from "react-icons/ai";
-import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
 import dashboardStyles from '../styles/Dashboard.module.css'
 import styles from '../styles/Attendees.module.css'
 
-export interface IAttendee {
-    ticket: string;
-    name: string;
-    first_name?: string;
-    last_name?: string;
-    email?: string;
-    addresses?: {};
-}
-
-const Attendee:FC<IAttendee> = ({name, ticket}) => {
+const Attendee = ({name, ticket}) => {
     return <div key={ticket} className={styles.attendee}>
         <p>{name}</p>
         <p>{ticket}</p>
@@ -31,8 +21,9 @@ const AttendeesContainer = () => {
         </div>
         <div>
             {show.attendees && 
-                show.attendees.map((attendee) => 
-                    <Attendee name={attendee.name} ticket={attendee.ticket}/>) }
+                Array.from(show.attendees.values())
+                    .map(attendee => 
+                        <Attendee name={attendee.name} ticket={attendee.ticket}/>)}
         </div>
     </div>
 }

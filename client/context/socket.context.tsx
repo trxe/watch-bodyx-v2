@@ -2,16 +2,16 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
 import { SOCKET_URL } from '../config/default';
 import EVENTS from '../config/events';
-import { IAttendee } from '../containers/Attendees';
 import { IRoom } from '../containers/Rooms';
 import { INotif } from '../containers/Snackbar';
+import { User } from '../containers/Users';
 
 interface ISocketContext {
     socket: Socket;
     ticket: string;
     setTicket: Function;
     isAdmin: boolean;
-    show?: {name: string, eventId: string, rooms: Array<IRoom>, attendees: Array<IAttendee>};
+    show?: {name: string, eventId: string, rooms: Array<IRoom>, attendees: Map<string, User>};
     setShow: Function;
     error?: INotif;
     setError: Function;
@@ -52,26 +52,19 @@ const SocketsProvider = (props: any) => {
     const [error, setError] =  useState(null)
 
     if (socket != null) {
-        socket.on(EVENTS.SERVER.INVALID_LOGIN, (err) => {
-            setError(err);
-        });
 
-        socket.on(EVENTS.SERVER.GENERIC_ERROR, (err) => {
-            setError(err);
-        });
-
-        socket.on(EVENTS.SERVER.PRIVILEGE, ({isAdmin, ticket}) => {
-            // set privilege level
-            console.log('am i admin?', isAdmin);
+        socket.on(EVENTS.SERVER.CLIENT_INFO, ({roomName, user}) => {
             setLoggedIn(true);
-            setIsAdmin(isAdmin);
-            setTicket(ticket);
-            localStorage.setItem('ticket', ticket);
-        })
+            setIsAdmin(user.isAdmin);
+            setTicket(user.ticket);
+            localStorage.setItem('email', user.email);
+            localStorage.setItem('ticket', user.ticket);
+        });
 
-        socket.on(EVENTS.SERVER.CURRENT_SHOW, (show) => {
+        socket.on(EVENTS.SERVER.CURRENT_SHOW, (show, callback) => {
             console.log("show attendees:", show);
-            setShow(show);
+            setShow({...show, attendees: new Map(Object.entries(show.attendees))});
+            callback(`User ${ticket} has received show.`);
         });
     }
 

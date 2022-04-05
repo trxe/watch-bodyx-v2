@@ -1,58 +1,13 @@
-import { Server, Socket } from "socket.io";
-import { IAttendee, IShow, ShowModel } from "./schemas/Show";
-import Logger from "./utils/logger";
-import { createNewRoom, getAttendees, updateRoomList, updateShowEvent, verifyAdmin } from "./admin";
-import { EVENTS } from "./utils/events";
-import { STATUS } from "./utils/ack";
-import { joinRoom, socketRoomIndex } from "./viewer";
+/* SOCKET */
+const socket = ({io}: { io: Server }) => {
 
-interface IUser {
-    name?: string;
-    ticket: string;
-    isAdmin: boolean;
-    eventId?: string;
-    roomIndex?: number;
-}
-
-/* GLOBALS */
-// Main room
-export const ROOM_HOUSE = 'house';
-
-let show: IShow = {
-    name: "", 
-    eventId: "",
-    rooms: [],
-    attendees: [],
-};
+    // on client connection.
+    /*
 
 let connectedClients: Map<string, IUser> = new Map<string, IUser>();
 let connectedTickets: Map<string, string> = new Map<string, string>();
 
 let attendees: Map<string, IAttendee> = new Map<string, IAttendee>();
-
-
-async function loadShow() {
-    const size = await ShowModel.count()
-    if (size != 1) {
-        await ShowModel.deleteMany({});
-        await ShowModel.create({
-            name: 'Sample Show',
-            eventId: '302699441177',
-            rooms: [],
-        })
-    }
-    const dbShow = await ShowModel.findOne();
-    show = {...dbShow._doc};
-    // console.log('show load complete:', show);
-    attendees = await getAttendees(show.eventId, show);
-}
-
-loadShow();
-
-/* SOCKET */
-const socket = ({io}: { io: Server }) => {
-
-    // on client connection.
     io.on(EVENTS.connect, (socket: Socket) => {
         Logger.info(`User connected ${socket.id}`)
 
@@ -106,6 +61,7 @@ const socket = ({io}: { io: Server }) => {
             connectedTickets.delete(user.ticket);
         })
     })
+    */
 }
 
 export default socket;

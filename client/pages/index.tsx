@@ -9,17 +9,22 @@ import ViewerContainer from '../containers/Viewer'
 import Snackbar from '../containers/Snackbar'
 
 export default function Home() {
-  const {socket, ticket, isAdmin, error, isLoggedIn} = useSockets();
+  const {socket, ticket, isAdmin, error, setError, isLoggedIn} = useSockets();
   const [isAdminView, setAdminView] = useState(true);
+  const emailRef = useRef(null);
   const ticketRef = useRef(null);
 
-  console.log(socket.io.opts);
+  // console.log(socket.io.opts);
 
   const handleSetTicket = () => {
-    const value = ticketRef.current.value;
-    if (!value) return;
-    console.log(socket.id);
-    socket.emit(EVENTS.CLIENT.LOGIN, {socketId: socket.id, ticket: value});
+    const email = emailRef.current.value;
+    const ticket = ticketRef.current.value;
+    if (!email || !ticket) return; // SET ERROR
+    socket.emit(EVENTS.CLIENT.LOGIN, 
+      {socketId: socket.id, ticket, email}, 
+      (res) => { 
+        if (res.status === 'error') setError(res);
+      });
   }
 
   const toggleAdminView = () => {
@@ -34,6 +39,7 @@ export default function Home() {
       {!ticket && <div className={styles.loginWrapper}>
           <div className={styles.loginInner}>
             <h1>BODYX</h1>
+            <input placeholder='Enter email' ref={emailRef}/>
             <input placeholder='Enter ticket' ref={ticketRef}/>
             <button onClick={handleSetTicket}>START</button>
           </div>
