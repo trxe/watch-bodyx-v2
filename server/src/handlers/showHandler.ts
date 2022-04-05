@@ -44,5 +44,30 @@ export const registerShowHandlers = (io: Server, socket) => {
             )
     }
 
+    // TODO:
+    const createRoom = () => {
+
+    }
+
+    // TODO:
+    const updateRoom = () => {
+
+    }
+
+    // TODO:
+    const deleteRoom = () => {
+
+    }
+
+    // TODO:
+    const joinRoom = () => {
+
+    }
+
+    // TODO:
+    const startShow = () => {
+
+    }
+
     socket.on(CLIENT_EVENTS.UPDATE_SHOW, updateShow);
 }

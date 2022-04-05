@@ -7,59 +7,6 @@ import { IAttendee, IShow, ShowModel } from "../schemas/showSchema";
 import { STATUS } from "../utils/ack";
 import { socketRoomIndex } from "./viewer";
 
-dotenv.config();
-
-export const verifyAdmin = (user, socket) => {
-    if (!user) {
-        socket.emit(EVENTS.SERVER.GENERIC_ERROR, STATUS.SESSION_EXP)
-        return false;
-    } else if (!user.isAdmin) {
-        socket.emit(EVENTS.SERVER.GENERIC_ERROR, STATUS.INSUFFICIENT_PRIVILEGE)
-        return false;
-    }
-    return true;
-}
-
-async function saveShow(show) {
-    const showToUpdate = await ShowModel.findOne();
-    showToUpdate.name = show.name;
-    showToUpdate.eventId = show.eventId;
-    showToUpdate.rooms = [...show.rooms];
-    await showToUpdate.save();
-}
-
-// To place all admin callbacks later.
-export const updateShowEvent = ({name, eventId, rooms}, socket, show, attendees) => {
-    name = !name ? '' : name.trim();
-    eventId = !eventId ? '' : eventId.trim();
-    // const isEventIdDiff = eventId != show.eventId;
-    show.name = name;
-    show.eventId = eventId;
-    show.rooms = rooms;
-    Logger.info(`Successfully updated current show: ${JSON.stringify(show)}`)
-
-    axios.get(`https://www.eventbriteapi.com/v3/events/${eventId}/attendees`, 
-        {headers: {
-            'Authorization': `Bearer ${process.env.EVENTBRITE_API_KEY}`,
-            'Content-Type': 'application/json',
-        }}
-    ).then((res) => {
-        Logger.info(`Attendees from new eventid ${eventId}.`);
-        attendees = res.data.attendees.map(attendee => { return {
-            profile: attendee.profile,
-            ticket: attendee.order_id, }
-        });
-        // Logger.info(attendees);
-        saveShow(show);
-        socket.emit(EVENTS.SERVER.ATTENDEE_LIST, attendees);
-    }).catch((err) => {
-        // inform client that it's invalid
-        Logger.error(err);
-    })
-    socket.emit(EVENTS.SERVER.CURRENT_SHOW, show);
-    socket.to(ROOM_HOUSE).emit(EVENTS.SERVER.CURRENT_SHOW, show);
-}
-
 export const createNewRoom = (room, socket, show) => {
     show.rooms.push(room);
     socket.to(ROOM_HOUSE).emit(EVENTS.SERVER.CURRENT_SHOW, show);

@@ -81,9 +81,7 @@ async function findUser(query): Promise<User> {
     return null;
 }
 
-const getShowJSON = (): Object => {
-    return show.getJSON();
-}
+const getShowJSON = (): Object => show.getJSON();
 
 const setShowInfo = (name, eventId, onSuccess, onFailure) => {
     Logger.info(`Updating show name ${name}, show eventId ${eventId}`);
@@ -92,6 +90,14 @@ const setShowInfo = (name, eventId, onSuccess, onFailure) => {
         .catch(onFailure);
 }
 
+// TODO
+const getClientRoom = () => {}
+
+// TODO
+const changeClientRoom = () => {}
+
+// TODO: For SM Room view
+const getClientsInRoom = () => {}
 
 const Provider = {
     addClient,
