@@ -1,5 +1,6 @@
 import { Ack } from "../interfaces/ack";
 import { CLIENT_EVENTS } from "../protocol/events";
+import { ROOMS } from "../protocol/roomNames";
 import Provider from "../provider"
 import Logger from "../utils/logger";
 
@@ -25,9 +26,11 @@ export const registerShowHandlers = (io, socket) => {
         Provider.setShowInfo(name, eventId, 
             () => { 
                 sendShow(socket); 
+                // sendShow(io.to(ROOMS.VIEWING_ROOM)); 
                 callback(SHOW_EVENTS.ACKS.UPDATE_SUCCESS.getJSON());
             },
             () => { 
+                sendShow(socket); 
                 callback(SHOW_EVENTS.ACKS.INVALID_EVENT_ID.getJSON());
             }
             )

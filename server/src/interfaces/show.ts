@@ -10,7 +10,7 @@ export class Show {
     rooms: Room[]
     // rooms and attendees are javascript Objects with ticket
     // attendees: Object
-    attendees: Map<string, User>
+    attendees: null | Map<string, User>
 
     constructor(name: string, eventId: string) {
         this.name = name;
@@ -19,12 +19,15 @@ export class Show {
 
     public async saveShow(name, eventId): Promise<void> {
         this.name = name;
+        if (this.eventId == eventId) return;
         this.eventId = eventId;
         const showToUpdate = await ShowModel.findOne();
         showToUpdate.name = name;
         showToUpdate.eventId = eventId;
         await showToUpdate.save();
-        this.attendees = await this.getAttendees();
+        await this.getAttendees()
+            .then(attendees => this.attendees = attendees)
+            .catch(err => { throw err });
     }
 
     public getJSON(): Object {
@@ -32,11 +35,13 @@ export class Show {
             name: this.name,
             eventId: this.eventId,
             rooms: this.rooms,
-            attendees: Object.fromEntries(this.attendees),
+            attendees: !this.attendees ? null : Object.fromEntries(this.attendees),
         };
     }
 
     public findAttendee(ticket: string, email: string): User {
+        // if no attendees list, this event is invalid. temp generate attendee
+        if (!this.attendees) return this.generateAttendee(ticket, email);
         if (!this.attendees.has(ticket)) return null;
         const user: User = this.attendees.get(ticket);
         if (user.email != email) return null;
@@ -57,7 +62,9 @@ export class Show {
         this.name = dbShow.name.trim();
         this.eventId = dbShow.eventId.trim();
         this.rooms = dbShow.rooms;
-        this.attendees = await this.getAttendees();
+        this.getAttendees()
+            .then(attendees => this.attendees = attendees)
+            .catch(err => { Logger.error(err) });
     }
 
     async getAttendees(): Promise<Map<string, User>> {
@@ -82,9 +89,13 @@ export class Show {
             });
             return attendeeMap;
         }).catch((err) => {
-            Logger.error(err);
+            Logger.error(err.message);
             throw `eventId ${this.eventId} not found`;
         })
         return attendeeMap;
+    }
+
+    generateAttendee(ticket, email): User {
+        return { ticket, email, name: ticket, firstName: ticket, isAdmin: false }
     }
 }

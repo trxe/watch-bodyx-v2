@@ -69,19 +69,16 @@ async function loadUsers() {
  */
 async function findUser(query): Promise<User> {
     const userDoc = await UserModel.findOne(query);
-    console.log(query);
-    const newAttendee = show.findAttendee(query.ticket, query.email);
-    if (!userDoc && !newAttendee) {
-        Logger.info('not found');
-        return null;
-    } else if (userDoc != null) {
+    if (userDoc != null) {
         const user = {...userDoc._doc};
         delete user['__v']
-        Logger.info('found');
         return user;
-    } else {
+    } 
+    const newAttendee = show.findAttendee(query.ticket, query.email);
+    if (newAttendee != null) {
         return newAttendee;
     }
+    return null;
 }
 
 const getShowJSON = (): Object => {
@@ -89,7 +86,7 @@ const getShowJSON = (): Object => {
 }
 
 const setShowInfo = (name, eventId, onSuccess, onFailure) => {
-    console.log("setting show info", eventId);
+    Logger.info(`Updating show name ${name}, show eventId ${eventId}`);
     show.saveShow(name, eventId)
         .then(onSuccess)
         .catch(onFailure);

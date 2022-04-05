@@ -27,6 +27,14 @@
     background-color: aliceblue;
 }
 
+.success {
+  background-color: darkseagreen !important;
+}
+
+.error {
+  background-color: palevioletred  !important;
+}
+
 .bottom {
   display: flex;
 }

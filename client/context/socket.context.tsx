@@ -63,7 +63,11 @@ const SocketsProvider = (props: any) => {
 
         socket.on(EVENTS.SERVER.CURRENT_SHOW, (show, callback) => {
             console.log("show attendees:", show);
-            setShow({...show, attendees: new Map(Object.entries(show.attendees))});
+            const currShow = {...show, attendees: null};
+            if (show.attendees != null) {
+                currShow.attendees = new Map(Object.entries(show.attendees));
+            }
+            setShow(currShow);
             callback(`User ${ticket} has received show.`);
         });
     }

@@ -21,16 +21,17 @@ const DashboardContainer = () => {
                 setEditMode(false);
                 return;
             }
+        console.log("what's wrong");
         setError({messageType: 'warning', title: 'Loading event info...', 
             message: 'Loading event from server.'})
         socket.emit(EVENTS.CLIENT.UPDATE_SHOW, {
             name: newShowTitle.current.value,
             eventId: newEventId.current.value,
         }, (res) => {
+            console.log(res);
             setError(res);
         });
         setEditMode(false);
-        // MUST wait for ack HERE: to be implemented.
     }
 
     const mode = isEditMode ?
@@ -47,7 +48,7 @@ const DashboardContainer = () => {
         </div> :
         <div className={styles.showInfo}>
             <p>Show Title: {show.name}</p>
-            <p>Event ID: {show.eventId}</p>
+            <p className={!show.attendees ? styles.error : styles.success}>Event ID: {show.eventId}</p>
             <button>START</button>
         </div>
     
