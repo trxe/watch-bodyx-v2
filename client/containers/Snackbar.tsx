@@ -10,7 +10,7 @@ export interface INotif {
 }
 
 const Snackbar:FC<INotif> = ({timer, messageType, title, message}) => {
-    const {setError} = useSockets()
+    const {setNotif} = useSockets()
     const [closeTimeout, setCloseTimeout] = useState(null);
 
     useEffect(() => {
@@ -19,7 +19,7 @@ const Snackbar:FC<INotif> = ({timer, messageType, title, message}) => {
 
     const closeSnackbar = () => {
         clearTimeout(closeTimeout);
-        setError(null);
+        setNotif(null);
     }
 
     const beginCloseTimeout = () => {

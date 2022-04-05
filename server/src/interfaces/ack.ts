@@ -7,7 +7,7 @@ export class Ack {
      title: string, msg?: string) {
         this.messageType = status;
         this.title = title;
-        this.message = msg;
+        this.message = msg || '';
     }
 
     public getJSON(): Object {

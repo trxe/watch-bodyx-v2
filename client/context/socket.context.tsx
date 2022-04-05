@@ -14,7 +14,7 @@ interface ISocketContext {
     show?: {name: string, eventId: string, rooms: Array<IRoom>, attendees: Map<string, User>};
     setShow: Function;
     error?: INotif;
-    setError: Function;
+    setNotif: Function;
     isLoggedIn: boolean;
 }
 
@@ -34,7 +34,7 @@ const SocketContext = createContext<ISocketContext>({
     setTicket: () => false, 
     isAdmin: false,
     isLoggedIn: false,
-    setError: () => false,
+    setNotif: () => false,
     setShow: () => false,
     // rooms: {}, 
     // messages: [], 
@@ -49,7 +49,7 @@ const SocketsProvider = (props: any) => {
     const [isLoggedIn, setLoggedIn] = useState(false)
     const [ticket, setTicket] = useState('');
     const [show, setShow] = useState({})
-    const [error, setError] =  useState(null)
+    const [error, setNotif] =  useState(null)
 
     if (socket != null) {
 
@@ -61,19 +61,19 @@ const SocketsProvider = (props: any) => {
             localStorage.setItem('ticket', user.ticket);
         });
 
-        socket.on(EVENTS.SERVER.CURRENT_SHOW, (show, callback) => {
-            console.log("show attendees:", show);
-            const currShow = {...show, attendees: null};
-            if (show.attendees != null) {
-                currShow.attendees = new Map(Object.entries(show.attendees));
+        socket.on(EVENTS.SERVER.CURRENT_SHOW, (newShow, callback) => {
+            const currShow = {...newShow, attendees: null};
+            if (newShow.attendees != null) {
+                currShow.attendees = new Map(Object.entries(newShow.attendees));
             }
+            console.log("show attendees:", currShow);
             setShow(currShow);
             callback(`User ${ticket} has received show.`);
         });
     }
 
     return <SocketContext.Provider 
-        value={{socket, ticket, setTicket, isAdmin, show, setShow, error, setError, isLoggedIn}} 
+        value={{socket, ticket, setTicket, isAdmin, show, setShow, error, setNotif, isLoggedIn}} 
         {...props} 
     />
 }

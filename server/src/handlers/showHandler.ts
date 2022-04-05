@@ -1,3 +1,4 @@
+import { Server } from "socket.io";
 import { Ack } from "../interfaces/ack";
 import { CLIENT_EVENTS } from "../protocol/events";
 import { ROOMS } from "../protocol/roomNames";
@@ -19,14 +20,21 @@ export const sendShow = (socket) => {
         });
 }
 
-export const registerShowHandlers = (io, socket) => {
+export const sendShowToRoom = (io: Server, roomName: string) => {
+    io.to(roomName).emit(SHOW_EVENTS.CURRENT_SHOW, Provider.getShowJSON(), 
+        (res) => {
+            Logger.info(res);
+        });
+}
+
+export const registerShowHandlers = (io: Server, socket) => {
     const updateShow = ({name, eventId}, callback) => {
         name = !name ? '' : name.trim();
         eventId = !eventId ? '' : eventId.trim();
         Provider.setShowInfo(name, eventId, 
             () => { 
                 sendShow(socket); 
-                // sendShow(io.to(ROOMS.VIEWING_ROOM)); 
+                sendShowToRoom(io, ROOMS.MAIN_ROOM);
                 callback(SHOW_EVENTS.ACKS.UPDATE_SUCCESS.getJSON());
             },
             () => { 

@@ -4,7 +4,6 @@ import https from 'https'
 import { Server } from 'socket.io';
 import cors from 'cors';
 import Logger from './utils/logger';
-import socket from './server';
 import fs from 'fs'
 import * as dotenv from 'dotenv';
 import { mongoInit } from './mongo';

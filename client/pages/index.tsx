@@ -9,7 +9,7 @@ import ViewerContainer from '../containers/Viewer'
 import Snackbar from '../containers/Snackbar'
 
 export default function Home() {
-  const {socket, ticket, isAdmin, error, setError, isLoggedIn} = useSockets();
+  const {socket, ticket, isAdmin, error, setNotif, isLoggedIn} = useSockets();
   const [isAdminView, setAdminView] = useState(true);
   const emailRef = useRef(null);
   const ticketRef = useRef(null);
@@ -23,7 +23,7 @@ export default function Home() {
     socket.emit(EVENTS.CLIENT.LOGIN, 
       {socketId: socket.id, ticket, email}, 
       (res) => { 
-        if (res.status === 'error') setError(res);
+        if (res.status === 'error') setNotif(res);
       });
   }
 

@@ -27,7 +27,10 @@ export class Show {
         await showToUpdate.save();
         await this.getAttendees()
             .then(attendees => this.attendees = attendees)
-            .catch(err => { throw err });
+            .catch(err => { 
+                this.attendees = null;
+                throw err;
+            });
     }
 
     public getJSON(): Object {
