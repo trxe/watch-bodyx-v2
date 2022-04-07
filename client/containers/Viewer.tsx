@@ -5,14 +5,11 @@ import styles from '../styles/Viewer.module.css'
 import UserMenu from './UserMenu';
 
 const ViewerContainer = () => {
-    const {socket, ticket, show, setShow} = useSockets();
+    const {socket, user, show, setShow} = useSockets();
     const [roomIndex, setRoomIndex] = useState(0)
     const [isChatNotPoll, setChatNotPoll] = useState(true);
 
     const handleSwitchRooms = (index) => {
-        // move to the response ack
-        // setRoomIndex(index);
-        // console.log(index);
         console.log(socket.id);
         socket.emit(EVENTS.CLIENT.JOIN_ROOM, {index}, 
             (response) => {
@@ -35,7 +32,7 @@ const ViewerContainer = () => {
         <div className={styles.playerWrapper}>
             <div className={styles.greeter}>
                 <UserMenu/>
-                <span>Welcome, Detective {ticket}!</span>
+                <span>Welcome, Detective {user.name}!</span>
             </div>
             <div className={styles.mediaPlayer}>
                 <iframe width="100%" height="100%" 

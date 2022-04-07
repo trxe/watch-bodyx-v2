@@ -9,6 +9,15 @@ export interface INotif {
     message: string,
 }
 
+export const DEFAULT_TIMER = 4;
+
+export const createNotif = (messageType: 'error' | 'info' | 'warning' | 'success', 
+    title:string, 
+    message:string, 
+    timer?: number): INotif => {
+        return {timer: timer || DEFAULT_TIMER, messageType, title, message}
+}
+
 const Snackbar:FC<INotif> = ({timer, messageType, title, message}) => {
     const {setNotif} = useSockets()
     const [closeTimeout, setCloseTimeout] = useState(null);

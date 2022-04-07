@@ -23,7 +23,9 @@ const AttendeesContainer = () => {
             {show.attendees && 
                 Array.from(show.attendees.values())
                     .map(attendee => 
-                        <Attendee name={attendee.name} ticket={attendee.ticket}/>)}
+                        <Attendee key={attendee.ticket} 
+                            name={attendee.name} 
+                            ticket={attendee.ticket}/>)}
         </div>
     </div>
 }
