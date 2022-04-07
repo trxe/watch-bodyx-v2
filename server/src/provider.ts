@@ -1,4 +1,5 @@
 import { Client } from "./interfaces/client";
+import { Room } from "./interfaces/room";
 import { Show } from "./interfaces/show";
 import { User } from "./interfaces/users";
 import { UserModel } from "./schemas/userSchema";
@@ -42,8 +43,13 @@ const addClient = (clientSocketId:string, ticket: string, client: Client): void 
     socketTicket.set(clientSocketId, ticket);
 }
 
-const getClient = (ticket: string): Client => {
+const getClientByTicket = (ticket: string): Client => {
     return clients.has(ticket) ? clients.get(ticket) : null;
+}
+
+const getClientBySocket = (socketId: string): Client => {
+    return socketTicket.has(socketId) ? 
+        getClientByTicket(socketTicket.get(socketId)) : null;
 }
 
 /**
@@ -82,10 +88,32 @@ async function findUser(query): Promise<User> {
 }
 
 const getShowJSON = (): Object => show.getJSON();
+const getRoomsJSON = (): Object => show.getJSON().rooms;
 
-const setShowInfo = (name, eventId, onSuccess, onFailure) => {
+const setShowInfo = (name: string, eventId: string, onSuccess, onFailure) => {
     Logger.info(`Updating show name ${name}, show eventId ${eventId}`);
     show.saveShow(name, eventId)
+        .then(onSuccess)
+        .catch(onFailure);
+}
+
+const createRoom = (name: string, url: string, isLocked, onSuccess, onFailure) => {
+    Logger.info(`Creating room ${name}; url: ${url}`);
+    show.createRoom(name, url, isLocked)
+        .then(onSuccess)
+        .catch(onFailure);
+}
+
+const updateRoom = (room: Room, onSuccess, onFailure) => {
+    Logger.info(`Updating room ${room.name}; id: ${room._id}`);
+    show.updateRoom(room)
+        .then(onSuccess)
+        .catch(onFailure);
+}
+
+const deleteRoom = (_id: string, onSuccess, onFailure) => {
+    Logger.info(`Deleting room with id ${_id}`);
+    show.deleteRoom(_id)
         .then(onSuccess)
         .catch(onFailure);
 }
@@ -101,11 +129,15 @@ const getClientsInRoom = () => {}
 
 const Provider = {
     addClient,
-    getClient, 
+    getClientBySocket, 
     removeClientBySocketId, 
     loadUsers,
     findUser,
+    createRoom,
+    updateRoom,
+    deleteRoom,
     getShowJSON,
+    getRoomsJSON,
     setShowInfo,
     init
 }

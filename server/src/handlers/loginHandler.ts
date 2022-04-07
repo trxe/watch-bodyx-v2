@@ -18,8 +18,7 @@ const LOGIN_EVENTS = {
 
 export const registerLoginHandlers = (io, socket) => {
     const recvLogin = ({socketId, ticket, email}, acknowledge) => {
-        socket.join(ROOMS.WAITING_ROOM);
-        let roomName = ROOMS.WAITING_ROOM;
+        let roomName = ROOMS.MAIN_ROOM;
         Provider.findUser({socketId, ticket, email})
             .then(user => {
                 if (!user) {

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { RoomModel } from "../schemas/roomSchema";
 import { ShowModel } from "../schemas/showSchema";
 import Logger from "../utils/logger";
 import { Room } from "./room";
@@ -8,23 +9,60 @@ export class Show {
     name: string
     eventId: string
     rooms: Room[]
-    // rooms and attendees are javascript Objects with ticket
-    // attendees: Object
-    attendees: null | Map<string, User>
+    attendees: Map<string, User>
+    dbShow
 
     constructor(name: string, eventId: string) {
         this.name = name;
         this.eventId = eventId;
     }
 
+    public async createRoom(name: string, url: string, isLocked: boolean): Promise<string> {
+        if (!this.dbShow) this.loadShow()
+        const room = new RoomModel({ name, url, isLocked });
+        this.dbShow.rooms.push(room);
+        room.chatRoomName = `${room._id}_ROOM`;
+        await this.dbShow.save(err => {
+            if (!err) return;
+            Logger.error(err);
+            throw 'Error saving room to database.';
+        });
+        this.rooms = this.dbShow.rooms;
+        return room._id.toString();
+    }
+
+    public async updateRoom(newRoom: Room): Promise<string> {
+        if (!this.dbShow) this.loadShow()
+        const room = await this.dbShow.rooms.id(newRoom._id);
+        console.log(room);
+        room.name = newRoom.name;
+        room.url = newRoom.url;
+        room.isLocked = newRoom.isLocked;
+        room.chatRoomName = `${newRoom._id}_ROOM`;
+        await this.dbShow.save(err => {
+            if (!err) return;
+            Logger.error(err);
+            throw 'Error saving room to database.';
+        });
+        this.rooms = this.dbShow.rooms;
+        return newRoom._id.toString();
+    }
+
+    public async deleteRoom(_id: string): Promise<string> {
+        if (!this.dbShow) this.loadShow()
+        const room = await this.dbShow.rooms.id(_id).remove();
+        Logger.info(this.dbShow.rooms);
+        return _id;
+    }
+
     public async saveShow(name, eventId): Promise<void> {
         this.name = name;
         if (this.eventId == eventId) return;
         this.eventId = eventId;
-        const showToUpdate = await ShowModel.findOne();
-        showToUpdate.name = name;
-        showToUpdate.eventId = eventId;
-        await showToUpdate.save();
+        if (!this.dbShow) this.loadShow()
+        this.dbShow.name = name;
+        this.dbShow.eventId = eventId;
+        await this.dbShow.save();
         await this.getAttendees()
             .then(attendees => this.attendees = attendees)
             .catch(err => { 
@@ -33,7 +71,7 @@ export class Show {
             });
     }
 
-    public getJSON(): Object {
+    public getJSON(): {name: string, eventId: string, rooms: Array<Room>, attendees: Object} {
         return {
             name: this.name,
             eventId: this.eventId,
@@ -61,10 +99,10 @@ export class Show {
                 rooms: [],
             })
         }
-        const dbShow = await ShowModel.findOne();
-        this.name = dbShow.name.trim();
-        this.eventId = dbShow.eventId.trim();
-        this.rooms = dbShow.rooms;
+        this.dbShow = await ShowModel.findOne();
+        this.name = this.dbShow.name.trim();
+        this.eventId = this.dbShow.eventId.trim();
+        this.rooms = this.dbShow.rooms;
         this.getAttendees()
             .then(attendees => this.attendees = attendees)
             .catch(err => { Logger.error(err) });

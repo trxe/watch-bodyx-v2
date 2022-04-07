@@ -75,7 +75,12 @@ const SocketsProvider = (props: any) => {
                 currShow.attendees = new Map(Object.entries(newShow.attendees));
             }
             setShow(currShow);
-            callback(`Socket ${socket.id} has received show.`);
+            callback(socket.id);
+        });
+
+        socket.on(EVENTS.SERVER.CURRENT_ROOMS, (rooms, callback) => {
+            setShow({...show, rooms});
+            if (callback != null) callback(socket.id);
         });
     }
 
