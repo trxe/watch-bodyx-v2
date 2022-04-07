@@ -1,6 +1,3 @@
-import { FC, useRef, useState } from "react";
-import { GrAdd } from 'react-icons/gr'
-import { AiFillLock, AiFillUnlock } from "react-icons/ai";
 import { useSockets } from "../context/socket.context";
 import dashboardStyles from '../styles/Dashboard.module.css'
 import styles from '../styles/Attendees.module.css'
@@ -25,7 +22,8 @@ const AttendeesContainer = () => {
                     .map(attendee => 
                         <Attendee key={attendee.ticket} 
                             name={attendee.name} 
-                            ticket={attendee.ticket}/>)}
+                            ticket={attendee.ticket}
+                            />)}
         </div>
     </div>
 }

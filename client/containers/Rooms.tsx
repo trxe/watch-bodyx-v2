@@ -1,6 +1,6 @@
 import { FC, useRef, useState } from "react";
 import { GrAdd } from 'react-icons/gr'
-import { AiFillDelete, AiFillEdit, AiFillLock, AiFillUnlock, AiOutlineCheck, AiOutlineClose, AiOutlineDelete } from "react-icons/ai";
+import { AiFillEdit, AiFillLock, AiFillUnlock, AiOutlineCheck, AiOutlineClose, AiOutlineDelete } from "react-icons/ai";
 import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
 import dashboardStyles from '../styles/Dashboard.module.css'

@@ -4,16 +4,19 @@ import { User } from "../interfaces/users";
 import { CLIENT_EVENTS } from "../protocol/events";
 import { ROOMS } from "../protocol/roomNames";
 import Provider from "../provider"
-import socket from "../server";
 import Logger from "../utils/logger";
 
 const SHOW_EVENTS = {
     CURRENT_SHOW: 'CURRENT_SHOW',
     CURRENT_ROOMS: 'CURRENT_ROOMS',
+    CURRENT_CLIENTS: 'CURRENT_CLIENTS',
+    ADD_CLIENT: 'ADD_CLIENT',
+    DISCONNECTED_CLIENT: 'DISCONNECTED_CLIENT',
     ACKS: {
         UPDATE_SUCCESS: new Ack('success', 'Show updated successfully'),
         INVALID_EVENT_ID: new Ack('error', 'Invalid Event Id'),
         MISSING_FIELD: new Ack('error', 'Missing field'),
+        JOIN_SUCCESS: new Ack('success', 'Joined room successfully'),
     }
 }
 
@@ -34,8 +37,24 @@ const logSocketIdEvent = (socketId: string, info: string) => {
 export const sendShow = (socket) => {
     socket.emit(SHOW_EVENTS.CURRENT_SHOW, Provider.getShowJSON(), 
         (socketId) => {
-            logSocketIdEvent(socketId, 'has received show')
+            logSocketIdEvent(socketId, 'has received show');
         });
+}
+
+export const sendClients = (socket) => {
+    socket.emit(SHOW_EVENTS.CURRENT_CLIENTS, Provider.getClientListJSON(),
+        (socketId) => {
+            logSocketIdEvent(socketId, 'has received user list');
+        }
+    );
+}
+
+export const sendClientToAdmin = (io, client) => {
+    io.to(ROOMS.SM_ROOM).emit(SHOW_EVENTS.ADD_CLIENT, client);
+}
+
+export const sendClientDisconnectedToAdmin = (io, ticket) => {
+    io.to(ROOMS.SM_ROOM).emit(SHOW_EVENTS.DISCONNECTED_CLIENT, ticket);
 }
 
 /**
@@ -44,10 +63,7 @@ export const sendShow = (socket) => {
  * @param roomName 
  */
 export const sendShowToRoom = (io: Server, roomName: string) => {
-    io.to(roomName).emit(SHOW_EVENTS.CURRENT_SHOW, Provider.getShowJSON(), 
-        (socketId) => {
-            logSocketIdEvent(socketId, 'has received show')
-        });
+    io.to(roomName).emit(SHOW_EVENTS.CURRENT_SHOW, Provider.getShowJSON());
 }
 
 /**
@@ -127,8 +143,16 @@ export const registerShowHandlers = (io: Server, socket) => {
     }
 
     // TODO:
-    const joinRoom = () => {
-
+    const joinRoom = (roomId, callback) => {
+        Provider.setClientRoom(socket.id, roomId, 
+            () => {
+                io.to(ROOMS.SM_ROOM).emit(SHOW_EVENTS.CURRENT_CLIENTS, Provider.getClientListJSON());
+                callback(SHOW_EVENTS.ACKS.JOIN_SUCCESS.getJSON());
+            },
+            (err) => {
+                Logger.error(err);
+                callback(new Ack('error', 'Unknown ERROR').getJSON())
+            });
     }
 
     // TODO:
@@ -140,4 +164,5 @@ export const registerShowHandlers = (io: Server, socket) => {
     socket.on(CLIENT_EVENTS.CREATE_ROOM, createRoom);
     socket.on(CLIENT_EVENTS.UPDATE_ROOM, updateRoom);
     socket.on(CLIENT_EVENTS.DELETE_ROOM, deleteRoom);
+    socket.on(CLIENT_EVENTS.JOIN_ROOM, joinRoom);
 }

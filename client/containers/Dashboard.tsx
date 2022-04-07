@@ -4,7 +4,7 @@ import styles from "../styles/Dashboard.module.css"
 import { useSockets } from "../context/socket.context";
 import RoomsContainer from "./Rooms";
 import UserMenu from "./UserMenu";
-import UsersContainer from "./Users";
+import UsersContainer from "./Clients";
 import AttendeesContainer from "./Attendees";
 
 const DashboardContainer = () => {
@@ -61,6 +61,7 @@ const DashboardContainer = () => {
         <div className={styles.bottom}>
             <div className={styles.attendeesWrapper}>
                 <AttendeesContainer/>
+                <UsersContainer/>
             </div>
             <RoomsContainer />
         </div>

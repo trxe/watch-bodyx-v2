@@ -55,6 +55,11 @@ export class Show {
         return _id;
     }
 
+    public async findRoomNameById(_id: string, defaultRoom : string): Promise<string> {
+        const room = await this.dbShow.rooms.id(_id);
+        return !room ? defaultRoom : room.chatRoomName;
+    }
+
     public async saveShow(name, eventId): Promise<void> {
         this.name = name;
         if (this.eventId == eventId) return;

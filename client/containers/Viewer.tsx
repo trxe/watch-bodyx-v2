@@ -5,13 +5,13 @@ import styles from '../styles/Viewer.module.css'
 import UserMenu from './UserMenu';
 
 const ViewerContainer = () => {
-    const {socket, user, show, setShow} = useSockets();
+    const {socket, user, show} = useSockets();
     const [roomIndex, setRoomIndex] = useState(0)
     const [isChatNotPoll, setChatNotPoll] = useState(true);
 
     const handleSwitchRooms = (index) => {
         console.log(socket.id);
-        socket.emit(EVENTS.CLIENT.JOIN_ROOM, {index}, 
+        socket.emit(EVENTS.CLIENT.JOIN_ROOM, show.rooms[index]._id, 
             (response) => {
                 console.log(response);
                 setRoomIndex(index);

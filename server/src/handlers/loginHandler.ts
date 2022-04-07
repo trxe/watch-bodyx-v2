@@ -4,7 +4,7 @@ import { Client } from "../interfaces/client"
 import Provider from "../provider"
 import Logger from "../utils/logger"
 import { CLIENT_EVENTS } from "../protocol/events"
-import { sendShow } from "./showHandler"
+import { sendClientDisconnectedToAdmin, sendClients, sendClientToAdmin, sendShow } from "./showHandler"
 
 const LOGIN_EVENTS = {
     CLIENT_INFO: "CLIENT_INFO",
@@ -29,8 +29,13 @@ export const registerLoginHandlers = (io, socket) => {
                 const client: Client = {user, socketId, roomName}
                 Provider.addClient(socketId, ticket, client);
                 socket.emit(LOGIN_EVENTS.CLIENT_INFO, client);
-                sendShow(socket);
                 socket.join(roomName);
+                sendShow(socket);
+                if (user.isAdmin) {
+                    sendClients(socket);
+                } else {
+                    sendClientToAdmin(io, client);
+                }
                 acknowledge(LOGIN_EVENTS.ACKS.VALID_LOGIN.getJSON());
             })
             .catch((err) => {
@@ -42,6 +47,7 @@ export const registerLoginHandlers = (io, socket) => {
     const logout = () => {
         const ticket = Provider.removeClientBySocketId(socket.id);
         if (ticket != null) {
+            sendClientDisconnectedToAdmin(io, ticket);
             Logger.info(`User ${ticket} disconnected`);
         }
     }

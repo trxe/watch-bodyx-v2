@@ -5,7 +5,7 @@ import EVENTS from '../config/events';
 import { ROOMS } from '../config/roomNames';
 import { IRoom } from '../containers/Rooms';
 import { INotif } from '../containers/Snackbar';
-import { User } from '../containers/Users';
+import { User } from '../containers/Clients';
 
 interface ISocketContext {
     socket: Socket

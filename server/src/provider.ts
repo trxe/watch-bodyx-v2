@@ -4,7 +4,6 @@ import { Show } from "./interfaces/show";
 import { User } from "./interfaces/users";
 import { UserModel } from "./schemas/userSchema";
 import Logger from "./utils/logger";
-
 /**
  * Contains the server's state information.
  */
@@ -51,6 +50,26 @@ const getClientBySocket = (socketId: string): Client => {
     return socketTicket.has(socketId) ? 
         getClientByTicket(socketTicket.get(socketId)) : null;
 }
+
+const getClientListJSON = (): Array<Object> => {
+    return Array.from(clients.values());
+}
+
+const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) => {
+    const clientToSet = getClientBySocket(socketId);
+    const originalName = clientToSet.roomName;
+    show.findRoomNameById(roomId, clientToSet.roomName)
+        .then(newRoomName => {
+            clients.set(clientToSet.user.ticket, {...clientToSet, roomName: newRoomName});
+            if (originalName != newRoomName) {
+                onSuccess();
+            }
+        })
+        .catch(onFailure);
+}
+
+// TODO
+const changeClientRoom = () => {}
 
 /**
  * Loads users from database. Contains only admins at startup.
@@ -118,17 +137,10 @@ const deleteRoom = (_id: string, onSuccess, onFailure) => {
         .catch(onFailure);
 }
 
-// TODO
-const getClientRoom = () => {}
-
-// TODO
-const changeClientRoom = () => {}
-
-// TODO: For SM Room view
-const getClientsInRoom = () => {}
-
 const Provider = {
     addClient,
+    getClientListJSON,
+    setClientRoom,
     getClientBySocket, 
     removeClientBySocketId, 
     loadUsers,
