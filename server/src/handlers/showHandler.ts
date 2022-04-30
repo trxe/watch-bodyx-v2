@@ -195,7 +195,7 @@ export const registerShowHandlers = (io: Server, socket) => {
         Provider.getShow().setShowOpen(isShowOpen);
         Logger.info(`Changing House open status to: ${isShowOpen ? 'open' : 'closed'}`);
         sendShow(socket);
-        callback(new Ack('success', 'Show started successfully').getJSON());
+        callback(new Ack('success', `House ${isShowOpen ? 'opened' : 'closed'} successfully`).getJSON());
     }
 
     // Assigns a user to a room via room ID.
