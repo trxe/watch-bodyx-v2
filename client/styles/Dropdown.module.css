@@ -1,0 +1,54 @@
+.dropdown a {
+  text-decoration: none;
+}
+
+.mainButton {
+  color: #fff;
+  background: darkorange;
+  display: block;
+  float: left;
+  padding: 1rem;
+  position: relative;
+  text-decoration: none;
+  transition-duration: 0.5s;
+}
+
+.mainButton:hover,
+.mainButton:focus-within {
+  background: red;
+  cursor: pointer;
+}
+
+.mainButton:focus-within a {
+  outline: none;
+}
+
+.dropdown {
+  background: orange;
+  visibility: hidden;
+  opacity: 0;
+  min-width: 5rem;
+  position: absolute;
+  transition: all 0.5s ease;
+  margin-top: 1rem;
+  left: 0;
+  display: none;
+}
+
+.dropdown:hover {
+  visibility: visible;
+  opacity: 1;
+  display: block
+}
+
+.dropdown li ul:hover,
+.dropdown li ul:focus {
+  visibility: visible;
+  opacity: 1;
+  display: block
+}
+
+.dropdown ul li {
+  clear: both;
+  width: 100%;
+}

@@ -4,6 +4,8 @@ export const RoomSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
+        unique: true,
+        dropDups: true,
     },
     url: {
         type: String,
@@ -16,6 +18,7 @@ export const RoomSchema = new mongoose.Schema({
     chatRoomName: {
         type: String,
         required: true,
+        unique: true,
     }
 });
 

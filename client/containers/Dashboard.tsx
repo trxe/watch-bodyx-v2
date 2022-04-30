@@ -4,8 +4,9 @@ import styles from "../styles/Dashboard.module.css"
 import { useSockets } from "../context/socket.context";
 import RoomsContainer from "./Rooms";
 import UserMenu from "./UserMenu";
-import UsersContainer from "./Users";
+import UsersContainer from "./Clients";
 import AttendeesContainer from "./Attendees";
+import { CHANNELS } from "../config/channels";
 
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
@@ -21,7 +22,6 @@ const DashboardContainer = () => {
                 setEditMode(false);
                 return;
             }
-        console.log("what's wrong");
         setNotif({messageType: 'warning', title: 'Loading event info...', 
             message: 'Loading event from server.'})
         socket.emit(EVENTS.CLIENT.UPDATE_SHOW, {
@@ -33,7 +33,18 @@ const DashboardContainer = () => {
         setEditMode(false);
     }
 
-    const mode = isEditMode ?
+    const toggleShowStart = () => {
+        console.log('Toggle show start', !show.isOpen);
+        socket.emit(EVENTS.CLIENT.TOGGLE_SHOW_START, {
+            fromChannel: !show.isOpen ? CHANNELS.WAITING_ROOM : CHANNELS.MAIN_ROOM,
+            toChannel: !show.isOpen ? CHANNELS.MAIN_ROOM : CHANNELS.WAITING_ROOM,
+            isShowOpen: !show.isOpen
+        }, (res) => {
+            setNotif(res);
+        });
+    }
+
+    const showInfo = isEditMode ?
         <div className={styles.editShowInfo}>
             <input placeholder='Show Title' 
                 ref={newShowTitle} 
@@ -48,19 +59,20 @@ const DashboardContainer = () => {
         <div className={styles.showInfo}>
             <p>Show Title: {show.name}</p>
             <p className={!show.attendees ? styles.error : styles.success}>Event ID: {show.eventId}</p>
-            <button>START</button>
+            <button onClick={toggleShowStart}>{show.isOpen ? 'END' : 'START'}</button>
         </div>
     
     return <div className={styles.dashboardWrapper}>
         <UserMenu/>
         <h1>Show Settings</h1>
-        {mode}
+        {showInfo}
         <button onClick={() => setEditMode(!isEditMode)}>
             {isEditMode ? 'CANCEL' : 'EDIT'}
         </button>
         <div className={styles.bottom}>
             <div className={styles.attendeesWrapper}>
                 <AttendeesContainer/>
+                <UsersContainer/>
             </div>
             <RoomsContainer />
         </div>

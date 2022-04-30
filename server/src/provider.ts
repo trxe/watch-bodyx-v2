@@ -1,4 +1,5 @@
 import { Client } from "./interfaces/client";
+import { Room } from "./interfaces/room";
 import { Show } from "./interfaces/show";
 import { User } from "./interfaces/users";
 import { UserModel } from "./schemas/userSchema";
@@ -7,13 +8,12 @@ import Logger from "./utils/logger";
 /**
  * Contains the server's state information.
  */
-
 let show: Show;
 let clients: Map<string, Client>;
 let socketTicket: Map<string, string>;
 
 const init = () => {
-    show = new Show('Sample Show', '302699441177');
+    show = new Show('Sample Show', '302699441177', false);
     show.loadShow();
     clients = new Map<string, Client>();
     socketTicket = new Map<string, string>();
@@ -42,9 +42,55 @@ const addClient = (clientSocketId:string, ticket: string, client: Client): void 
     socketTicket.set(clientSocketId, ticket);
 }
 
-const getClient = (ticket: string): Client => {
+const getClientByTicket = (ticket: string): Client => {
     return clients.has(ticket) ? clients.get(ticket) : null;
 }
+
+const getClientBySocket = (socketId: string): Client => {
+    return socketTicket.has(socketId) ? 
+        getClientByTicket(socketTicket.get(socketId)) : null;
+}
+
+const getClientListJSON = (): Array<Object> => {
+    return Array.from(clients.values());
+}
+
+/**
+ * Set the current show-specific room client is in.
+ * @param socketId 
+ * @param roomId 
+ * @param onSuccess 
+ * @param onFailure 
+ */
+const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) => {
+    const clientToSet = getClientBySocket(socketId);
+    const originalName = clientToSet.roomName;
+    show.findRoomNameById(roomId, clientToSet.roomName)
+        .then(newRoomName => {
+            clients.set(clientToSet.user.ticket, {...clientToSet, roomName: newRoomName});
+            if (originalName != newRoomName) {
+                onSuccess(clients.get(clientToSet.user.ticket), originalName);
+            }
+        })
+        .catch(onFailure);
+}
+
+/**
+ * Set the current app-wide channel client is in.
+ * @param socketId 
+ * @param channelName 
+ * @param onSuccess 
+ * @param onFailure 
+ */
+const setClientChannel = (socketId: string, channelName: string, onSuccess, onFailure) => {
+    const clientToSet = getClientBySocket(socketId);
+    const originalName = clientToSet.channelName;
+    clients.set(clientToSet.user.ticket, {...clientToSet, channelName: channelName});
+    onSuccess(clients.get(clientToSet.user.ticket), originalName);
+}
+
+// TODO
+const changeClientRoom = () => {}
 
 /**
  * Loads users from database. Contains only admins at startup.
@@ -81,32 +127,52 @@ async function findUser(query): Promise<User> {
     return null;
 }
 
-const getShowJSON = (): Object => show.getJSON();
+const getShow = (): Show => show;
+const getShowMainRoom = (): string => show.rooms.length == 0 ? null : show.rooms[0].chatRoomName;
 
-const setShowInfo = (name, eventId, onSuccess, onFailure) => {
+const setShowInfo = (name: string, eventId: string, onSuccess, onFailure) => {
     Logger.info(`Updating show name ${name}, show eventId ${eventId}`);
     show.saveShow(name, eventId)
         .then(onSuccess)
         .catch(onFailure);
 }
 
-// TODO
-const getClientRoom = () => {}
+const createRoom = (name: string, url: string, isLocked, onSuccess, onFailure) => {
+    Logger.info(`Creating room ${name}; url: ${url}`);
+    show.createRoom(name, url, isLocked)
+        .then(onSuccess)
+        .catch(onFailure);
+}
 
-// TODO
-const changeClientRoom = () => {}
+const updateRoom = (room: Room, onSuccess, onFailure) => {
+    Logger.info(`Updating room ${room.name}; id: ${room._id}`);
+    show.updateRoom(room)
+        .then(onSuccess)
+        .catch(onFailure);
+}
 
-// TODO: For SM Room view
-const getClientsInRoom = () => {}
+const deleteRoom = (_id: string, onSuccess, onFailure) => {
+    Logger.info(`Deleting room with id ${_id}`);
+    show.deleteRoom(_id)
+        .then(onSuccess)
+        .catch(onFailure);
+}
 
 const Provider = {
     addClient,
-    getClient, 
+    getClientListJSON,
+    setClientRoom,
+    setClientChannel,
+    getClientBySocket, 
     removeClientBySocketId, 
     loadUsers,
     findUser,
-    getShowJSON,
+    createRoom,
+    updateRoom,
+    deleteRoom,
     setShowInfo,
+    getShow,
+    getShowMainRoom,
     init
 }
 

@@ -1,10 +1,10 @@
-import { ROOMS } from "../protocol/roomNames"
+import { CHANNELS } from "../protocol/channels"
 import { Ack } from "../interfaces/ack"
 import { Client } from "../interfaces/client"
 import Provider from "../provider"
 import Logger from "../utils/logger"
 import { CLIENT_EVENTS } from "../protocol/events"
-import { sendShow } from "./showHandler"
+import { sendClientDisconnectedToAdmin, sendClients, sendClientToAdmin, sendShow } from "./showHandler"
 
 const LOGIN_EVENTS = {
     CLIENT_INFO: "CLIENT_INFO",
@@ -18,20 +18,24 @@ const LOGIN_EVENTS = {
 
 export const registerLoginHandlers = (io, socket) => {
     const recvLogin = ({socketId, ticket, email}, acknowledge) => {
-        socket.join(ROOMS.WAITING_ROOM);
-        let roomName = ROOMS.WAITING_ROOM;
+        let channelName = CHANNELS.WAITING_ROOM;
         Provider.findUser({socketId, ticket, email})
             .then(user => {
                 if (!user) {
                     acknowledge(LOGIN_EVENTS.ACKS.INVALID_LOGIN.getJSON());
                     return;
                 }
-                if (user.isAdmin) roomName = ROOMS.SM_ROOM;
-                const client: Client = {user, socketId, roomName}
+                if (user.isAdmin) channelName = CHANNELS.SM_ROOM;
+                const client: Client = {user, socketId, channelName}
                 Provider.addClient(socketId, ticket, client);
                 socket.emit(LOGIN_EVENTS.CLIENT_INFO, client);
+                socket.join(channelName);
                 sendShow(socket);
-                socket.join(roomName);
+                if (user.isAdmin) {
+                    sendClients(socket);
+                } else {
+                    sendClientToAdmin(io, client);
+                }
                 acknowledge(LOGIN_EVENTS.ACKS.VALID_LOGIN.getJSON());
             })
             .catch((err) => {
@@ -43,6 +47,7 @@ export const registerLoginHandlers = (io, socket) => {
     const logout = () => {
         const ticket = Provider.removeClientBySocketId(socket.id);
         if (ticket != null) {
+            sendClientDisconnectedToAdmin(io, ticket);
             Logger.info(`User ${ticket} disconnected`);
         }
     }

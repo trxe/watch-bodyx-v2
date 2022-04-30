@@ -1,0 +1,32 @@
+.userAdmin {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  background-color: coral;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 2px 2px 5px;
+  margin: 1rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.userViewer {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  background-color: lightblue;
+  border: none;
+  border-radius: 4px;
+  box-shadow: 2px 2px 5px;
+  margin: 1rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.userAdmin .userViewer p {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
