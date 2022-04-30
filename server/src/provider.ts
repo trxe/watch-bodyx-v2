@@ -4,16 +4,16 @@ import { Show } from "./interfaces/show";
 import { User } from "./interfaces/users";
 import { UserModel } from "./schemas/userSchema";
 import Logger from "./utils/logger";
+
 /**
  * Contains the server's state information.
  */
-
 let show: Show;
 let clients: Map<string, Client>;
 let socketTicket: Map<string, string>;
 
 const init = () => {
-    show = new Show('Sample Show', '302699441177');
+    show = new Show('Sample Show', '302699441177', false);
     show.loadShow();
     clients = new Map<string, Client>();
     socketTicket = new Map<string, string>();
@@ -62,10 +62,27 @@ const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) =
         .then(newRoomName => {
             clients.set(clientToSet.user.ticket, {...clientToSet, roomName: newRoomName});
             if (originalName != newRoomName) {
-                onSuccess();
+                onSuccess(clients.get(clientToSet.user.ticket), originalName);
             }
         })
         .catch(onFailure);
+}
+
+/**
+ * For main named channels (e.g. MAIN_ROOM, SM_ROOM etc). 
+ * By default, client.roomName is set to channelName but when the client joins a specific room,
+ * client.roomName is overwritten with that room name (to fix).
+ * @param io 
+ * @param socketId 
+ * @param channelName 
+ * @param onSuccess 
+ * @param onFailure 
+ */
+const setClientChannel = (socketId: string, channelName: string, onSuccess, onFailure) => {
+    const clientToSet = getClientBySocket(socketId);
+    const originalName = clientToSet.roomName;
+    clients.set(clientToSet.user.ticket, {...clientToSet, roomName: channelName});
+    onSuccess(clients.get(clientToSet.user.ticket), originalName);
 }
 
 // TODO
@@ -106,8 +123,7 @@ async function findUser(query): Promise<User> {
     return null;
 }
 
-const getShowJSON = (): Object => show.getJSON();
-const getRoomsJSON = (): Object => show.getJSON().rooms;
+const getShow = () => show;
 
 const setShowInfo = (name: string, eventId: string, onSuccess, onFailure) => {
     Logger.info(`Updating show name ${name}, show eventId ${eventId}`);
@@ -141,6 +157,7 @@ const Provider = {
     addClient,
     getClientListJSON,
     setClientRoom,
+    setClientChannel,
     getClientBySocket, 
     removeClientBySocketId, 
     loadUsers,
@@ -148,9 +165,8 @@ const Provider = {
     createRoom,
     updateRoom,
     deleteRoom,
-    getShowJSON,
-    getRoomsJSON,
     setShowInfo,
+    getShow,
     init
 }
 

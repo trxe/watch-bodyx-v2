@@ -22,6 +22,7 @@ interface ISocketContext {
     show?: {
         name: string, 
         eventId: string, 
+        isOpen: boolean,
         rooms: Array<IRoom>, 
         attendees: Map<string, User>
     }
@@ -60,11 +61,10 @@ const SocketsProvider = (props: any) => {
     const [notif, setNotif] =  useState(null)
 
     if (socket != null) {
-
         socket.on(EVENTS.SERVER.CLIENT_INFO, ({roomName, user}) => {
             console.log(roomName, user);
             setUser(user);
-            setChannel(roomName)
+            setChannel(roomName);
             localStorage.setItem('email', user.email);
             localStorage.setItem('ticket', user.ticket);
         });
@@ -77,6 +77,15 @@ const SocketsProvider = (props: any) => {
             setShow(currShow);
             callback(socket.id);
         });
+
+        socket.off(EVENTS.SERVER.FORCE_JOIN_CHANNEL)
+            .on(EVENTS.SERVER.FORCE_JOIN_CHANNEL, (newChannel) => {
+                socket.emit(EVENTS.CLIENT.JOIN_CHANNEL, newChannel, 
+                    (response) => {
+                        setChannel(newChannel);
+                        setNotif(response);
+                    });
+        })
 
         socket.on(EVENTS.SERVER.CURRENT_ROOMS, (rooms, callback) => {
             setShow({...show, rooms});

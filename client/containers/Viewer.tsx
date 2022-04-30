@@ -18,10 +18,6 @@ const ViewerContainer = () => {
             });
     };
 
-    socket.on(EVENTS.SERVER.FORCE_JOIN, ({index}) => {
-        handleSwitchRooms(index);
-    });
-
     if (!show.rooms || show.rooms.length == 0) {
         return <div className={styles.viewerWrapper}>
             <h1>Rooms Not Available</h1>

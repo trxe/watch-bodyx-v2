@@ -1,17 +1,13 @@
 # BODYX
 
 Current functionality:
-- Enter in a username (to be switched to ticket number in future) to login
-- Admin can edit the current event details (title, eventId) which will be saved to the local database
+- Enter in registered email and ticket to login
+- Admin can edit the Event Title, Eventbrite Event ID, and rooms which will be saved to the local database
+- Admin can fetch list of attendees from Eventbrite by inputting a valid event id
 - Viewer can enter unlocked rooms (room with index 0 is the main room and is always unlocked)
 - Viewer can watch videos hosted in the unlocked rooms upon entering
 - When admin locks a room, viewer is automatically moved to the main room
-- Admin can fetch list of attendees from eventbrite by inputting a valid event id
 - Admin can fetch list of users currently logged in (to clean up)
-
-## Remote TODO
-- [x] Make Dockerfile
-- [x] Figure out NGINX config
 
 ## Client TODO
 

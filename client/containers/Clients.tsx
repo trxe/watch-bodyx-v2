@@ -3,6 +3,7 @@ import { BsThreeDotsVertical } from "react-icons/bs"
 import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Clients.module.css"
+import DropdownMenu from "../utils/dropdown";
 
 export interface User {
     name: string,
@@ -19,6 +20,9 @@ export interface Client {
 }
 
 const Client:FC<Client> = ({user, roomName}) => {
+    const dropDownLabels = ['opt1', 'opt2'];
+    const dropDownActions = [() => console.log('opt1'), () => console.log('opt2')];
+    // Dropdown menu will provide a list of actions: kick user, move user to.
     const kickUser = () => {
         console.log("kicking", user.ticket);
     };
@@ -28,7 +32,7 @@ const Client:FC<Client> = ({user, roomName}) => {
         <p>{user.email}</p>
         <p>{user.ticket}</p>
         <p>{roomName}</p>
-        <button onClick={kickUser} className="iconButton"><BsThreeDotsVertical/></button>
+        <DropdownMenu title={<BsThreeDotsVertical/>} labels={dropDownLabels} actions={dropDownActions}/>
     </div>;
 }
 

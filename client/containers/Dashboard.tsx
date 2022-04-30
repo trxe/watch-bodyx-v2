@@ -6,6 +6,7 @@ import RoomsContainer from "./Rooms";
 import UserMenu from "./UserMenu";
 import UsersContainer from "./Clients";
 import AttendeesContainer from "./Attendees";
+import { ROOMS } from "../config/roomNames";
 
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
@@ -21,7 +22,6 @@ const DashboardContainer = () => {
                 setEditMode(false);
                 return;
             }
-        console.log("what's wrong");
         setNotif({messageType: 'warning', title: 'Loading event info...', 
             message: 'Loading event from server.'})
         socket.emit(EVENTS.CLIENT.UPDATE_SHOW, {
@@ -33,7 +33,19 @@ const DashboardContainer = () => {
         setEditMode(false);
     }
 
-    const mode = isEditMode ?
+    const toggleShowStart = () => {
+        console.log('Toggle show start', !show.isOpen);
+        socket.emit(EVENTS.CLIENT.TOGGLE_SHOW_START, {
+            fromChannel: !show.isOpen ? ROOMS.WAITING_ROOM : ROOMS.MAIN_ROOM,
+            toChannel: !show.isOpen ? ROOMS.MAIN_ROOM : ROOMS.WAITING_ROOM,
+            isShowOpen: !show.isOpen
+        }, (res) => {
+            setNotif(res);
+        });
+        // set buton to "STOP show"
+    }
+
+    const showInfo = isEditMode ?
         <div className={styles.editShowInfo}>
             <input placeholder='Show Title' 
                 ref={newShowTitle} 
@@ -48,13 +60,13 @@ const DashboardContainer = () => {
         <div className={styles.showInfo}>
             <p>Show Title: {show.name}</p>
             <p className={!show.attendees ? styles.error : styles.success}>Event ID: {show.eventId}</p>
-            <button>START</button>
+            <button onClick={toggleShowStart}>{show.isOpen ? 'END' : 'START'}</button>
         </div>
     
     return <div className={styles.dashboardWrapper}>
         <UserMenu/>
         <h1>Show Settings</h1>
-        {mode}
+        {showInfo}
         <button onClick={() => setEditMode(!isEditMode)}>
             {isEditMode ? 'CANCEL' : 'EDIT'}
         </button>

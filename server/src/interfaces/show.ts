@@ -1,4 +1,5 @@
 import axios from "axios";
+import mongoose from "mongoose";
 import { RoomModel } from "../schemas/roomSchema";
 import { ShowModel } from "../schemas/showSchema";
 import Logger from "../utils/logger";
@@ -9,19 +10,22 @@ export class Show {
     name: string
     eventId: string
     rooms: Room[]
-    attendees: Map<string, User>
+    attendees: Map<string, User> // key = ticket, value = User
+    isOpen: boolean
     dbShow
 
-    constructor(name: string, eventId: string) {
+    constructor(name: string, eventId: string, isOpen: boolean) {
         this.name = name;
         this.eventId = eventId;
+        this.isOpen = isOpen;
     }
 
     public async createRoom(name: string, url: string, isLocked: boolean): Promise<string> {
         if (!this.dbShow) this.loadShow()
-        const room = new RoomModel({ name, url, isLocked });
+        const _id = new mongoose.Types.ObjectId();
+        const chatRoomName = `${_id.toString()}_ROOM`;
+        const room = new RoomModel({ name, url, isLocked, _id, chatRoomName });
         this.dbShow.rooms.push(room);
-        room.chatRoomName = `${room._id}_ROOM`;
         await this.dbShow.save(err => {
             if (!err) return;
             Logger.error(err);
@@ -57,7 +61,7 @@ export class Show {
 
     public async findRoomNameById(_id: string, defaultRoom : string): Promise<string> {
         const room = await this.dbShow.rooms.id(_id);
-        return !room ? defaultRoom : room.chatRoomName;
+        return !room ? defaultRoom : room.name;
     }
 
     public async saveShow(name, eventId): Promise<void> {
@@ -76,10 +80,11 @@ export class Show {
             });
     }
 
-    public getJSON(): {name: string, eventId: string, rooms: Array<Room>, attendees: Object} {
+    public getJSON(): {name: string, eventId: string, isOpen: boolean, rooms: Array<Room>, attendees: Object} {
         return {
             name: this.name,
             eventId: this.eventId,
+            isOpen: this.isOpen,
             rooms: this.rooms,
             attendees: !this.attendees ? null : Object.fromEntries(this.attendees),
         };
@@ -106,11 +111,16 @@ export class Show {
         }
         this.dbShow = await ShowModel.findOne();
         this.name = this.dbShow.name.trim();
+        this.isOpen = false;
         this.eventId = this.dbShow.eventId.trim();
         this.rooms = this.dbShow.rooms;
         this.getAttendees()
             .then(attendees => this.attendees = attendees)
             .catch(err => { Logger.error(err) });
+    }
+
+    public setShowOpen(isShowOpen: boolean) {
+        this.isOpen = isShowOpen;
     }
 
     async getAttendees(): Promise<Map<string, User>> {
