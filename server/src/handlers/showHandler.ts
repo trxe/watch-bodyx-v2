@@ -3,7 +3,7 @@ import { Ack } from "../interfaces/ack";
 import { Client } from "../interfaces/client";
 import { User } from "../interfaces/users";
 import { CLIENT_EVENTS } from "../protocol/events";
-import { ROOMS } from "../protocol/roomNames";
+import { CHANNELS } from "../protocol/channels";
 import Provider from "../provider"
 import socket from "../server";
 import Logger from "../utils/logger";
@@ -15,6 +15,7 @@ const SHOW_EVENTS = {
     ADD_CLIENT: 'ADD_CLIENT',
     DISCONNECTED_CLIENT: 'DISCONNECTED_CLIENT',
     FORCE_JOIN_CHANNEL: 'FORCE_JOIN_CHANNEL',
+    FORCE_JOIN_ROOM: 'FORCE_JOIN_ROOM',
     ACKS: {
         UPDATE_SUCCESS: new Ack('success', 'Show updated successfully'),
         INVALID_EVENT_ID: new Ack('error', 'Invalid Event Id'),
@@ -62,7 +63,7 @@ export const sendClients = (socket) => {
  * @param client 
  */
 export const sendClientToAdmin = (io, client: Client) => {
-    io.to(ROOMS.SM_ROOM).emit(SHOW_EVENTS.ADD_CLIENT, client);
+    io.to(CHANNELS.SM_ROOM).emit(SHOW_EVENTS.ADD_CLIENT, client);
 }
 
 /**
@@ -71,7 +72,7 @@ export const sendClientToAdmin = (io, client: Client) => {
  * @param ticket of the disconnected client
  */
 export const sendClientDisconnectedToAdmin = (io, ticket: string) => {
-    io.to(ROOMS.SM_ROOM).emit(SHOW_EVENTS.DISCONNECTED_CLIENT, ticket);
+    io.to(CHANNELS.SM_ROOM).emit(SHOW_EVENTS.DISCONNECTED_CLIENT, ticket);
 }
 
 /**
@@ -98,13 +99,24 @@ export const clientForceJoinChannel = (socket, channelName: string) => {
 }
 
 /**
- * Send a command to all clients in a room to change channels.
+ * Send a command to all clients in a channel to change channels.
  * @param io 
  * @param origChannel The channel to move all clients from
  * @param channelName Channel to move all clients to
+ * @param roomName Optional room name to move all clients from or to DEFAULT_ROOM
  */
 export const clientsForceJoinChannel = (io: Server, origChannel: string, channelName: string) => {
     io.to(origChannel).emit(SHOW_EVENTS.FORCE_JOIN_CHANNEL, channelName);
+}
+
+/**
+ * Send a command to all clients in a room to change room.
+ * @param io 
+ * @param origRoom 
+ * @param roomName 
+ */
+export const clientsForceJoinRoom = (io: Server, origRoom: string, roomName: string) => {
+    io.to(origRoom).emit(SHOW_EVENTS.FORCE_JOIN_ROOM, roomName);
 }
 
 /**
@@ -123,7 +135,7 @@ export const registerShowHandlers = (io: Server, socket) => {
         Provider.setShowInfo(name, eventId, 
             () => { 
                 sendShow(socket); 
-                sendShowToRoom(io, ROOMS.MAIN_ROOM);
+                sendShowToRoom(io, CHANNELS.MAIN_ROOM);
                 callback(SHOW_EVENTS.ACKS.UPDATE_SUCCESS.getJSON());
             },
             () => { 
@@ -162,7 +174,7 @@ export const registerShowHandlers = (io: Server, socket) => {
             (id) => {
                 callback(new Ack('info', room, id).getJSON())
                 const show = Provider.getShow();
-                io.to(ROOMS.MAIN_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
+                io.to(CHANNELS.MAIN_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
             }, 
             (err) => {
                 Logger.error(err);
@@ -180,7 +192,7 @@ export const registerShowHandlers = (io: Server, socket) => {
                 socket.emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON(), 
                     socketId => {logSocketIdEvent(socketId, 'has deleted room')}
                 );
-                io.to(ROOMS.MAIN_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
+                io.to(CHANNELS.MAIN_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
             }, 
             (err) => {
                 Logger.error(err);
@@ -202,8 +214,9 @@ export const registerShowHandlers = (io: Server, socket) => {
     const joinRoom = (roomId, callback) => {
         Provider.setClientRoom(socket.id, roomId, 
             (client, oldRoomName) => {
-                socket.leave(oldRoomName);
+                if (oldRoomName != null) socket.leave(oldRoomName);
                 socket.join(client.roomName);
+                Logger.info(`${client.user.name} has joined room ${client.roomName}.`);
                 sendClientToAdmin(io, client);
                 callback(SHOW_EVENTS.ACKS.JOIN_SUCCESS.getJSON());
             },
@@ -217,9 +230,9 @@ export const registerShowHandlers = (io: Server, socket) => {
     const joinChannel = (newChannel, callback) => {
         Provider.setClientChannel(socket.id, newChannel, 
             (client, oldChannel) => {
-                socket.leave(oldChannel);
-                socket.join(client.roomName);
-                Logger.info(`${client.user.name} has joined ${client.roomName}.`);
+                if (oldChannel != null) socket.leave(oldChannel);
+                socket.join(client.channelName);
+                Logger.info(`${client.user.name} has joined channel ${client.channelName}.`);
                 sendClientToAdmin(io, client);
                 callback(SHOW_EVENTS.ACKS.JOIN_SUCCESS.getJSON());
             },

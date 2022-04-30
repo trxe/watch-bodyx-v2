@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import EVENTS from '../config/events';
 import { useSockets } from '../context/socket.context';
 import styles from '../styles/Viewer.module.css'
@@ -9,14 +9,25 @@ const ViewerContainer = () => {
     const [roomIndex, setRoomIndex] = useState(0)
     const [isChatNotPoll, setChatNotPoll] = useState(true);
 
+    // At startup to enter room
+    useEffect(() => {
+        handleSwitchRooms(roomIndex);
+    }, []);
+
     const handleSwitchRooms = (index) => {
-        console.log(socket.id);
         socket.emit(EVENTS.CLIENT.JOIN_ROOM, show.rooms[index]._id, 
             (response) => {
                 console.log(response);
                 setRoomIndex(index);
             });
     };
+
+    socket.off(EVENTS.SERVER.FORCE_JOIN_ROOM)
+        .on(EVENTS.SERVER.FORCE_JOIN_ROOM, (newRoomName) => {
+            const index = show.rooms.findIndex(room => room.name === newRoomName);
+            console.log(`joining room ${show.rooms[index].name}`);
+            handleSwitchRooms(index);
+    });
 
     if (!show.rooms || show.rooms.length == 0) {
         return <div className={styles.viewerWrapper}>

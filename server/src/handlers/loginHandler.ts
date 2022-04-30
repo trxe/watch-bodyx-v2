@@ -1,4 +1,4 @@
-import { ROOMS } from "../protocol/roomNames"
+import { CHANNELS } from "../protocol/channels"
 import { Ack } from "../interfaces/ack"
 import { Client } from "../interfaces/client"
 import Provider from "../provider"
@@ -18,18 +18,18 @@ const LOGIN_EVENTS = {
 
 export const registerLoginHandlers = (io, socket) => {
     const recvLogin = ({socketId, ticket, email}, acknowledge) => {
-        let roomName = ROOMS.WAITING_ROOM;
+        let channelName = CHANNELS.WAITING_ROOM;
         Provider.findUser({socketId, ticket, email})
             .then(user => {
                 if (!user) {
                     acknowledge(LOGIN_EVENTS.ACKS.INVALID_LOGIN.getJSON());
                     return;
                 }
-                if (user.isAdmin) roomName = ROOMS.SM_ROOM;
-                const client: Client = {user, socketId, roomName}
+                if (user.isAdmin) channelName = CHANNELS.SM_ROOM;
+                const client: Client = {user, socketId, channelName}
                 Provider.addClient(socketId, ticket, client);
                 socket.emit(LOGIN_EVENTS.CLIENT_INFO, client);
-                socket.join(roomName);
+                socket.join(channelName);
                 sendShow(socket);
                 if (user.isAdmin) {
                     sendClients(socket);

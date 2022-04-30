@@ -7,7 +7,7 @@ import EVENTS from '../config/events'
 import DashboardContainer from '../containers/Dashboard'
 import ViewerContainer from '../containers/Viewer'
 import Snackbar, { createNotif } from '../containers/Snackbar'
-import { ROOMS } from '../config/roomNames'
+import { CHANNELS } from '../config/channels'
 import WaitingRoomContainer from '../containers/WaitingRoom'
 
 export default function Home() {
@@ -42,9 +42,9 @@ export default function Home() {
           </div>
         </div>
       }
-      {channel === ROOMS.SM_ROOM && <DashboardContainer/>}
-      {channel === ROOMS.WAITING_ROOM && <WaitingRoomContainer/>}
-      {channel === ROOMS.MAIN_ROOM && <ViewerContainer />}
+      {channel === CHANNELS.SM_ROOM && <DashboardContainer/>}
+      {channel === CHANNELS.WAITING_ROOM && <WaitingRoomContainer/>}
+      {channel === CHANNELS.MAIN_ROOM && <ViewerContainer />}
       {notif != null &&
         <Snackbar timer={4000} 
           messageType={notif.messageType}

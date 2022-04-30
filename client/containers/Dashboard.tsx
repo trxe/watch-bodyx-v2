@@ -6,7 +6,7 @@ import RoomsContainer from "./Rooms";
 import UserMenu from "./UserMenu";
 import UsersContainer from "./Clients";
 import AttendeesContainer from "./Attendees";
-import { ROOMS } from "../config/roomNames";
+import { CHANNELS } from "../config/channels";
 
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
@@ -36,13 +36,12 @@ const DashboardContainer = () => {
     const toggleShowStart = () => {
         console.log('Toggle show start', !show.isOpen);
         socket.emit(EVENTS.CLIENT.TOGGLE_SHOW_START, {
-            fromChannel: !show.isOpen ? ROOMS.WAITING_ROOM : ROOMS.MAIN_ROOM,
-            toChannel: !show.isOpen ? ROOMS.MAIN_ROOM : ROOMS.WAITING_ROOM,
+            fromChannel: !show.isOpen ? CHANNELS.WAITING_ROOM : CHANNELS.MAIN_ROOM,
+            toChannel: !show.isOpen ? CHANNELS.MAIN_ROOM : CHANNELS.WAITING_ROOM,
             isShowOpen: !show.isOpen
         }, (res) => {
             setNotif(res);
         });
-        // set buton to "STOP show"
     }
 
     const showInfo = isEditMode ?

@@ -20,7 +20,9 @@ const EVENTS = {
         ADD_CLIENT: 'ADD_CLIENT',
         DISCONNECTED_CLIENT: 'DISCONNECTED_CLIENT',
         FORCE_JOIN_CHANNEL: 'FORCE_JOIN_CHANNEL',
+        FORCE_JOIN_ROOM: 'FORCE_JOIN_ROOM',
     }
 };
 
-export default EVENTS
+
+export default EVENTS;

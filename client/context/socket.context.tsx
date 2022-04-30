@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
 import { SOCKET_URL } from '../config/default';
 import EVENTS from '../config/events';
-import { ROOMS } from '../config/roomNames';
+import { CHANNELS } from '../config/channels';
 import { IRoom } from '../containers/Rooms';
 import { INotif } from '../containers/Snackbar';
 import { User } from '../containers/Clients';
@@ -11,6 +11,8 @@ interface ISocketContext {
     socket: Socket
     channel: string
     setChannel: Function
+    room?: string
+    setRoom: Function
     user: {
         name: string,
         email: string,
@@ -43,9 +45,10 @@ export const getSocketInfo = () => {
 */
 const SocketContext = createContext<ISocketContext>({
     socket, 
-    channel: ROOMS.LOGIN_ROOM,
+    channel: CHANNELS.LOGIN_ROOM,
     setChannel: () => false,
     user: null,
+    setRoom: () => false,
     setUser: () => false, 
     setNotif: () => false,
     setShow: () => false,
@@ -56,15 +59,15 @@ const SocketContext = createContext<ISocketContext>({
  */
 const SocketsProvider = (props: any) => {
     const [user, setUser] =  useState(null)
-    const [channel, setChannel] = useState(false)
+    const [channel, setChannel] = useState(null)
     const [show, setShow] = useState({})
     const [notif, setNotif] =  useState(null)
 
     if (socket != null) {
-        socket.on(EVENTS.SERVER.CLIENT_INFO, ({roomName, user}) => {
-            console.log(roomName, user);
+        socket.on(EVENTS.SERVER.CLIENT_INFO, ({channelName, user}) => {
+            console.log(channelName, user);
             setUser(user);
-            setChannel(roomName);
+            setChannel(channelName);
             localStorage.setItem('email', user.email);
             localStorage.setItem('ticket', user.ticket);
         });
@@ -80,12 +83,13 @@ const SocketsProvider = (props: any) => {
 
         socket.off(EVENTS.SERVER.FORCE_JOIN_CHANNEL)
             .on(EVENTS.SERVER.FORCE_JOIN_CHANNEL, (newChannel) => {
+                if (channel === newChannel) return;
                 socket.emit(EVENTS.CLIENT.JOIN_CHANNEL, newChannel, 
                     (response) => {
                         setChannel(newChannel);
                         setNotif(response);
                     });
-        })
+        });
 
         socket.on(EVENTS.SERVER.CURRENT_ROOMS, (rooms, callback) => {
             setShow({...show, rooms});

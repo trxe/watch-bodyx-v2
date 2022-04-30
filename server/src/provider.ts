@@ -55,6 +55,13 @@ const getClientListJSON = (): Array<Object> => {
     return Array.from(clients.values());
 }
 
+/**
+ * Set the current show-specific room client is in.
+ * @param socketId 
+ * @param roomId 
+ * @param onSuccess 
+ * @param onFailure 
+ */
 const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) => {
     const clientToSet = getClientBySocket(socketId);
     const originalName = clientToSet.roomName;
@@ -69,10 +76,7 @@ const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) =
 }
 
 /**
- * For main named channels (e.g. MAIN_ROOM, SM_ROOM etc). 
- * By default, client.roomName is set to channelName but when the client joins a specific room,
- * client.roomName is overwritten with that room name (to fix).
- * @param io 
+ * Set the current app-wide channel client is in.
  * @param socketId 
  * @param channelName 
  * @param onSuccess 
@@ -80,8 +84,8 @@ const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) =
  */
 const setClientChannel = (socketId: string, channelName: string, onSuccess, onFailure) => {
     const clientToSet = getClientBySocket(socketId);
-    const originalName = clientToSet.roomName;
-    clients.set(clientToSet.user.ticket, {...clientToSet, roomName: channelName});
+    const originalName = clientToSet.channelName;
+    clients.set(clientToSet.user.ticket, {...clientToSet, channelName: channelName});
     onSuccess(clients.get(clientToSet.user.ticket), originalName);
 }
 
@@ -123,7 +127,8 @@ async function findUser(query): Promise<User> {
     return null;
 }
 
-const getShow = () => show;
+const getShow = (): Show => show;
+const getShowMainRoom = (): string => show.rooms.length == 0 ? null : show.rooms[0].chatRoomName;
 
 const setShowInfo = (name: string, eventId: string, onSuccess, onFailure) => {
     Logger.info(`Updating show name ${name}, show eventId ${eventId}`);
@@ -167,6 +172,7 @@ const Provider = {
     deleteRoom,
     setShowInfo,
     getShow,
+    getShowMainRoom,
     init
 }
 

@@ -15,11 +15,12 @@ export interface User {
 
 export interface Client {
     user: User,
+    channelName: string,
     roomName: string,
     socketId?: string
 }
 
-const Client:FC<Client> = ({user, roomName}) => {
+const Client:FC<Client> = ({user, channelName, roomName}) => {
     const dropDownLabels = ['opt1', 'opt2'];
     const dropDownActions = [() => console.log('opt1'), () => console.log('opt2')];
     // Dropdown menu will provide a list of actions: kick user, move user to.
@@ -30,7 +31,7 @@ const Client:FC<Client> = ({user, roomName}) => {
     return <div className={user.isAdmin ? styles.userAdmin : styles.userViewer}>
         <p>{user.name}</p>
         <p>{user.email}</p>
-        <p>{user.ticket}</p>
+        <p>{channelName}</p>
         <p>{roomName}</p>
         <DropdownMenu title={<BsThreeDotsVertical/>} labels={dropDownLabels} actions={dropDownActions}/>
     </div>;
@@ -63,7 +64,7 @@ const UsersContainer = () => {
     return <div>
         <h2>Users</h2>
         {Array.from(clients.values())
-            .map(c => <Client key={c.socketId} user={c.user} roomName={c.roomName} />)}
+            .map(c => <Client key={c.socketId} user={c.user} roomName={c.roomName} channelName={c.channelName}/>)}
     </div>;
 }
 
