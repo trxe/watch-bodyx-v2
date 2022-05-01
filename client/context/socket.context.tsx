@@ -91,6 +91,12 @@ const SocketsProvider = (props: any) => {
                     });
         });
 
+        socket.on(EVENTS.SERVER.FORCE_DISCONNECT, ({msg}) => {
+            console.log(msg);
+            setChannel(CHANNELS.DISCONNECTED);
+            socket.disconnect();
+        });
+
         socket.on(EVENTS.SERVER.CURRENT_ROOMS, (rooms, callback) => {
             setShow({...show, rooms});
             if (callback != null) callback(socket.id);

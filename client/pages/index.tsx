@@ -9,6 +9,7 @@ import ViewerContainer from '../containers/Viewer'
 import Snackbar, { createNotif } from '../containers/Snackbar'
 import { CHANNELS } from '../config/channels'
 import WaitingRoomContainer from '../containers/WaitingRoom'
+import DisconnectedContainer from '../containers/DisconnectedPage'
 
 export default function Home() {
   const {socket, channel, user, notif, setNotif} = useSockets();
@@ -45,6 +46,7 @@ export default function Home() {
       {channel === CHANNELS.SM_ROOM && <DashboardContainer/>}
       {channel === CHANNELS.WAITING_ROOM && <WaitingRoomContainer/>}
       {channel === CHANNELS.MAIN_ROOM && <ViewerContainer />}
+      {channel === CHANNELS.DISCONNECTED && <DisconnectedContainer />}
       {notif != null &&
         <Snackbar timer={4000} 
           messageType={notif.messageType}
