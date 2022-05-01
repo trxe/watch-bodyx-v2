@@ -5,8 +5,8 @@ import { User } from "../interfaces/users";
 import { CLIENT_EVENTS } from "../protocol/events";
 import { CHANNELS } from "../protocol/channels";
 import Provider from "../provider"
-import socket from "../server";
 import Logger from "../utils/logger";
+import { channel } from "diagnostics_channel";
 
 const SHOW_EVENTS = {
     CURRENT_SHOW: 'CURRENT_SHOW',
@@ -16,11 +16,13 @@ const SHOW_EVENTS = {
     DISCONNECTED_CLIENT: 'DISCONNECTED_CLIENT',
     FORCE_JOIN_CHANNEL: 'FORCE_JOIN_CHANNEL',
     FORCE_JOIN_ROOM: 'FORCE_JOIN_ROOM',
+    FORCE_DISCONNECT: 'FORCE_DISCONNECT',
     ACKS: {
         UPDATE_SUCCESS: new Ack('success', 'Show updated successfully'),
         INVALID_EVENT_ID: new Ack('error', 'Invalid Event Id'),
         MISSING_FIELD: new Ack('error', 'Missing field'),
         JOIN_SUCCESS: new Ack('success', 'Joined room successfully'),
+        UNKNOWN_ERROR: new Ack('error', 'Unknown ERROR'),
     }
 }
 
@@ -87,15 +89,28 @@ export const sendShowToRoom = (io: Server, roomName: string) => {
 /**
  * Send a command to client to join another channel.
  * @param socket 
+ * @param msg Reason for kick/ban
+ */
+export const clientForceDisconnect = (io: Server, socketId: string, msg: string) => {
+    io.to(socketId).emit(SHOW_EVENTS.FORCE_DISCONNECT, {msg});
+}
+
+/**
+ * Send a command to client to join another channel.
+ * @param socket 
  * @param channelName 
  */
-export const clientForceJoinChannel = (socket, channelName: string) => {
-    // TODO: add callback AND FIX UP FORCE JOIN on client side.
-    socket.emit(SHOW_EVENTS.FORCE_JOIN_CHANNEL, channelName, 
-        (socketId)=>{
-            logSocketIdEvent(socketId, 'joined room' + channelName);
-        }
-    );
+export const clientForceJoinChannel = (io: Server, socketId: string, channelName: string) => {
+    io.to(socketId).emit(SHOW_EVENTS.FORCE_JOIN_CHANNEL, channelName);
+}
+
+/**
+ * Send a command to client to join another room.
+ * @param socket 
+ * @param roomName 
+ */
+export const clientForceJoinRoom = (io: Server, socketId: string, roomName: string) => {
+    io.to(socketId).emit(SHOW_EVENTS.FORCE_JOIN_ROOM, roomName);
 }
 
 /**
@@ -163,7 +178,7 @@ export const registerShowHandlers = (io: Server, socket) => {
             }, 
             (err) => {
                 Logger.error(err);
-                callback(new Ack('error', 'Unknown ERROR').getJSON())
+                callback(SHOW_EVENTS.ACKS.UNKNOWN_ERROR.getJSON())
             });
 
     }
@@ -178,7 +193,7 @@ export const registerShowHandlers = (io: Server, socket) => {
             }, 
             (err) => {
                 Logger.error(err);
-                callback(new Ack('error', 'Unknown ERROR').getJSON())
+                callback(SHOW_EVENTS.ACKS.UNKNOWN_ERROR.getJSON())
             }
         );
     }
@@ -196,7 +211,7 @@ export const registerShowHandlers = (io: Server, socket) => {
             }, 
             (err) => {
                 Logger.error(err);
-                callback(new Ack('error', 'Unknown ERROR').getJSON())
+                callback(SHOW_EVENTS.ACKS.UNKNOWN_ERROR.getJSON())
             }
         );
     }
@@ -222,7 +237,7 @@ export const registerShowHandlers = (io: Server, socket) => {
             },
             (err) => {
                 Logger.error(err);
-                callback(new Ack('error', 'Unknown ERROR').getJSON())
+                callback(SHOW_EVENTS.ACKS.UNKNOWN_ERROR.getJSON())
             });
     }
 
@@ -238,8 +253,30 @@ export const registerShowHandlers = (io: Server, socket) => {
             },
             (err) => {
                 Logger.error(err);
-                callback(new Ack('error', 'Unknown ERROR').getJSON())
+                callback(SHOW_EVENTS.ACKS.UNKNOWN_ERROR.getJSON())
             });
+    }
+
+    // Admin-only: Move socket to this room/channel
+    const moveSocketTo = ({socketId, newChannel, newRoom}, callback) => {
+        const client = Provider.getClientBySocket(socketId);
+        if (client == null) {
+            callback(new Ack('error', `User with socketId ${socketId} not found`));
+            return;
+        }
+        // For kicking clients
+        if (newChannel === CHANNELS.DISCONNECTED)  {
+            clientForceDisconnect(io, socketId, 'Generic reason for kicking');
+            callback(new Ack('info', `Disconnecting ${client.user.name}`));
+        } else if (newChannel != null) {
+            clientForceJoinChannel(io, socketId, newChannel);
+            callback(new Ack('info', `Moving ${client.user.name} to channel ${newChannel}`).getJSON());
+        }
+        if (newRoom != null) {
+            clientForceJoinRoom(io, socketId, newRoom);
+            callback(new Ack('info', `Moving ${client.user.name} to room ${newRoom}`).getJSON());
+        }
+        Logger.info(`Moving ${client.user.name} to channel ${newChannel}, room ${newRoom}`);
     }
 
     socket.on(CLIENT_EVENTS.UPDATE_SHOW, updateShow);
@@ -249,4 +286,5 @@ export const registerShowHandlers = (io: Server, socket) => {
     socket.on(CLIENT_EVENTS.JOIN_ROOM, joinRoom);
     socket.on(CLIENT_EVENTS.JOIN_CHANNEL, joinChannel);
     socket.on(CLIENT_EVENTS.TOGGLE_SHOW_START, toggleShowStart);
+    socket.on(CLIENT_EVENTS.MOVE_SOCKET_TO, moveSocketTo);
 }

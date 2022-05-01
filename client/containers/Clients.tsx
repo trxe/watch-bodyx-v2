@@ -1,5 +1,6 @@
 import { FC, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs"
+import { CHANNELS } from "../config/channels";
 import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Clients.module.css"
@@ -20,13 +21,36 @@ export interface Client {
     socketId?: string
 }
 
-const Client:FC<Client> = ({user, channelName, roomName}) => {
-    const dropDownLabels = ['opt1', 'opt2'];
-    const dropDownActions = [() => console.log('opt1'), () => console.log('opt2')];
-    // Dropdown menu will provide a list of actions: kick user, move user to.
+const Client:FC<Client> = ({user, socketId, channelName, roomName}) => {
+    const {show, socket, setNotif} = useSockets();
+
     const kickUser = () => {
-        console.log("kicking", user.ticket);
+        const socketMoveInfo = {socketId, newChannel: CHANNELS.DISCONNECTED};
+        socket.emit(EVENTS.CLIENT.MOVE_SOCKET_TO, socketMoveInfo, res => setNotif(res));
+        console.log('Kicking', user.name);
     };
+
+    const moveUserToChannel = (newChannel) => {
+        const socketMoveInfo = {socketId, newChannel};
+        socket.emit(EVENTS.CLIENT.MOVE_SOCKET_TO, socketMoveInfo, res => setNotif(res));
+        console.log(`Move ${user.name} to channel`, newChannel);
+    };
+
+    const moveUserToRoom = (newRoom) => {
+        const socketMoveInfo = {socketId, newRoom};
+        socket.emit(EVENTS.CLIENT.MOVE_SOCKET_TO, socketMoveInfo, res => setNotif(res));
+        console.log(`Move ${user.name} to room`, newRoom);
+    };
+
+    // Dropdown menu will provide a list of actions: kick user, move user to.
+    const altChannel = channelName === CHANNELS.WAITING_ROOM ? CHANNELS.MAIN_ROOM : CHANNELS.WAITING_ROOM;
+    const altChannelLabel = channelName === CHANNELS.WAITING_ROOM ? "Main Room" : "Waiting Room";
+    const dropDownLabels = ['Kick', altChannelLabel, ...show.rooms.map(room => room.name)];
+    const dropDownActions = [
+        kickUser, 
+        () => moveUserToChannel(altChannel),
+        ...show.rooms.map(room => () => moveUserToRoom(room.name))
+    ];
 
     return <div className={user.isAdmin ? styles.userAdmin : styles.userViewer}>
         <p>{user.name}</p>
@@ -64,7 +88,7 @@ const UsersContainer = () => {
     return <div>
         <h2>Users</h2>
         {Array.from(clients.values())
-            .map(c => <Client key={c.socketId} user={c.user} roomName={c.roomName} channelName={c.channelName}/>)}
+            .map(c => <Client key={c.socketId} socketId={c.socketId} user={c.user} roomName={c.roomName} channelName={c.channelName}/>)}
     </div>;
 }
 
