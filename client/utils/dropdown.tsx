@@ -9,7 +9,7 @@ export interface DropdownOptions {
 
 // The CSS here needs some serious repair.
 const DropdownMenu:FC<DropdownOptions> = ({title, labels, actions}) => {
-    return <div>
+    return <div className={styles.dropdownWrapper}>
         <button className={styles.mainButton}>{title}</button>
         <ul className={styles.dropdown}>
             {labels.map((label, i) => 
