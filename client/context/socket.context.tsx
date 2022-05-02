@@ -58,10 +58,10 @@ const SocketContext = createContext<ISocketContext>({
  * that allows consuming components to subscribe to context changes.
  */
 const SocketsProvider = (props: any) => {
-    const [user, setUser] =  useState(null)
-    const [channel, setChannel] = useState(null)
-    const [show, setShow] = useState({})
-    const [notif, setNotif] =  useState(null)
+    const [user, setUser] =  useState(null);
+    const [channel, setChannel] = useState(null);
+    const [show, setShow] = useState({});
+    const [notif, setNotif] =  useState(null);
 
     if (socket != null) {
         socket.on(EVENTS.SERVER.CLIENT_INFO, ({channelName, user}) => {

@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import EVENTS from '../config/events';
 import { useSockets } from '../context/socket.context';
 import styles from '../styles/Viewer.module.css'
+import ChatContainer from './Chat';
 import UserMenu from './UserMenu';
 
 const ViewerContainer = () => {
-    const {socket, user, show} = useSockets();
+    const {socket, user, show, setRoom} = useSockets();
     const [roomIndex, setRoomIndex] = useState(0)
     const [isChatNotPoll, setChatNotPoll] = useState(true);
 
@@ -56,6 +57,7 @@ const ViewerContainer = () => {
         </div>
         <div className={styles.chatWrapper}>
             {isChatNotPoll ? 'Chat' : 'Poll'} (in progress)
+            <ChatContainer />
             <button onClick={() => setChatNotPoll(!isChatNotPoll)}>
                 {isChatNotPoll ? 'POLL' : 'CHAT'}
             </button>

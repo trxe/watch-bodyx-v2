@@ -5,5 +5,6 @@ export interface Room {
     name: string,
     url: string,
     isLocked: boolean,
-    chatRoomName: string
+    // roomName used by Socket.io to identify which chat room to communicate to
+    roomName: string
 }

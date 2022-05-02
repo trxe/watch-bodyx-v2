@@ -11,6 +11,7 @@ import registerRouting from './router';
 import Provider from './provider';
 import { registerLoginHandlers } from './handlers/loginHandler';
 import { registerShowHandlers } from './handlers/showHandler';
+import { registerChatHandlers } from './handlers/chatHandler';
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ const onConnection = (socket) => {
     Logger.info(`User ${socket.id} connected`);
     registerLoginHandlers(io, socket);
     registerShowHandlers(io, socket);
+    registerChatHandlers(io, socket);
 }
 
 httpServer.listen(port, host, () => {
