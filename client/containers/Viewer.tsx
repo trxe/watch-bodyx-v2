@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { CHANNELS } from '../config/channels';
 import EVENTS from '../config/events';
 import { useSockets } from '../context/socket.context';
 import styles from '../styles/Viewer.module.css'
@@ -57,7 +58,7 @@ const ViewerContainer = () => {
         </div>
         <div className={styles.chatWrapper}>
             {isChatNotPoll ? 'Chat' : 'Poll'} (in progress)
-            <ChatContainer />
+            <ChatContainer chatName={CHANNELS.MAIN_ROOM}/>
             <button onClick={() => setChatNotPoll(!isChatNotPoll)}>
                 {isChatNotPoll ? 'POLL' : 'CHAT'}
             </button>

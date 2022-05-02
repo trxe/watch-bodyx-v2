@@ -7,33 +7,38 @@ import styles from "../styles/Chat.module.css";
 import { generateDateBasedID } from "../utils/generateId";
 
 const MessageContainer:FC<Message> = ({userName, contents}) => {
-    return <div className={styles.messageWrapper}>
-        <p> {userName}: {contents} </p>
+    const {user} = useSockets();
+    const isSelf = userName === user.name;
+
+    return <div className={isSelf ? styles.messageSelf : styles.messageOther}>
+        <p> {isSelf ? '': `${userName}: `}{contents} </p>
     </div>;
 }
 
-const ChatContainer = () => {
-    const {socket, show, user, channel} = useSockets();
-    const {currentChatRoom, setChatRooms, selectChatRoomName} = useChatRooms();
+const ChatContainer = ({chatName}) => {
+    const {socket, show, user} = useSockets();
+    const {chatRooms, currentChatRoom, setChatRooms, selectChatRoomName} = useChatRooms();
     const [messages, setMessages] = useState(!currentChatRoom ? [] : currentChatRoom.messages);
     const newMessageRef = useRef(null);
 
     useEffect(() => {
-        setChatRooms(show);
+        console.log('switching to', chatName);
+        setChatRooms();
         // temporary
-        selectChatRoomName(CHANNELS.SM_ROOM);
-    }, [show])
+        selectChatRoomName(chatName);
+        setMessages([...chatRooms.get(chatName).messages]);
+    }, [])
 
     // sends to a room
     const handleSendMessage = () => {
-        console.log("sending to", channel);
+        console.log("sending to", chatName);
         if (newMessageRef.current.value.length == 0) return;
         const index = messages.length;
         const message: Message = {
             _id: generateDateBasedID(),
             userName: user.name, 
             fromSocketId: socket.id,
-            sendTo: [channel],
+            sendTo: [chatName],
             timestamp: new Date().toISOString(),
             contents: newMessageRef.current.value,
             status: 'sending'

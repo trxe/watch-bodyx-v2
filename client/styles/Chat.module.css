@@ -1,4 +1,10 @@
-.messageWrapper {
+.messageSelf {
+    background-color: rgba(238, 238, 255, 0.5);
+    text-align: right;
+    padding-inline-end: 1em;
+}
+
+.messageOther {
     background-color: rgba(255, 238, 238, 0.5);
     text-align: left;
     padding-inline-start: 1em;

@@ -59,12 +59,9 @@ const ChatRoomProvider = (props: any) => {
 
     chatRooms.set(chatWithAdmins.channelName, chatWithAdmins);
 
-    const setChatRooms = (newShow) => {
-        if (newShow.rooms != null) {
-            newShow.rooms.forEach(room => {
-                if (!chatRooms.has(room.roomName)) 
-                    chatRooms.set(room.roomName, new ChatRoom(room, CHANNELS.MAIN_ROOM));
-                });
+    const setChatRooms = () => {
+        if (!chatRooms.has(CHANNELS.MAIN_ROOM)) {
+            chatRooms.set(CHANNELS.MAIN_ROOM, new ChatRoom(null, CHANNELS.MAIN_ROOM));
         }
     }
 
