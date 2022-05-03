@@ -137,7 +137,6 @@ const RoomsContainer = () => {
     }
 
     const toggleAudienceChat = () => {
-        console.log("Toggle audience chat");
         console.log({status: isViewerChatEnabled});
         socket.emit(EVENTS.CLIENT.ADMIN_TOGGLE_AUDIENCE_CHAT, 
             {status: isViewerChatEnabled},

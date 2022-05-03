@@ -88,12 +88,12 @@ const ChatContainer = ({chatName, isAdmin}) => {
         // temporary
         selectChatRoomName(chatName);
         setMessages([...chatRoomMap.get(chatName).messages]);
-        console.log('chat room', chatRoomMap.get(chatName).messages, ' from room map', chatRoomMap);
+        // console.log('chat room', chatRoomMap.get(chatName).messages, ' from room map', chatRoomMap);
     }, [chatName])
 
     // sends to a room
     const handleSendMessage = () => {
-        console.log("sending to", chatName);
+        // console.log("sending to", chatName);
         if (newMessageRef.current.value.length == 0) return;
         const index = messages.length;
         const message: Message = {
@@ -116,7 +116,7 @@ const ChatContainer = ({chatName, isAdmin}) => {
 
     socket.off(EVENTS.SERVER.DELIVER_MESSAGE)
         .on(EVENTS.SERVER.DELIVER_MESSAGE, (message: Message) => {
-            console.log("message", message.sendTo);
+            // console.log("message", message.sendTo);
             if (message.fromSocketId === socket.id) return;
             // only update if this chat is the correct recepient room
             if (message.sendTo.find(name => name === chatName) != null) {
@@ -128,7 +128,6 @@ const ChatContainer = ({chatName, isAdmin}) => {
                         chatRooms.set(recepient, 
                             new ChatRoom(show.rooms.find(room => room.roomName === recepient), CHANNELS.MAIN_ROOM));
                     }
-                    console.log(recepient, "chatrooms", chatRooms.get(recepient), chatRooms);
                     chatRooms.get(recepient).addMessage(message);
                 });
             }
