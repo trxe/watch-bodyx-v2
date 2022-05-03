@@ -28,6 +28,8 @@ export const registerLoginHandlers = (io, socket) => {
                 }
                 if (user.isAdmin) {
                     channelName = CHANNELS.SM_ROOM;
+                    // admins have to receive all messages
+                    Provider.getShow().rooms.forEach(room => socket.join(room.roomName));
                 }
                 const client: Client = {user, socketId, channelName}
                 Provider.addClient(socketId, ticket, client);

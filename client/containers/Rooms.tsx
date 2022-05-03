@@ -14,10 +14,11 @@ export interface IRoom {
     url:  string;
     isLocked: boolean;
     index?: number;
+    roomName?: string;
     _id?: string;
 }
 
-const Room:FC<IRoom> = ({name, url, isLocked, _id, index}) => {
+const Room:FC<IRoom> = ({name, url, isLocked, _id, roomName, index}) => {
     const {socket, show, setShow, setNotif} = useSockets();
     const [isEditMode, setEditMode] = useState(false);
     const nameRef = useRef(null);
@@ -51,6 +52,7 @@ const Room:FC<IRoom> = ({name, url, isLocked, _id, index}) => {
             name: updatedName, 
             url: updatedUrl, 
             isLocked: !isLocked,
+            roomName,
             _id
         };
         nameRef.current.value = '';
@@ -120,13 +122,12 @@ const RoomsContainer = () => {
             setNotif(createNotif('error', 'Duplicate room name', 'Please enter a unique room name.'))
             return;
         }
-        const newRoom: IRoom = {name: newRoomName.current.value, 
+        let newRoom: IRoom = {name: newRoomName.current.value, 
             url: newRoomUrl.current.value, isLocked: show.rooms.length == 0};
         socket.emit(EVENTS.CLIENT.CREATE_ROOM, newRoom,
             (res) => {
-                // server should return the room database id.
-                console.log(res);
-                if (res.messageType === 'info') newRoom._id = res.message;
+                // server should return the room created
+                if (res.messageType === 'info') newRoom = res.message;
                 else setNotif(res);
             }
             );
@@ -162,10 +163,8 @@ const RoomsContainer = () => {
                 show.rooms.map((room, index) => <Room 
                     key={room._id} 
                     index={index} 
-                    name={room.name} 
-                    url={room.url} 
-                    isLocked={room.isLocked} 
-                    _id={room._id} />) 
+                    {...room}
+                     />) 
                 }
         </div>
     </div>

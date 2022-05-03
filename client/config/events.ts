@@ -3,6 +3,7 @@ const EVENTS = {
     disconnect: 'disconnect',
     CLIENT: {
         LOGIN: 'LOGIN',
+        GET_INFO: 'GET_INFO',
         UPDATE_SHOW: 'UPDATE_SHOW',
         JOIN_ROOM: 'JOIN_ROOM',
         JOIN_CHANNEL: 'JOIN_CHANNEL',

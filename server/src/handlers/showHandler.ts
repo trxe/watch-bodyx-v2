@@ -6,7 +6,6 @@ import { CLIENT_EVENTS } from "../protocol/events";
 import { CHANNELS } from "../protocol/channels";
 import Provider from "../provider"
 import Logger from "../utils/logger";
-import { channel } from "diagnostics_channel";
 
 const SHOW_EVENTS = {
     CURRENT_SHOW: 'CURRENT_SHOW',
@@ -32,7 +31,12 @@ const SHOW_EVENTS = {
  * @param info 
  */
 const logSocketIdEvent = (socketId: string, info: string) => {
-    const user: User = Provider.getClientBySocket(socketId).user;
+    const client: Client = Provider.getClientBySocket(socketId);
+    if (!client) {
+        Logger.warn(`Client with socket id ${socketId} not found.`);
+        return;
+    }
+    const user: User = client.user;
     Logger.info(`${user.isAdmin ? 'Admin' : 'Viewer'} ${user.name} ${info}.`);
 }
 
@@ -167,9 +171,10 @@ export const registerShowHandlers = (io: Server, socket) => {
                 message: 'Missing room name or URL.'})
         }
         Provider.createRoom(name, url, isLocked, 
-            (id) => {
-                callback(new Ack('info', name, id).getJSON())
+            (room) => {
+                callback(new Ack('info', 'Room created', room).getJSON())
                 const show = Provider.getShow();
+                io.to(CHANNELS.MAIN_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
                 socket.emit(SHOW_EVENTS.CURRENT_ROOMS,  show.getJSON().rooms, 
                     (socketId) => {
                         logSocketIdEvent(socketId, 'has received rooms')
@@ -204,7 +209,7 @@ export const registerShowHandlers = (io: Server, socket) => {
             (id) => {
                 callback(new Ack('info', 'Deleted room', id).getJSON());
                 const show = Provider.getShow();
-                socket.emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON(), 
+                socket.emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms, 
                     socketId => {logSocketIdEvent(socketId, 'has deleted room')}
                 );
                 io.to(CHANNELS.MAIN_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
@@ -279,6 +284,17 @@ export const registerShowHandlers = (io: Server, socket) => {
         Logger.info(`Moving ${client.user.name} to channel ${newChannel}, room ${newRoom}`);
     }
 
+    // Get particular info
+    const getInfo = ({request}) => {
+        switch (request) {
+            case 'clients':
+                sendClients(socket);
+                break;
+            default:
+                break;
+        }
+    }
+
     socket.on(CLIENT_EVENTS.UPDATE_SHOW, updateShow);
     socket.on(CLIENT_EVENTS.CREATE_ROOM, createRoom);
     socket.on(CLIENT_EVENTS.UPDATE_ROOM, updateRoom);
@@ -287,4 +303,5 @@ export const registerShowHandlers = (io: Server, socket) => {
     socket.on(CLIENT_EVENTS.JOIN_CHANNEL, joinChannel);
     socket.on(CLIENT_EVENTS.TOGGLE_SHOW_START, toggleShowStart);
     socket.on(CLIENT_EVENTS.MOVE_SOCKET_TO, moveSocketTo);
+    socket.on(CLIENT_EVENTS.GET_INFO, getInfo);
 }

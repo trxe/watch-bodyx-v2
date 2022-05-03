@@ -3,6 +3,7 @@ export const CLIENT_EVENTS = {
     disconnect: 'disconnect',
     LOGIN: 'LOGIN',
     LOGOUT: 'LOGOUT',
+    GET_INFO: 'GET_INFO',
     UPDATE_SHOW: 'UPDATE_SHOW',
     JOIN_ROOM: 'JOIN_ROOM',
     JOIN_CHANNEL: 'JOIN_CHANNEL',

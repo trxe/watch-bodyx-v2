@@ -33,6 +33,7 @@ export class ChatRoom {
     // Add messages
     public addMessage(message: Message) {
         this.messages.push(message);
+        console.log("mesage update", this.messages, 'at room', this.room);
     }
 }
 
@@ -60,30 +61,35 @@ const ChatRoomContext = createContext<IChatRoomContext>({
 
 
 const ChatRoomProvider = (props: any) => {
-    const [chatRoomName, selectChatRoomName] = useState(CHANNELS.SM_ROOM);
+    const [chatRoomName, setChatRoomName] = useState(CHANNELS.SM_ROOM);
     const [chatWithAdmins] = useState(new ChatRoom(null, CHANNELS.SM_ROOM));
     const [chatRooms] = useState(new Map<string, ChatRoom>()); // identifier, room
     const [isViewerChatEnabled, setViewerChatEnabled] = useState(false);
-    const {socket} = useSockets();
+    const {socket, show} = useSockets();
 
     chatRooms.set(chatWithAdmins.channelName, chatWithAdmins);
 
-    const setChatRooms = () => {
+    const setChatRooms = (rooms: Array<IRoom>): Map<string, ChatRoom> => {
         if (!chatRooms.has(CHANNELS.MAIN_ROOM)) {
             chatRooms.set(CHANNELS.MAIN_ROOM, new ChatRoom(null, CHANNELS.MAIN_ROOM));
         }
+        console.log('rooms passed in', rooms);
+        if (rooms == null || rooms.length == 0) return chatRooms;
+        rooms.forEach(room => {
+            if (!chatRooms.has(room.roomName)) {
+                chatRooms.set(room.roomName, new ChatRoom(room, CHANNELS.MAIN_ROOM));
+            }
+        });
+        return chatRooms;
     }
 
-    socket.off(EVENTS.SERVER.DELIVER_MESSAGE)
-        .on(EVENTS.SERVER.DELIVER_MESSAGE, (message: Message) => {
-            if (message.fromSocketId === socket.id) return;
-            // only update here if this chat is not the current room
-            if (message.sendTo.find(recepient => recepient === chatRoomName) != null) return;
-            message.sendTo.forEach(recepient => {
-                if (recepient === chatRoomName) return;
-                chatRooms.get(recepient).addMessage(message);
-            })
-    });
+    const selectChatRoomName = (roomName: string) => {
+        if (!chatRooms.has(roomName)) {
+            chatRooms.set(roomName, 
+                new ChatRoom(show.rooms.find(room => room.roomName === roomName), CHANNELS.MAIN_ROOM));
+        }
+        setChatRoomName(roomName);
+    }
 
     socket.off(EVENTS.SERVER.TOGGLE_AUDIENCE_CHAT)
         .on(EVENTS.SERVER.TOGGLE_AUDIENCE_CHAT, ({status}) => {

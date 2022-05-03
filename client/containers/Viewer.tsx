@@ -7,7 +7,7 @@ import ChatContainer from './Chat';
 import UserMenu from './UserMenu';
 
 const ViewerContainer = ({isAdmin}) => {
-    const {socket, user, show, setRoom} = useSockets();
+    const {socket, user, show, roomName, setRoomName} = useSockets();
     const [roomIndex, setRoomIndex] = useState(0)
     const [isChatNotPoll, setChatNotPoll] = useState(true);
 
@@ -16,11 +16,19 @@ const ViewerContainer = ({isAdmin}) => {
         handleSwitchRooms(roomIndex);
     }, []);
 
+    // BUGS: on deletion of rooms, roomIndex doesn't update: put into useEffect (roomName).
     const handleSwitchRooms = (index) => {
+        if (isAdmin) {
+            setRoomIndex(index);
+            setRoomName(show.rooms[index].roomName);
+            return;
+        }
         socket.emit(EVENTS.CLIENT.JOIN_ROOM, show.rooms[index]._id, 
             (response) => {
                 console.log(response);
                 setRoomIndex(index);
+                console.log("roomName", show.rooms[index].roomName);
+                setRoomName(show.rooms[index].roomName);
             });
     };
 
@@ -58,7 +66,7 @@ const ViewerContainer = ({isAdmin}) => {
         </div>
         <div className={styles.chatWrapper}>
             {isChatNotPoll ? 'Chat' : 'Poll'} (in progress)
-            <ChatContainer chatName={CHANNELS.MAIN_ROOM} isAdmin={isAdmin}/>
+            <ChatContainer chatName={roomName || CHANNELS.SM_ROOM} isAdmin={isAdmin}/>
             <button onClick={() => setChatNotPoll(!isChatNotPoll)}>
                 {isChatNotPoll ? 'POLL' : 'CHAT'}
             </button>

@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs"
 import { CHANNELS } from "../config/channels";
 import EVENTS from "../config/events";
@@ -17,6 +17,7 @@ export interface User {
 export interface Client {
     user: User,
     channelName: string,
+    // TODO: RENAME TO NAME or something less confusing
     roomName: string,
     socketId?: string
 }
@@ -62,11 +63,21 @@ const Client:FC<Client> = ({user, socketId, channelName, roomName}) => {
 }
 
 const UsersContainer = () => {
-    const {socket} = useSockets();
+    const {socket, show} = useSockets();
     const [clients, setClients] = useState(new Map<string, Client>());
 
+    useEffect(() => {
+        socket.emit(EVENTS.CLIENT.GET_INFO, {request: 'clients'});
+    }, [])
+
+    const getHumanReadableRoomName = (roomName: string) => {
+        const room = show.rooms.find(room => room.roomName === roomName);
+        if (!room) return roomName;
+        else return room.name;
+    }
+
     socket.on(EVENTS.SERVER.CURRENT_CLIENTS, (clientList, callback) => {
-        console.log("clients", clientList);
+        // console.log("clients", clientList);
         const newClientMap = new Map<string, Client>();
         clientList.forEach(client => {
             newClientMap.set(client.user.ticket, client);
@@ -88,7 +99,12 @@ const UsersContainer = () => {
     return <div>
         <h2>Users</h2>
         {Array.from(clients.values())
-            .map(c => <Client key={c.socketId} socketId={c.socketId} user={c.user} roomName={c.roomName} channelName={c.channelName}/>)}
+            .map(c => <Client 
+                key={c.socketId} 
+                socketId={c.socketId} 
+                user={c.user} 
+                roomName={getHumanReadableRoomName(c.roomName)} 
+                channelName={c.channelName}/>)}
     </div>;
 }
 

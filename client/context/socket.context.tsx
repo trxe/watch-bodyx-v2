@@ -6,13 +6,14 @@ import { CHANNELS } from '../config/channels';
 import { IRoom } from '../containers/Rooms';
 import { INotif } from '../containers/Snackbar';
 import { User } from '../containers/Clients';
+import { useChatRooms } from './chats.context';
 
 interface ISocketContext {
     socket: Socket
     channel: string
     setChannel: Function
-    room?: string
-    setRoom: Function
+    roomName?: string
+    setRoomName: Function
     user: {
         name: string,
         email: string,
@@ -48,7 +49,7 @@ const SocketContext = createContext<ISocketContext>({
     channel: CHANNELS.LOGIN_ROOM,
     setChannel: () => false,
     user: null,
-    setRoom: () => false,
+    setRoomName: () => false,
     setUser: () => false, 
     setNotif: () => false,
     setShow: () => false,
@@ -60,25 +61,30 @@ const SocketContext = createContext<ISocketContext>({
 const SocketsProvider = (props: any) => {
     const [user, setUser] =  useState(null);
     const [channel, setChannel] = useState(null);
+    const [roomName, setRoomName] = useState(null);
     const [show, setShow] = useState({});
     const [notif, setNotif] =  useState(null);
+    const {setChatRooms} = useChatRooms();
 
     if (socket != null) {
         socket.on(EVENTS.SERVER.CLIENT_INFO, ({channelName, user}) => {
-            console.log(channelName, user);
+            // console.log(channelName, user);
             setUser(user);
             setChannel(channelName);
             localStorage.setItem('email', user.email);
             localStorage.setItem('ticket', user.ticket);
         });
 
-        socket.on(EVENTS.SERVER.CURRENT_SHOW, (newShow, callback) => {
+        socket.off(EVENTS.SERVER.CURRENT_SHOW)
+            .on(EVENTS.SERVER.CURRENT_SHOW, (newShow, callback) => {
             const currShow = {...newShow, attendees: null};
             if (newShow.attendees != null) {
                 currShow.attendees = new Map(Object.entries(newShow.attendees));
             }
             setShow(currShow);
-            callback(socket.id);
+            console.log("i'm receiving show", newShow.rooms);
+            setChatRooms(newShow.rooms);
+            if (callback != null) callback(socket.id);
         });
 
         socket.off(EVENTS.SERVER.FORCE_JOIN_CHANNEL)
@@ -97,8 +103,11 @@ const SocketsProvider = (props: any) => {
             socket.disconnect();
         });
 
-        socket.on(EVENTS.SERVER.CURRENT_ROOMS, (rooms, callback) => {
+        socket.off(EVENTS.SERVER.CURRENT_ROOMS)
+            .on(EVENTS.SERVER.CURRENT_ROOMS, (rooms, callback) => {
             setShow({...show, rooms});
+            console.log("setting rooms", rooms);
+            setChatRooms(rooms);
             if (callback != null) callback(socket.id);
         });
     }
@@ -112,6 +121,8 @@ const SocketsProvider = (props: any) => {
             setUser, 
             show, 
             setShow, 
+            roomName,
+            setRoomName,
             notif, 
             setNotif, 
         }} 

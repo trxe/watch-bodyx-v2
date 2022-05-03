@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CHANNELS } from "../config/channels";
 import EVENTS from "../config/events";
-import { Message, useChatRooms } from "../context/chats.context";
+import { ChatRoom, Message, useChatRooms } from "../context/chats.context";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Chat.module.css";
 import { generateDateBasedID } from "../utils/generateId";
@@ -76,19 +76,20 @@ const MessageContainer = ({index, isAdmin, message}) => {
 }
 
 const ChatContainer = ({chatName, isAdmin}) => {
-    const {socket, user} = useSockets();
+    const {socket, show, user} = useSockets();
     const {chatRooms, currentChatRoom, setChatRooms, selectChatRoomName, isViewerChatEnabled} = useChatRooms();
     const [messages, setMessages] = useState(!currentChatRoom ? [] : currentChatRoom.messages);
     const [pins, setPins] = useState(!currentChatRoom ? [] : currentChatRoom.pins);
     const newMessageRef = useRef(null);
 
+
     useEffect(() => {
-        console.log('switching to', chatName);
-        setChatRooms();
+        const chatRoomMap = setChatRooms(show.rooms);
         // temporary
         selectChatRoomName(chatName);
-        setMessages([...chatRooms.get(chatName).messages]);
-    }, [])
+        setMessages([...chatRoomMap.get(chatName).messages]);
+        console.log('chat room', chatRoomMap.get(chatName).messages, ' from room map', chatRoomMap);
+    }, [chatName])
 
     // sends to a room
     const handleSendMessage = () => {
@@ -107,20 +108,30 @@ const ChatContainer = ({chatName, isAdmin}) => {
         setMessages([...messages, message]);
         newMessageRef.current.value = '';
         socket.emit(EVENTS.CLIENT.NEW_MESSAGE, message, (res) => {
-            console.log(message, index);
             currentChatRoom.addMessage(message);
-            setPins([...pins, message]);
+            // setPins([...pins, message]);
             setMessages([...currentChatRoom.messages]);
         });
     };
 
     socket.off(EVENTS.SERVER.DELIVER_MESSAGE)
         .on(EVENTS.SERVER.DELIVER_MESSAGE, (message: Message) => {
+            console.log("message", message.sendTo);
             if (message.fromSocketId === socket.id) return;
             // only update if this chat is the correct recepient room
-            if (message.sendTo.find(chatName) == null) return;
-            currentChatRoom.addMessage(message);
-            setMessages([...currentChatRoom.messages]);
+            if (message.sendTo.find(name => name === chatName) != null) {
+                currentChatRoom.addMessage(message);
+                setMessages([...currentChatRoom.messages]);
+            } else {
+                message.sendTo.forEach(recepient => {
+                    if (!chatRooms.has(recepient))  {
+                        chatRooms.set(recepient, 
+                            new ChatRoom(show.rooms.find(room => room.roomName === recepient), CHANNELS.MAIN_ROOM));
+                    }
+                    console.log(recepient, "chatrooms", chatRooms.get(recepient), chatRooms);
+                    chatRooms.get(recepient).addMessage(message);
+                });
+            }
     });
 
     return <div className={styles.chatWrapper}>
@@ -137,7 +148,7 @@ const ChatContainer = ({chatName, isAdmin}) => {
                 <MessageContainer key={index} index={index} isAdmin={isAdmin} message={msg} />
             )}
         </div>
-        {(isViewerChatEnabled || chatName == CHANNELS.SM_ROOM) &&
+        {(chatName == CHANNELS.SM_ROOM || isViewerChatEnabled || isAdmin) &&
             <div>
                 <textarea rows={3} placeholder='Send a message' ref={newMessageRef}/>
                 <button onClick={handleSendMessage}>SEND</button>

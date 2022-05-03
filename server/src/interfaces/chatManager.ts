@@ -16,6 +16,7 @@ export class ChatManager {
         this.publicRoomPins = new Map<string, Array<Message>>();
         show.rooms.forEach(room => this.publicRoomPins.set(room.roomName, []));
         this.privateRooms = new Map<string, Client>();
+        this.isAudienceChatEnabled = false;
     }
 
     public toggleAudienceChat(status: boolean) {
