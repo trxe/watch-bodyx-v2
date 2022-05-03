@@ -1,5 +1,5 @@
 import { FC } from "react";
-import styles from "../styles/Dropdown.module.css"
+import styles from "../styles/Utils.module.css"
 
 export interface DropdownOptions {
     title: any;
@@ -9,7 +9,7 @@ export interface DropdownOptions {
 
 const DropdownMenu:FC<DropdownOptions> = ({title, labels, actions}) => {
     return <div className={styles.dropdownWrapper}>
-        <button className={styles.mainButton}>{title}</button>
+        <button className={styles.dropdownButton}>{title}</button>
         <ul className={styles.dropdown}>
             {labels.map((label, i) => 
                 <li key={i}>

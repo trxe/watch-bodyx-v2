@@ -7,6 +7,7 @@ import { Show } from "./show";
  */
 export class ChatManager {
     show: Show
+    isAudienceChatEnabled: boolean
     publicRoomPins: Map<string, Array<Message>> // key = roomName, value = pinned messages of that room
     privateRooms: Map<string, Client> // key = socketId, value = Client
 
@@ -17,4 +18,8 @@ export class ChatManager {
         this.privateRooms = new Map<string, Client>();
     }
 
+    public toggleAudienceChat(status: boolean) {
+        this.isAudienceChatEnabled = status;
+        return this.isAudienceChatEnabled;
+    }
 }

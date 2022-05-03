@@ -169,6 +169,8 @@ const deleteRoom = (_id: string, onSuccess, onFailure) => {
         .catch(onFailure);
 }
 
+const getChatManager = () => chatManager;
+
 const Provider = {
     addClient,
     getClientListJSON,
@@ -184,6 +186,7 @@ const Provider = {
     setShowInfo,
     getShow,
     getShowMainRoom,
+    getChatManager,
     init
 }
 

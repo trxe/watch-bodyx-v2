@@ -7,12 +7,14 @@ import UserMenu from "./UserMenu";
 import UsersContainer from "./Clients";
 import AttendeesContainer from "./Attendees";
 import { CHANNELS } from "../config/channels";
+import ViewerContainer from "./Viewer";
 
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
     // and EventInfo, including Time, Duration, Title
     const {socket, show, setNotif} = useSockets();
     const [isEditMode, setEditMode] = useState(false);
+    const [isTheatreMode, setTheatreMode] = useState(false);
     const newShowTitle = useRef(null);
     const newEventId = useRef(null);
 
@@ -61,9 +63,18 @@ const DashboardContainer = () => {
             <p className={!show.attendees ? styles.error : styles.success}>Event ID: {show.eventId}</p>
             <button onClick={toggleShowStart}>{show.isOpen ? 'END' : 'START'}</button>
         </div>
+
+    if (isTheatreMode) {
+        return <div className={styles.dashboardWrapper}>
+            <UserMenu/>
+            <button onClick={() => setTheatreMode(false)}>Dashboard Mode</button>
+            <ViewerContainer isAdmin={true} />
+        </div>;
+    }
     
     return <div className={styles.dashboardWrapper}>
         <UserMenu/>
+        <button onClick={() => setTheatreMode(true)}>Theatre Mode</button>
         <h1>Show Settings</h1>
         {showInfo}
         <button onClick={() => setEditMode(!isEditMode)}>
@@ -77,7 +88,6 @@ const DashboardContainer = () => {
             <RoomsContainer />
         </div>
     </div>
-
 }
 
 export default DashboardContainer;

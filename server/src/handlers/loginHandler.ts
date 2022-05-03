@@ -5,6 +5,7 @@ import Provider from "../provider"
 import Logger from "../utils/logger"
 import { CLIENT_EVENTS } from "../protocol/events"
 import { sendClientDisconnectedToAdmin, sendClients, sendClientToAdmin, sendShow } from "./showHandler"
+import { informAudienceChatStatus, informSocketChatStatus } from "./chatHandler"
 
 const LOGIN_EVENTS = {
     CLIENT_INFO: "CLIENT_INFO",
@@ -25,10 +26,14 @@ export const registerLoginHandlers = (io, socket) => {
                     acknowledge(LOGIN_EVENTS.ACKS.INVALID_LOGIN.getJSON());
                     return;
                 }
-                if (user.isAdmin) channelName = CHANNELS.SM_ROOM;
+                if (user.isAdmin) {
+                    channelName = CHANNELS.SM_ROOM;
+                }
                 const client: Client = {user, socketId, channelName}
                 Provider.addClient(socketId, ticket, client);
                 socket.emit(LOGIN_EVENTS.CLIENT_INFO, client);
+                informSocketChatStatus(io, client.socketId, 
+                    Provider.getChatManager().isAudienceChatEnabled);
                 socket.join(channelName);
                 sendShow(socket);
                 if (user.isAdmin) {

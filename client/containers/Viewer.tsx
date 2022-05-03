@@ -6,7 +6,7 @@ import styles from '../styles/Viewer.module.css'
 import ChatContainer from './Chat';
 import UserMenu from './UserMenu';
 
-const ViewerContainer = () => {
+const ViewerContainer = ({isAdmin}) => {
     const {socket, user, show, setRoom} = useSockets();
     const [roomIndex, setRoomIndex] = useState(0)
     const [isChatNotPoll, setChatNotPoll] = useState(true);
@@ -51,14 +51,14 @@ const ViewerContainer = () => {
                     allowFullScreen></iframe>
             </div>
             <div className={styles.roomButtons}>
-                {show.rooms && show.rooms.map && show.rooms.map(({name, url, isLocked}, index) => 
+                {show.rooms && show.rooms.map && show.rooms.map(({name, isLocked}, index) => 
                     <button onClick={()=> handleSwitchRooms(index)} 
                         disabled={isLocked} key={name}>{name}</button>)}
             </div>
         </div>
         <div className={styles.chatWrapper}>
             {isChatNotPoll ? 'Chat' : 'Poll'} (in progress)
-            <ChatContainer chatName={CHANNELS.MAIN_ROOM}/>
+            <ChatContainer chatName={CHANNELS.MAIN_ROOM} isAdmin={isAdmin}/>
             <button onClick={() => setChatNotPoll(!isChatNotPoll)}>
                 {isChatNotPoll ? 'POLL' : 'CHAT'}
             </button>

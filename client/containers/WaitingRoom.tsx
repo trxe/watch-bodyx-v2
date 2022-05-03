@@ -6,7 +6,7 @@ const WaitingRoomContainer = () => {
     return <div className={styles.waitingRoomWrapper}>
         <h1>Waiting Room</h1>
         <div className={styles.chatWrapper}>
-            <ChatContainer chatName={CHANNELS.SM_ROOM}/>
+            <ChatContainer isAdmin={false} chatName={CHANNELS.SM_ROOM}/>
         </div>
     </div>
 }

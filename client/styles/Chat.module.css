@@ -1,3 +1,26 @@
+.chatWrapper {
+    max-height: 80vh;
+}
+
+.messageList {
+    overflow-y: auto;
+    height: 70vh;
+}
+
+.chatHeader {
+    text-align: center;
+    background-color: antiquewhite;
+    color: black;
+}
+
+.chatHeader h3 {
+    margin: 0;
+}
+
+.message {
+    overflow-wrap: break-word;
+}
+
 .messageSelf {
     background-color: rgba(238, 238, 255, 0.5);
     text-align: right;
@@ -8,4 +31,49 @@
     background-color: rgba(255, 238, 238, 0.5);
     text-align: left;
     padding-inline-start: 1em;
+}
+
+.messagePin {
+    background-color: rgba(101, 155, 255, 0.7);
+    text-align: left;
+    padding-inline-start: 1em;
+}
+
+.textBox {
+    margin: 5px;
+}
+
+
+.contextMenu {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  width: fit-content;
+}
+
+.dropdown {
+  background: violet;
+  list-style-type: none;
+  min-width: 5rem;
+  margin-top: 0;
+  z-index: 1;
+  padding-inline-start: 0;
+  padding: 2px;
+  border-radius: 5px;
+}
+
+.dropdown a {
+  text-align: center;
+  padding: 2px 10px 2px 10px;
+  display: block;
+}
+
+.dropdown li {
+  border-radius: 5px;
+  margin: 5px;
+}
+
+.dropdown li:hover {
+  transition: background-color 0.2s ease-in;
+  background-color: blueviolet;
 }

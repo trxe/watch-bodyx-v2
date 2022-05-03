@@ -45,7 +45,7 @@ export default function Home() {
       }
       {channel === CHANNELS.SM_ROOM && <DashboardContainer/>}
       {channel === CHANNELS.WAITING_ROOM && <WaitingRoomContainer/>}
-      {channel === CHANNELS.MAIN_ROOM && <ViewerContainer />}
+      {channel === CHANNELS.MAIN_ROOM && <ViewerContainer isAdmin={user.isAdmin}/>}
       {channel === CHANNELS.DISCONNECTED && <DisconnectedContainer />}
       {notif != null &&
         <Snackbar timer={4000} 

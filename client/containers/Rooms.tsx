@@ -6,6 +6,8 @@ import { useSockets } from "../context/socket.context";
 import dashboardStyles from '../styles/Dashboard.module.css'
 import styles from '../styles/Rooms.module.css'
 import { createNotif } from "./Snackbar";
+import ToggleButton from "../utils/toggleButton";
+import { useChatRooms } from "../context/chats.context";
 
 export interface IRoom {
     name: string;
@@ -102,6 +104,7 @@ const Room:FC<IRoom> = ({name, url, isLocked, _id, index}) => {
 
 const RoomsContainer = () => {
     const {socket, show, setShow, setNotif} = useSockets();
+    const {isViewerChatEnabled, setViewerChatEnabled} = useChatRooms();
     const newRoomName = useRef(null);
     const newRoomUrl = useRef(null);
     const [isAddMode, setAddMode] = useState(false);
@@ -132,12 +135,21 @@ const RoomsContainer = () => {
         toggleAddMode();
     }
 
+    const toggleAudienceChat = () => {
+        console.log("Toggle audience chat");
+        console.log({status: isViewerChatEnabled});
+        socket.emit(EVENTS.CLIENT.ADMIN_TOGGLE_AUDIENCE_CHAT, 
+            {status: isViewerChatEnabled},
+            (res) => setViewerChatEnabled(res.status));
+    }
+
     return <div className={dashboardStyles.roomsWrapper}>
         <div className={styles.roomHeader}>
             <h2>Rooms</h2>
             <button className={styles.iconButton} onClick={toggleAddMode}>
                 {!isAddMode ? <GrAdd /> : <AiOutlineClose/>}
             </button>
+            <ToggleButton label="Audience Chat" action={toggleAudienceChat} isSelected={isViewerChatEnabled}/>
         </div>
         {isAddMode && <div>
             <input placeholder="Room Name" ref={newRoomName}/>
