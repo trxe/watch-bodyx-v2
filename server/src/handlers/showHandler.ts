@@ -58,7 +58,7 @@ export const sendShow = (socket) => {
 export const sendClients = (socket) => {
     socket.emit(SHOW_EVENTS.CURRENT_CLIENTS, Provider.getClientListJSON(),
         (socketId) => {
-            logSocketIdEvent(socketId, 'has received user list');
+            logSocketIdEvent(socketId, 'has received client list');
         }
     );
 }
@@ -77,8 +77,8 @@ export const sendClientToAdmin = (io, client: Client) => {
  * @param io 
  * @param ticket of the disconnected client
  */
-export const sendClientDisconnectedToAdmin = (io, ticket: string) => {
-    io.to(CHANNELS.SM_ROOM).emit(SHOW_EVENTS.DISCONNECTED_CLIENT, ticket);
+export const sendClientDisconnectedToAdmin = (io, ticket: string, socketId: string) => {
+    io.to(CHANNELS.SM_ROOM).emit(SHOW_EVENTS.DISCONNECTED_CLIENT, {ticket, socketId});
 }
 
 /**
@@ -263,7 +263,7 @@ export const registerShowHandlers = (io: Server, socket) => {
     }
 
     // Admin-only: Move socket to this room/channel
-    const moveSocketTo = ({socketId, newChannel, newRoom}, callback) => {
+    const moveSocketTo = ({socketId, newChannel, newRoom, reason}, callback) => {
         const client = Provider.getClientBySocket(socketId);
         if (client == null) {
             callback(new Ack('error', `User with socketId ${socketId} not found`));
@@ -271,15 +271,15 @@ export const registerShowHandlers = (io: Server, socket) => {
         }
         // For kicking clients
         if (newChannel === CHANNELS.DISCONNECTED)  {
-            clientForceDisconnect(io, socketId, 'Generic reason for kicking');
-            callback(new Ack('info', `Disconnecting ${client.user.name}`));
+            clientForceDisconnect(io, socketId, reason);
+            callback(new Ack('success', `Disconnecting ${client.user.name}`));
         } else if (newChannel != null) {
             clientForceJoinChannel(io, socketId, newChannel);
-            callback(new Ack('info', `Moving ${client.user.name} to channel ${newChannel}`).getJSON());
+            callback(new Ack('success', `Moving ${client.user.name} to channel ${newChannel}`).getJSON());
         }
         if (newRoom != null) {
             clientForceJoinRoom(io, socketId, newRoom);
-            callback(new Ack('info', `Moving ${client.user.name} to room ${newRoom}`).getJSON());
+            callback(new Ack('success', `Moving ${client.user.name} to room ${newRoom}`).getJSON());
         }
         Logger.info(`Moving ${client.user.name} to channel ${newChannel}, room ${newRoom}`);
     }
@@ -303,5 +303,5 @@ export const registerShowHandlers = (io: Server, socket) => {
     socket.on(CLIENT_EVENTS.JOIN_CHANNEL, joinChannel);
     socket.on(CLIENT_EVENTS.TOGGLE_SHOW_START, toggleShowStart);
     socket.on(CLIENT_EVENTS.MOVE_SOCKET_TO, moveSocketTo);
-    socket.on(CLIENT_EVENTS.GET_INFO, getInfo);
+    socket.once(CLIENT_EVENTS.GET_INFO, getInfo);
 }

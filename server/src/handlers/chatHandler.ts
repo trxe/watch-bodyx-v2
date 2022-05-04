@@ -26,12 +26,11 @@ export const sendPinnedMessages = () => {}
 
 /**
  * Inform an audience member at socketId of current chat status
- * @param io 
- * @param socketId 
+ * @param socket
  * @param audienceChatStatus 
  */
-export const informSocketChatStatus = (io: Server, socketId: string, audienceChatStatus: boolean) => {
-    io.to(socketId).emit(CHAT_EVENTS.TOGGLE_AUDIENCE_CHAT, {status: audienceChatStatus});
+export const informSocketChatStatus = (socket, audienceChatStatus: boolean) => {
+    socket.emit(CHAT_EVENTS.TOGGLE_AUDIENCE_CHAT, {status: audienceChatStatus});
 }
 
 // Inform all MAIN_ROOM audience the chat is disabled.

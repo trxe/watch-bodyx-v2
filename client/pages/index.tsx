@@ -12,21 +12,18 @@ import WaitingRoomContainer from '../containers/WaitingRoom'
 import DisconnectedContainer from '../containers/DisconnectedPage'
 
 export default function Home() {
-  const {socket, channel, user, notif, setNotif} = useSockets();
+  const {socket, channel, user, notif, setNotif, loginRequest} = useSockets();
   const emailRef = useRef(null);
   const ticketRef = useRef(null);
 
   const handleSetTicket = () => {
     const email = emailRef.current.value;
     const ticket = ticketRef.current.value;
-    if (!email || !ticket) {
+    if (!email || !ticket || email.length == 0 || ticket.length == 0) {
       setNotif(createNotif('error', "Missing email or ticket number", "Please enter all details."));
+    } else {
+      loginRequest({email, ticket});
     }
-    socket.emit(EVENTS.CLIENT.LOGIN, 
-      {socketId: socket.id, ticket, email}, 
-      (res) => { 
-        if (res.status === 'error') setNotif(res);
-      });
   }
 
   return (
