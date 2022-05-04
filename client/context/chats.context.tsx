@@ -89,11 +89,13 @@ const ChatRoomProvider = (props: any) => {
         setChatRoomName(roomName);
     }
 
-    socket.off(EVENTS.SERVER.TOGGLE_AUDIENCE_CHAT)
-        .on(EVENTS.SERVER.TOGGLE_AUDIENCE_CHAT, ({status}) => {
-            console.log("viewer", status);
-            setViewerChatEnabled(status);
-        });
+    if (socket != null) {
+        socket.off(EVENTS.SERVER.TOGGLE_AUDIENCE_CHAT)
+            .on(EVENTS.SERVER.TOGGLE_AUDIENCE_CHAT, ({status}) => {
+                console.log("viewer", status);
+                setViewerChatEnabled(status);
+            });
+    }
 
     return <ChatRoomContext.Provider 
         value={{

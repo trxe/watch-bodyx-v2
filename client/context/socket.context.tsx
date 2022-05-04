@@ -1,10 +1,11 @@
 import { createContext, useContext, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
+import axios from 'axios'
 import { SOCKET_URL } from '../config/default';
 import EVENTS from '../config/events';
 import { CHANNELS } from '../config/channels';
 import { IRoom } from '../containers/Rooms';
-import { INotif } from '../containers/Snackbar';
+import { createNotif, INotif } from '../containers/Snackbar';
 import { User } from '../containers/Clients';
 import { useChatRooms } from './chats.context';
 
@@ -32,13 +33,11 @@ interface ISocketContext {
     setShow: Function
     notif?: INotif
     setNotif: Function
+    disconnectedInfo: string
+    loginRequest: Function
 }
 
-let socket = io(SOCKET_URL);
-
-export const getSocketInfo = () => {
-    console.log('socket', socket);
-}
+let socket;
 
 /* When React renders a component that subscribes to this Context object 
 * it will read the current context value from the closest matching Provider 
@@ -53,6 +52,8 @@ const SocketContext = createContext<ISocketContext>({
     setUser: () => false, 
     setNotif: () => false,
     setShow: () => false,
+    disconnectedInfo: '',
+    loginRequest: () => false,
 })
 
 /* Every Context object comes with a Provider React component 
@@ -64,11 +65,71 @@ const SocketsProvider = (props: any) => {
     const [roomName, setRoomName] = useState(null);
     const [show, setShow] = useState({});
     const [notif, setNotif] =  useState(null);
+    const [disconnectedInfo, setDisconnectedInfo] = useState('');
     const {setChatRooms} = useChatRooms();
+
+    const loginInfo = (request) => {
+        socket.emit(EVENTS.CLIENT.LOGIN, request, 
+            (res) => { 
+                console.log("socket", socket.id);
+                if (res.messageType === 'warning' || res.messageType === 'error') {
+                    setNotif(res); 
+                } else if (res.messageType === 'info') {
+                    const client = JSON.parse(res.message);
+                    setUser(client.user);
+                    setChannel(client.channelName);
+                    const event = client.user.isAdmin 
+                        ? EVENTS.CLIENT.REQUEST_ADMIN_INFO 
+                        : EVENTS.CLIENT.REQUEST_VIEWER_INFO;
+                    socket.emit(event, client, (ack) => console.log(ack));
+                }
+            });
+    }
+
+    const loginRequest = (request) => {
+        axios.post(SOCKET_URL + "auth", request)
+            .then(({data}) => {
+                console.log(data);
+                if (data.messageType === 'error') {
+                    setNotif(data);
+                    return;
+                } 
+
+                socket = io(SOCKET_URL);
+                if (data.messageType === 'info') {
+                    setNotif(createNotif('warning', 
+                        'You are logged in on multiple instances',
+                        'Other instances will be disconnected.'));
+                    const socketIdDisconnect = data.message;
+                    socket.emit(EVENTS.CLIENT.RECONNECT, {
+                        oldSocketId: socketIdDisconnect, ...request
+                    }, (res) => {
+                        console.log("socket", socket.id);
+                        if (res.messageType === 'warning' || res.messageType === 'error') {
+                            setNotif(res); 
+                        } else if (res.messageType === 'info') {
+                            const client = JSON.parse(res.message);
+                            setUser(client.user);
+                            setChannel(client.channelName);
+                            const event = client.user.isAdmin 
+                                ? EVENTS.CLIENT.REQUEST_ADMIN_INFO 
+                                : EVENTS.CLIENT.REQUEST_VIEWER_INFO;
+                            socket.emit(event, client, (ack) => console.log(ack));
+                        }
+                    });
+                } else {
+                    loginInfo(request);
+                }
+
+            })
+            .catch(err => {
+                console.log("error", err);
+                setNotif(err);
+            })
+    }
 
     if (socket != null) {
         socket.on(EVENTS.SERVER.CLIENT_INFO, ({channelName, user}) => {
-            // console.log(channelName, user);
             setUser(user);
             setChannel(channelName);
             localStorage.setItem('email', user.email);
@@ -98,6 +159,7 @@ const SocketsProvider = (props: any) => {
 
         socket.on(EVENTS.SERVER.FORCE_DISCONNECT, ({msg}) => {
             console.log(msg);
+            setDisconnectedInfo(msg);
             setChannel(CHANNELS.DISCONNECTED);
             socket.disconnect();
         });
@@ -109,6 +171,12 @@ const SocketsProvider = (props: any) => {
             setChatRooms(rooms);
             if (callback != null) callback(socket.id);
         });
+
+        socket.on(EVENTS.disconnect, (msg) => {
+            console.log(msg);
+            setDisconnectedInfo('A network issue occurred, or you are logged in elsewhere.');
+            setChannel(CHANNELS.DISCONNECTED);
+        })
     }
 
     return <SocketContext.Provider 
@@ -124,6 +192,8 @@ const SocketsProvider = (props: any) => {
             setRoomName,
             notif, 
             setNotif, 
+            disconnectedInfo,
+            loginRequest,
         }} 
         {...props} 
     />

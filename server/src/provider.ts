@@ -177,6 +177,7 @@ const Provider = {
     setClientRoom,
     setClientChannel,
     getClientBySocket, 
+    getClientByTicket, 
     removeClientBySocketId, 
     loadUsers,
     findUser,

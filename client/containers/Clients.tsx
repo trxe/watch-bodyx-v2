@@ -77,7 +77,6 @@ const UsersContainer = () => {
     }
 
     socket.on(EVENTS.SERVER.CURRENT_CLIENTS, (clientList, callback) => {
-        // console.log("clients", clientList);
         const newClientMap = new Map<string, Client>();
         clientList.forEach(client => {
             newClientMap.set(client.user.ticket, client);
@@ -91,7 +90,7 @@ const UsersContainer = () => {
         setClients(clients);
     })
 
-    socket.on(EVENTS.SERVER.DISCONNECTED_CLIENT, (ticket) => {
+    socket.on(EVENTS.SERVER.DISCONNECTED_CLIENT, ({ticket, socketId}) => {
         clients.delete(ticket);
         setClients(clients);
     })
