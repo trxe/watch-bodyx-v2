@@ -19,13 +19,11 @@ export class ChatRoom {
     room: IRoom
     channelName: string
     messages: Array<Message>
-    lastReadIndex: number
     pins: Array<Message>
 
     constructor(room?: IRoom, channelName?: string) {
         this.room = room;
         this.channelName = channelName;
-        this.lastReadIndex = 0;
         this.messages = [];
         this.pins = [];
     }

@@ -43,6 +43,12 @@
     margin: 5px;
 }
 
+.unreadMarker {
+  background-color: antiquewhite;
+  text-align: center;
+  border-radius: 5px;
+  display: block;
+}
 
 .contextMenu {
   display: flex;

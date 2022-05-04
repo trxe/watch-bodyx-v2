@@ -43,7 +43,7 @@ export const registerChatHandlers = (io, socket) => {
     // Receive a message to be sent to a list of rooms/sockets 
     // e.g. all breakout rooms, SM_ROOM and one socket
     const recvMessage = (message: Message, callback) => {
-        console.log(message);
+        // TODO: Fix the missing admins
         const recepients: Array<string> = message.sendTo;
         recepients.forEach(recepient => {
             sendMessage(io, recepient, message);

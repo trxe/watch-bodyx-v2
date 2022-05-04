@@ -82,7 +82,6 @@ const SocketsProvider = (props: any) => {
                 currShow.attendees = new Map(Object.entries(newShow.attendees));
             }
             setShow(currShow);
-            console.log("i'm receiving show", newShow.rooms);
             setChatRooms(newShow.rooms);
             if (callback != null) callback(socket.id);
         });

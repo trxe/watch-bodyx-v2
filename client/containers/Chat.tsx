@@ -81,7 +81,7 @@ const ChatContainer = ({chatName, isAdmin}) => {
     const [messages, setMessages] = useState(!currentChatRoom ? [] : currentChatRoom.messages);
     const [pins, setPins] = useState(!currentChatRoom ? [] : currentChatRoom.pins);
     const newMessageRef = useRef(null);
-
+    const messagesEndRef = useRef(null)
 
     useEffect(() => {
         const chatRoomMap = setChatRooms(show.rooms);
@@ -89,6 +89,7 @@ const ChatContainer = ({chatName, isAdmin}) => {
         selectChatRoomName(chatName);
         setMessages([...chatRoomMap.get(chatName).messages]);
         // console.log('chat room', chatRoomMap.get(chatName).messages, ' from room map', chatRoomMap);
+        scrollToBottom();
     }, [chatName])
 
     // sends to a room
@@ -111,17 +112,23 @@ const ChatContainer = ({chatName, isAdmin}) => {
             currentChatRoom.addMessage(message);
             // setPins([...pins, message]);
             setMessages([...currentChatRoom.messages]);
+            scrollToBottom();
         });
     };
 
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }
+
     socket.off(EVENTS.SERVER.DELIVER_MESSAGE)
         .on(EVENTS.SERVER.DELIVER_MESSAGE, (message: Message) => {
-            // console.log("message", message.sendTo);
+            console.log("message", message);
             if (message.fromSocketId === socket.id) return;
-            // only update if this chat is the correct recepient room
+            // if this chat is the correct recepient room
             if (message.sendTo.find(name => name === chatName) != null) {
                 currentChatRoom.addMessage(message);
                 setMessages([...currentChatRoom.messages]);
+                scrollToBottom();
             } else {
                 message.sendTo.forEach(recepient => {
                     if (!chatRooms.has(recepient))  {
@@ -146,6 +153,7 @@ const ChatContainer = ({chatName, isAdmin}) => {
             {messages.map((msg, index) => 
                 <MessageContainer key={index} index={index} isAdmin={isAdmin} message={msg} />
             )}
+            <div ref={messagesEndRef} />
         </div>
         {(chatName == CHANNELS.SM_ROOM || isViewerChatEnabled || isAdmin) &&
             <div>
