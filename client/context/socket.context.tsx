@@ -6,7 +6,7 @@ import EVENTS from '../config/events';
 import { CHANNELS } from '../config/channels';
 import { IRoom } from '../containers/Rooms';
 import { createNotif, INotif } from '../containers/Snackbar';
-import { User } from '../containers/Clients';
+import { Client, User } from '../containers/Clients';
 import { useChatRooms } from './chats.context';
 
 interface ISocketContext {
@@ -31,6 +31,8 @@ interface ISocketContext {
         attendees: Map<string, User>
     }
     setShow: Function
+    clients?: Map<string, Client>
+    setClients: Function
     notif?: INotif
     setNotif: Function
     disconnectedInfo: string
@@ -52,6 +54,7 @@ const SocketContext = createContext<ISocketContext>({
     setUser: () => false, 
     setNotif: () => false,
     setShow: () => false,
+    setClients: () => false,
     disconnectedInfo: '',
     loginRequest: () => false,
 })
@@ -67,6 +70,7 @@ const SocketsProvider = (props: any) => {
     const [notif, setNotif] =  useState(null);
     const [disconnectedInfo, setDisconnectedInfo] = useState('');
     const {setChatRooms} = useChatRooms();
+    const [clients, setClients] = useState(new Map<string, Client>());
 
     const loginInfo = (request) => {
         socket.emit(EVENTS.CLIENT.LOGIN, request, 
@@ -190,6 +194,8 @@ const SocketsProvider = (props: any) => {
             setShow, 
             roomName,
             setRoomName,
+            clients,
+            setClients,
             notif, 
             setNotif, 
             disconnectedInfo,

@@ -63,8 +63,9 @@ const Client:FC<Client> = ({user, socketId, channelName, roomName}) => {
 }
 
 const UsersContainer = () => {
-    const {socket, show} = useSockets();
-    const [clients, setClients] = useState(new Map<string, Client>());
+    const {socket, show, clients, setClients} = useSockets();
+    const [clientList, setClientList] = useState(!clients ? [] : Array.from(clients.values()));
+    // const [clients, setClients] = useState(new Map<string, Client>());
 
     useEffect(() => {
         socket.emit(EVENTS.CLIENT.GET_INFO, {request: 'clients'});
@@ -82,28 +83,30 @@ const UsersContainer = () => {
             newClientMap.set(client.user.ticket, client);
         });
         setClients(newClientMap);
+        setClientList(Array.from(clients.values()));
         if (callback != null) callback(socket.id);
     });
 
     socket.on(EVENTS.SERVER.ADD_CLIENT, (client) => {
         clients.set(client.user.ticket, client);
         setClients(clients);
+        setClientList(Array.from(clients.values()));
     })
 
     socket.on(EVENTS.SERVER.DISCONNECTED_CLIENT, ({ticket, socketId}) => {
         clients.delete(ticket);
         setClients(clients);
+        setClientList(Array.from(clients.values()));
     })
 
     return <div>
         <h2>Users</h2>
-        {Array.from(clients.values())
-            .map(c => <Client 
-                key={c.socketId} 
-                socketId={c.socketId} 
-                user={c.user} 
-                roomName={getHumanReadableRoomName(c.roomName)} 
-                channelName={c.channelName}/>)}
+        {clientList.map(c => <Client 
+            key={c.socketId} 
+            socketId={c.socketId} 
+            user={c.user} 
+            roomName={getHumanReadableRoomName(c.roomName)} 
+            channelName={c.channelName}/>)}
     </div>;
 }
 
