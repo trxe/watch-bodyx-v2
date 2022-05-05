@@ -24,10 +24,10 @@ export class Show {
         if (!this.dbShow) this.loadShow()
         const _id = new mongoose.Types.ObjectId();
         const roomName = `${_id.toString()}_ROOM`;
-        if (await this.dbShow.rooms.length == 0) {
-            isLocked = false;
-        }
         const room = new RoomModel({ name, url, isLocked, _id, roomName });
+        if (await this.dbShow.rooms.length == 0) {
+            room.isLocked = false;
+        }
         this.dbShow.rooms.push(room);
         await this.dbShow.save(err => {
             if (!err) return;
@@ -57,18 +57,18 @@ export class Show {
 
     public async deleteRoom(_id: string): Promise<string> {
         if (!this.dbShow) await this.loadShow()
-        if (_id == this.dbShow.rooms[0] && this.dbShow.rooms.length > 1) {
+        if (_id === this.dbShow.rooms[0]._id.toString() && this.dbShow.rooms.length > 1) {
             this.dbShow.rooms[1].isLocked = false;
-            await this.dbShow.save(err => {
-                if (!err) {
-                    Logger.warn(`Room ${this.dbShow.rooms[1].name} is now the new main room.`);
-                }
-                Logger.error(err);
-                throw 'Error saving room to database.';
-            });
-            
+            Logger.warn(`Room ${this.dbShow.rooms[1].name} is now the new main room.`);
         }
         const room = await this.dbShow.rooms.id(_id).remove();
+        await this.dbShow.save(err => {
+            if (err) {
+                Logger.error(err);
+                throw 'Error saving room to database.';
+            }
+        });
+        Logger.info(`Updated room list:`);
         Logger.info(this.dbShow.rooms);
         return _id;
     }

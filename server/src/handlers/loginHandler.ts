@@ -4,7 +4,7 @@ import { Client } from "../interfaces/client"
 import Provider from "../provider"
 import Logger from "../utils/logger"
 import { CLIENT_EVENTS } from "../protocol/events"
-import { clientForceDisconnect, sendClientDisconnectedToAdmin, sendClients, sendClientToAdmin, sendShow } from "./showHandler"
+import { sendClientDisconnectedToAdmin, sendClients, sendClientToAdmin, sendShow } from "./showHandler"
 import { informSocketChatStatus } from "./chatHandler"
 
 const LOGIN_EVENTS = {
@@ -33,7 +33,7 @@ export const registerLoginHandlers = (io, socket) => {
                     Provider.getShow().rooms.forEach(room => socket.join(room.roomName));
                 }
                 const client = {user, socketId: socket.id, channelName}
-                Provider.addClient(socket.id, ticket, client);
+                Provider.setClient(socket.id, ticket, client);
                 socket.join(channelName);
                 callback(new Ack('info', 'Client information', JSON.stringify(client)).getJSON());
             })
@@ -43,7 +43,7 @@ export const registerLoginHandlers = (io, socket) => {
             })
     }
 
-    const reconnect = ({oldSocketId, ticket, email}, callback) => {
+    const replaceClient = ({oldSocketId, ticket, email}, callback) => {
         let channelName = CHANNELS.WAITING_ROOM;
         Provider.findUser({ticket, email})
             .then(user => {
@@ -67,7 +67,7 @@ export const registerLoginHandlers = (io, socket) => {
                     Provider.getShow().rooms.forEach(room => socket.join(room.roomName));
                 }
                 client = {user, socketId: socket.id, channelName}
-                Provider.addClient(socket.id, ticket, client);
+                Provider.setClient(socket.id, ticket, client);
                 socket.join(channelName);
                 callback(new Ack('info', 'Client information', JSON.stringify(client)).getJSON());
             })
@@ -77,10 +77,15 @@ export const registerLoginHandlers = (io, socket) => {
             })
     }
 
+    const reconnect = ({client, ticket}, callback) => {
+        console.log("set client", client);
+        Provider.setClient(socket.id, client, ticket);
+        callback(new Ack('success', 'Connection re-established', JSON.stringify(client)).getJSON());
+    }
+
     const adminInfo = (client, callback) => {
         sendShow(socket);
         informSocketChatStatus(socket, Provider.getChatManager().isAudienceChatEnabled); sendClients(socket);
-        sendClients(socket);
         sendClientToAdmin(io, client);
         callback(new Ack('success', 'Loaded show info successfully').getJSON());
     }
@@ -101,6 +106,7 @@ export const registerLoginHandlers = (io, socket) => {
     }
 
     socket.on(CLIENT_EVENTS.LOGIN, recvLogin);
+    socket.on(CLIENT_EVENTS.REPLACE_CLIENT, replaceClient);
     socket.on(CLIENT_EVENTS.RECONNECT, reconnect);
     socket.on(CLIENT_EVENTS.REQUEST_ADMIN_INFO, adminInfo);
     socket.on(CLIENT_EVENTS.REQUEST_VIEWER_INFO, viewerInfo);

@@ -2,6 +2,7 @@ export const CLIENT_EVENTS = {
     connect: 'connect',
     disconnect: 'disconnect',
     LOGIN: 'LOGIN',
+    REPLACE_CLIENT: 'REPLACE_CLIENT',
     RECONNECT: 'RECONNECT',
     REQUEST_ADMIN_INFO: 'REQUEST_ADMIN_INFO',
     REQUEST_VIEWER_INFO: 'REQUEST_VIEWER_INFO',
