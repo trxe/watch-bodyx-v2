@@ -18,18 +18,21 @@ const ViewerContainer = ({isAdmin}) => {
 
     // BUGS: on deletion of rooms, roomIndex doesn't update: put into useEffect (roomName).
     const handleSwitchRooms = (index) => {
-        if (isAdmin) {
+        if (show.rooms.length == 0) {
+            setRoomIndex(-1);
+        } else if (isAdmin) {
             setRoomIndex(index);
             setRoomName(show.rooms[index].roomName);
-            return;
+        } else {
+            const viewerIndex = index >= show.rooms.length ? 0 : index;
+            socket.emit(EVENTS.CLIENT.JOIN_ROOM, show.rooms[viewerIndex]._id, 
+                (response) => {
+                    console.log(response);
+                    setRoomIndex(viewerIndex);
+                    console.log("roomName", show.rooms[viewerIndex].roomName);
+                    setRoomName(show.rooms[viewerIndex].roomName);
+                });
         }
-        socket.emit(EVENTS.CLIENT.JOIN_ROOM, show.rooms[index]._id, 
-            (response) => {
-                console.log(response);
-                setRoomIndex(index);
-                console.log("roomName", show.rooms[index].roomName);
-                setRoomName(show.rooms[index].roomName);
-            });
     };
 
     socket.off(EVENTS.SERVER.FORCE_JOIN_ROOM)
@@ -39,7 +42,7 @@ const ViewerContainer = ({isAdmin}) => {
             handleSwitchRooms(index);
     });
 
-    if (!show.rooms || show.rooms.length == 0) {
+    if (roomIndex < 0 || !show.rooms || show.rooms.length == 0) {
         return <div className={styles.viewerWrapper}>
             <h1>Rooms Not Available</h1>
         </div>
