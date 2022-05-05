@@ -33,14 +33,13 @@ const removeClientBySocketId = (clientSocketId: string): string => {
     socketTicket.delete(clientSocketId);
     return ticket;
 }
-
 /**
- * Adds a client to the list of connected clients.
+ * Sets a client with ticket and socketId to the list of connected clients.
  * @param clientSocketId 
  * @param ticket 
  * @param client 
  */
-const addClient = (clientSocketId:string, ticket: string, client: Client): void => {
+const setClient = (clientSocketId:string, ticket: string, client: Client): void => {
     clients.set(ticket, client);
     socketTicket.set(clientSocketId, ticket);
 }
@@ -172,7 +171,7 @@ const deleteRoom = (_id: string, onSuccess, onFailure) => {
 const getChatManager = () => chatManager;
 
 const Provider = {
-    addClient,
+    setClient,
     getClientListJSON,
     setClientRoom,
     setClientChannel,

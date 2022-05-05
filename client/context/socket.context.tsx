@@ -31,8 +31,7 @@ interface ISocketContext {
         attendees: Map<string, User>
     }
     setShow: Function
-    clients?: Map<string, Client>
-    setClients: Function
+    clientsList?: Array<Client>
     notif?: INotif
     setNotif: Function
     disconnectedInfo: string
@@ -54,7 +53,6 @@ const SocketContext = createContext<ISocketContext>({
     setUser: () => false, 
     setNotif: () => false,
     setShow: () => false,
-    setClients: () => false,
     disconnectedInfo: '',
     loginRequest: () => false,
 })
@@ -70,7 +68,9 @@ const SocketsProvider = (props: any) => {
     const [notif, setNotif] =  useState(null);
     const [disconnectedInfo, setDisconnectedInfo] = useState('');
     const {setChatRooms} = useChatRooms();
-    const [clients, setClients] = useState(new Map<string, Client>());
+
+    const [clientsMap, setClientsMap] = useState(new Map<string, Client>());
+    const [clientsList, setClientsList] = useState(new Array<Client>());
 
     const loginInfo = (request) => {
         socket.emit(EVENTS.CLIENT.LOGIN, request, 
@@ -105,7 +105,7 @@ const SocketsProvider = (props: any) => {
                         'You are logged in on multiple instances',
                         'Other instances will be disconnected.'));
                     const socketIdDisconnect = data.message;
-                    socket.emit(EVENTS.CLIENT.RECONNECT, {
+                    socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, {
                         oldSocketId: socketIdDisconnect, ...request
                     }, (res) => {
                         console.log("socket", socket.id);
@@ -140,6 +140,7 @@ const SocketsProvider = (props: any) => {
             localStorage.setItem('ticket', user.ticket);
         });
 
+        // Admin show info
         socket.off(EVENTS.SERVER.CURRENT_SHOW)
             .on(EVENTS.SERVER.CURRENT_SHOW, (newShow, callback) => {
             const currShow = {...newShow, attendees: null};
@@ -151,6 +152,41 @@ const SocketsProvider = (props: any) => {
             if (callback != null) callback(socket.id);
         });
 
+        // Admin control of clients
+        socket.off(EVENTS.SERVER.CURRENT_CLIENTS).on(EVENTS.SERVER.CURRENT_CLIENTS, (newClientList, callback) => {
+            console.log("received list", newClientList);
+            newClientList.forEach(client => {
+                clientsMap.set(client.user.ticket, client);
+            });
+            setClientsList(Array.from(clientsMap.values()));
+            if (callback != null) callback(socket.id);
+        });
+
+        socket.off(EVENTS.SERVER.ADD_CLIENT).on(EVENTS.SERVER.ADD_CLIENT, (client) => {
+            clientsMap.set(client.user.ticket, client);
+            console.log("clientsmap curr", clientsMap);
+            setClientsMap(clientsMap);
+            setClientsList(Array.from(clientsMap.values()));
+            // setClientsMap(new Map<string, Client>(clientsMap));
+        })
+
+        socket.off(EVENTS.SERVER.DISCONNECTED_CLIENT).on(EVENTS.SERVER.DISCONNECTED_CLIENT, ({ticket, socketId}) => {
+            clientsMap.delete(ticket);
+            setClientsMap(clientsMap);
+            setClientsList(Array.from(clientsMap.values()));
+            // setClientsMap(new Map<string, Client>(clientsMap));
+        })
+
+        // Rooms info
+        socket.off(EVENTS.SERVER.CURRENT_ROOMS)
+            .on(EVENTS.SERVER.CURRENT_ROOMS, (rooms, callback) => {
+            setShow({...show, rooms});
+            console.log("setting rooms", rooms);
+            setChatRooms(rooms);
+            if (callback != null) callback(socket.id);
+        });
+
+        // Crowd control
         socket.off(EVENTS.SERVER.FORCE_JOIN_CHANNEL)
             .on(EVENTS.SERVER.FORCE_JOIN_CHANNEL, (newChannel) => {
                 if (channel === newChannel) return;
@@ -168,19 +204,29 @@ const SocketsProvider = (props: any) => {
             socket.disconnect();
         });
 
-        socket.off(EVENTS.SERVER.CURRENT_ROOMS)
-            .on(EVENTS.SERVER.CURRENT_ROOMS, (rooms, callback) => {
-            setShow({...show, rooms});
-            console.log("setting rooms", rooms);
-            setChatRooms(rooms);
-            if (callback != null) callback(socket.id);
-        });
-
-        socket.on(EVENTS.disconnect, (msg) => {
-            console.log(msg);
-            setDisconnectedInfo('A network issue occurred, or you are logged in elsewhere.');
-            setChannel(CHANNELS.DISCONNECTED);
+        /*
+        socket.on(EVENTS.connect, () => {
+            // if alr have user, just replace my oldSocketId
+            const client = {user, socketId: socket.id, channelName: channel, roomName}
+            socket.emit(EVENTS.CLIENT.RECONNECT, {client, ticket: user.ticket}, (res) => {
+                if (res && res.messageType === 'info') {
+                    const data = JSON.parse(res.message);
+                    console.log(data);
+                    setChannel(data.channelName);
+                    setRoomName(data.roomName);
+                }
+            });
         })
+        */
+
+        socket.off(EVENTS.disconnect)
+            .on(EVENTS.disconnect, (reason) => {
+                console.log(reason);
+                if (reason.indexOf('disconnect') >= 0) {
+                    setDisconnectedInfo('A network issue occurred, or you are logged in elsewhere.');
+                    setChannel(CHANNELS.DISCONNECTED);
+                }
+            });
     }
 
     return <SocketContext.Provider 
@@ -194,8 +240,7 @@ const SocketsProvider = (props: any) => {
             setShow, 
             roomName,
             setRoomName,
-            clients,
-            setClients,
+            clientsList,
             notif, 
             setNotif, 
             disconnectedInfo,

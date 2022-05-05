@@ -70,6 +70,7 @@ export const sendClients = (socket) => {
  */
 export const sendClientToAdmin = (io, client: Client) => {
     io.to(CHANNELS.SM_ROOM).emit(SHOW_EVENTS.ADD_CLIENT, client);
+    Logger.info(`Admins are sent new client.`);
 }
 
 /**
@@ -79,6 +80,7 @@ export const sendClientToAdmin = (io, client: Client) => {
  */
 export const sendClientDisconnectedToAdmin = (io, ticket: string, socketId: string) => {
     io.to(CHANNELS.SM_ROOM).emit(SHOW_EVENTS.DISCONNECTED_CLIENT, {ticket, socketId});
+    Logger.info(`Admins are informed of disconnected client.`);
 }
 
 /**
@@ -207,6 +209,8 @@ export const registerShowHandlers = (io: Server, socket) => {
     const deleteRoom = (_id, callback) => {
         Provider.deleteRoom(_id,
             (id) => {
+                // TODO: Kick users from this room
+                // io.to(_id + '_ROOM').emit(SHOW_EVENTS.FORCE_JOIN_ROOM, Provider.getShowMainRoom());
                 callback(new Ack('info', 'Deleted room', id).getJSON());
                 const show = Provider.getShow();
                 socket.emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms, 

@@ -28,6 +28,13 @@
     cursor: default;
 }
 
+.currentRoomButton,
+.currentRoomButton:disabled {
+    background-color: darkorange !important;
+    color: black !important;
+    cursor: default;
+}
+
 .mediaPlayer {
     height: 80vh;
 }

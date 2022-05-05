@@ -63,13 +63,15 @@ const Client:FC<Client> = ({user, socketId, channelName, roomName}) => {
 }
 
 const UsersContainer = () => {
-    const {socket, show, clients, setClients} = useSockets();
-    const [clientList, setClientList] = useState(!clients ? [] : Array.from(clients.values()));
+    const {socket, show, clientsList} = useSockets();
+    // const [clientList, setClientList] = useState(!clients ? [] : Array.from(clients.values()));
     // const [clients, setClients] = useState(new Map<string, Client>());
 
+    /*
     useEffect(() => {
         socket.emit(EVENTS.CLIENT.GET_INFO, {request: 'clients'});
-    }, [])
+    }, []);
+    */
 
     const getHumanReadableRoomName = (roomName: string) => {
         const room = show.rooms.find(room => room.roomName === roomName);
@@ -77,31 +79,9 @@ const UsersContainer = () => {
         else return room.name;
     }
 
-    socket.on(EVENTS.SERVER.CURRENT_CLIENTS, (clientList, callback) => {
-        const newClientMap = new Map<string, Client>();
-        clientList.forEach(client => {
-            newClientMap.set(client.user.ticket, client);
-        });
-        setClients(newClientMap);
-        setClientList(Array.from(clients.values()));
-        if (callback != null) callback(socket.id);
-    });
-
-    socket.on(EVENTS.SERVER.ADD_CLIENT, (client) => {
-        clients.set(client.user.ticket, client);
-        setClients(clients);
-        setClientList(Array.from(clients.values()));
-    })
-
-    socket.on(EVENTS.SERVER.DISCONNECTED_CLIENT, ({ticket, socketId}) => {
-        clients.delete(ticket);
-        setClients(clients);
-        setClientList(Array.from(clients.values()));
-    })
-
     return <div>
         <h2>Users</h2>
-        {clientList.map(c => <Client 
+        {clientsList.map(c => <Client 
             key={c.socketId} 
             socketId={c.socketId} 
             user={c.user} 
