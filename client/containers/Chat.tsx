@@ -76,8 +76,7 @@ const MessageContainer = ({index, isAdmin, message}) => {
 
     return <div id={`message-${index}`} 
             className={`${styles.message} ${isSelf ? styles.messageSelf : styles.messageOther}`}>
-        {isAdmin && 
-            <ChatContextMenu _id={`message-${index}`} 
+        {isAdmin && <ChatContextMenu _id={`message-${index}`} 
                 message={message} localMsgIndex={index} pinIndex={-1}/>}
         <div className={styles.textBox}>
             {isSelf ? '': `${message.userName}: `}{message.contents}
@@ -85,7 +84,7 @@ const MessageContainer = ({index, isAdmin, message}) => {
     </div>;
 }
 
-const ChatContainer = ({chatName, isAdmin}) => {
+const ChatContainer = ({chatName, isAdmin, label}) => {
     const {socket, user} = useSockets();
     const {messages, setMessages, pins, 
             isViewerChatEnabled, 
@@ -139,7 +138,7 @@ const ChatContainer = ({chatName, isAdmin}) => {
 
     return <div className={styles.chatWrapper}>
         <div className={styles.chatHeader}>
-            <h3>{chatName}</h3>
+            <h3>{label}</h3>
         </div>
         <div className={styles.messageList}>
             {messages.map((msg, index) => 

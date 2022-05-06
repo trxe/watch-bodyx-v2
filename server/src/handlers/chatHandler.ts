@@ -51,7 +51,7 @@ export const registerChatHandlers = (io, socket) => {
         if (recepients.length == 0) 
             return;
         // possibly need to implement concurrency handling for each room
-        const primaryRecepient: string = recepients.splice(0, 1)[0];
+        const primaryRecepient: string = recepients[0];
         const msgIndex = Provider.getChatManager().addMessageToRoom(primaryRecepient, message);
 
         recepients.forEach(recepient => {

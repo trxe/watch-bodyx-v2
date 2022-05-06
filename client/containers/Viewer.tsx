@@ -13,16 +13,16 @@ const ViewerContainer = ({isAdmin}) => {
 
     // At startup to enter room
     useEffect(() => {
-        if (show.rooms.length >= 1) {
-            handleSwitchRooms(0);
-        } else {
+        if (!show.rooms || show.rooms.length == 0) {
             handleSwitchRooms(-1);
+        } else {
+            handleSwitchRooms(0);
         }
     }, [show]);
 
     // BUGS: on deletion of rooms, roomIndex doesn't update: put into useEffect (roomName).
     const handleSwitchRooms = (index) => {
-        if (show.rooms.length == 0 || index < 0) {
+        if (!show.rooms || show.rooms.length == 0 || index < 0) {
             setRoomIndex(-1);
             console.log("current room", -1, show.rooms)
         } else if (isAdmin) {
@@ -84,7 +84,7 @@ const ViewerContainer = ({isAdmin}) => {
         </div>
         <div className={styles.chatWrapper}>
             {isChatNotPoll ? 'Chat' : 'Poll'} (in progress)
-            <ChatContainer chatName={roomName || CHANNELS.SM_ROOM} isAdmin={isAdmin}/>
+            <ChatContainer chatName={roomName || CHANNELS.SM_ROOM} isAdmin={isAdmin} label={show.rooms[roomIndex].name}/>
             <button onClick={() => setChatNotPoll(!isChatNotPoll)}>
                 {isChatNotPoll ? 'POLL' : 'CHAT'}
             </button>

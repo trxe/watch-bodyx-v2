@@ -48,15 +48,19 @@ export class ChatRoom {
         if (this.firstMsgIndex < 0) {
             this.firstMsgIndex = msgIndex;
             this.currMsgIndex = msgIndex;
+            this.messages.push(message);
+            console.log('init', this.messages)
         } else if (msgIndex < this.nextNewMsgIndexRecv()) {
             // if this is a missing message OR message to replace
             this.messages[msgIndex - this.firstMsgIndex] = message;
+            console.log('filling', this.messages)
         } else {
             // if this is a new message
             for (let i = this.nextNewMsgIndexRecv(); i < msgIndex; i++) {
                 this.messages.push(null);
             }
             this.messages.push(message);
+            console.log('adding', this.messages)
         }
 
         // move msg index to last position
@@ -64,6 +68,7 @@ export class ChatRoom {
             && this.messages[this.currMsgIndex + 1 - this.firstMsgIndex]) {
                 this.currMsgIndex += 1;
         }
+        console.log('my message list', this.messages)
     }
 
     public pinMessage(msgIndex: number, pinIndex: number): Message {
@@ -148,7 +153,7 @@ const ChatRoomProvider = (props: any) => {
     if (socket != null) {
         socket.off(EVENTS.SERVER.DELIVER_MESSAGE)
             .on(EVENTS.SERVER.DELIVER_MESSAGE, ({message, msgIndex}) => {
-                console.log("message", message);
+                console.log("message", message, msgIndex);
                 // handled by emit's ack
                 if (message.fromSocketId === socket.id) 
                     return;

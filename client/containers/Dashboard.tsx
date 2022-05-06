@@ -1,4 +1,4 @@
-import { FC, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import EVENTS from "../config/events";
 import styles from "../styles/Dashboard.module.css"
 import { useSockets } from "../context/socket.context";
@@ -8,13 +8,15 @@ import UsersContainer from "./Clients";
 import AttendeesContainer from "./Attendees";
 import { CHANNELS } from "../config/channels";
 import ViewerContainer from "./Viewer";
+import { MODES } from "../config/modes";
+import QNAContainer from "./QnA";
 
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
     // and EventInfo, including Time, Duration, Title
     const {socket, show, setNotif} = useSockets();
     const [isEditMode, setEditMode] = useState(false);
-    const [isTheatreMode, setTheatreMode] = useState(false);
+    const [mode, setMode] = useState(MODES.DASHBOARD);
     const newShowTitle = useRef(null);
     const newEventId = useRef(null);
 
@@ -64,17 +66,28 @@ const DashboardContainer = () => {
             <button onClick={toggleShowStart}>{show.isOpen ? 'END' : 'START'}</button>
         </div>
 
-    if (isTheatreMode) {
+    if (mode == MODES.THEATRE) {
         return <div className={styles.dashboardWrapper}>
             <UserMenu/>
-            <button onClick={() => setTheatreMode(false)}>Dashboard Mode</button>
+            <button onClick={() => setMode(MODES.DASHBOARD)}>{MODES.DASHBOARD}</button>
+            <button onClick={() => setMode(MODES.QNA)}>{MODES.QNA}</button>
             <ViewerContainer isAdmin={true} />
         </div>;
     }
     
+    if (mode == MODES.QNA) {
+        return <div className={styles.dashboardWrapper}>
+            <UserMenu/>
+            <button onClick={() => setMode(MODES.THEATRE)}>{MODES.THEATRE}</button>
+            <button onClick={() => setMode(MODES.QNA)}>{MODES.QNA}</button>
+            <QNAContainer />
+        </div>;
+    }
+
     return <div className={styles.dashboardWrapper}>
         <UserMenu/>
-        <button onClick={() => setTheatreMode(true)}>Theatre Mode</button>
+        <button onClick={() => setMode(MODES.THEATRE)}>{MODES.THEATRE}</button>
+        <button onClick={() => setMode(MODES.QNA)}>{MODES.QNA}</button>
         <h1>Show Settings</h1>
         {showInfo}
         <button onClick={() => setEditMode(!isEditMode)}>
@@ -87,7 +100,7 @@ const DashboardContainer = () => {
             </div>
             <RoomsContainer />
         </div>
-    </div>
+    </div>;
 }
 
 export default DashboardContainer;
