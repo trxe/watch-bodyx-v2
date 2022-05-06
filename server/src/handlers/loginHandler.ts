@@ -80,6 +80,7 @@ export const registerLoginHandlers = (io, socket) => {
     const reconnect = ({client, ticket}, callback) => {
         console.log("set client", client);
         Provider.setClient(socket.id, client, ticket);
+        // send client to admins
         callback(new Ack('success', 'Connection re-established', JSON.stringify(client)).getJSON());
     }
 
@@ -102,6 +103,8 @@ export const registerLoginHandlers = (io, socket) => {
         if (ticket != null) {
             sendClientDisconnectedToAdmin(io, ticket, socket.id);
             Logger.info(`Socket ${socket.id} with ticket ${ticket} disconnected`);
+        } else {
+            Logger.info(`Socket ${socket.id} disconnected`);
         }
     }
 

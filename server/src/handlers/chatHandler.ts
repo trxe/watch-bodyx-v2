@@ -1,4 +1,6 @@
+import { ObjectID } from "bson"
 import { Server } from "socket.io"
+import { Ack } from "../interfaces/ack"
 import { Message } from "../interfaces/message"
 import { CHANNELS } from "../protocol/channels"
 import { CLIENT_EVENTS } from "../protocol/events"
@@ -13,9 +15,10 @@ const CHAT_EVENTS = {
 }
 
 // Send a message to a list of rooms/sockets 
-export const sendMessage = (io: Server, recepient: string, message: Message) => {
-    Logger.info(`Sending message to ${recepient}`);
-    io.to(recepient).emit(CHAT_EVENTS.DELIVER_MESSAGE, message);
+export const sendMessage = (io: Server, recepient: string, 
+    data: {message: Message, msgIndex: number}) => {
+        Logger.info(`Sending message to ${recepient}`);
+        io.to(recepient).emit(CHAT_EVENTS.DELIVER_MESSAGE, data);
 }
 
 // Pin a message in a room
@@ -43,15 +46,24 @@ export const registerChatHandlers = (io, socket) => {
     // e.g. all breakout rooms, SM_ROOM and one socket
     const recvMessage = (message: Message, callback) => {
         // TODO: Fix the missing admins
+        message._id = new ObjectID().toString();
         const recepients: Array<string> = message.sendTo;
+        if (recepients.length == 0) 
+            return;
+        // possibly need to implement concurrency handling for each room
+        const primaryRecepient: string = recepients.splice(0, 1)[0];
+        const msgIndex = Provider.getChatManager().addMessageToRoom(primaryRecepient, message);
+
         recepients.forEach(recepient => {
-            sendMessage(io, recepient, message);
+            sendMessage(io, recepient, {message, msgIndex});
         });
-        callback({status: 'delivered'});
+        callback(new Ack('info', 'Message with id', JSON.stringify({message, msgIndex})));
     }
 
     // Receive a message to be pinned/saved to a list, present for each room
     const recvPin = (message: Message, callback) => {
+        // add pin to list
+
     }
 
     // toggle chat settings
@@ -62,5 +74,6 @@ export const registerChatHandlers = (io, socket) => {
     }
 
     socket.on(CLIENT_EVENTS.NEW_MESSAGE, recvMessage);
+    socket.on(CLIENT_EVENTS.PIN_MESSAGE, recvPin);
     socket.on(CLIENT_EVENTS.ADMIN_TOGGLE_AUDIENCE_CHAT, adminToggleAudienceChat);
 }

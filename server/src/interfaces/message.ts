@@ -5,7 +5,7 @@ export interface Message {
     userName: string,
     fromSocketId: string,
     sendTo: Array<string>,
-    timestamp: string // ISO
+    timestamp: string, // ISO
     contents: string,
-    status: 'sending' | 'delivered' | 'received',
+    isPinned: boolean,
 }
