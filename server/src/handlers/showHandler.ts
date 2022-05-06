@@ -6,6 +6,7 @@ import { CLIENT_EVENTS } from "../protocol/events";
 import { CHANNELS } from "../protocol/channels";
 import Provider from "../provider"
 import Logger from "../utils/logger";
+import { Room } from "../interfaces/room";
 
 const SHOW_EVENTS = {
     CURRENT_SHOW: 'CURRENT_SHOW',
@@ -140,6 +141,16 @@ export const clientsForceJoinRoom = (io: Server, origRoom: string, roomName: str
     io.to(origRoom).emit(SHOW_EVENTS.FORCE_JOIN_ROOM, roomName);
 }
 
+const addSMsToRoom = async (io: Server, roomName: string) => {
+    const smList = await io.in(CHANNELS.SM_ROOM).fetchSockets();
+    smList.forEach(sm => { sm.join(roomName); });
+}
+
+const removeSMsFromRoom = async (io: Server, roomName: string) => {
+    const smList = await io.in(CHANNELS.SM_ROOM).fetchSockets();
+    smList.forEach(sm => { sm.leave(roomName); });
+}
+
 /**
  * Registers show handlers: 
  *  - updateShow
@@ -173,10 +184,11 @@ export const registerShowHandlers = (io: Server, socket) => {
                 message: 'Missing room name or URL.'})
         }
         Provider.createRoom(name, url, isLocked, 
-            (room) => {
-                callback(new Ack('info', 'Room created', room).getJSON())
+            (room: Room) => {
+                callback(new Ack('info', 'Room created', JSON.stringify(room)).getJSON())
                 const show = Provider.getShow();
                 io.to(CHANNELS.MAIN_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
+                addSMsToRoom(io, room.roomName);
                 socket.emit(SHOW_EVENTS.CURRENT_ROOMS,  show.getJSON().rooms, 
                     (socketId) => {
                         logSocketIdEvent(socketId, 'has received rooms')
@@ -193,7 +205,7 @@ export const registerShowHandlers = (io: Server, socket) => {
     // ADMIN-only: updates a room
     const updateRoom = (room, callback) => {
         Provider.updateRoom(room, 
-            (id) => {
+            (id: string) => {
                 callback(new Ack('info', room, id).getJSON())
                 const show = Provider.getShow();
                 io.to(CHANNELS.MAIN_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
@@ -208,11 +220,13 @@ export const registerShowHandlers = (io: Server, socket) => {
     // ADMIN-only: deletes a room
     const deleteRoom = (_id, callback) => {
         Provider.deleteRoom(_id,
-            (id) => {
+            (room) => {
                 // TODO: Kick users from this room
                 // io.to(_id + '_ROOM').emit(SHOW_EVENTS.FORCE_JOIN_ROOM, Provider.getShowMainRoom());
-                callback(new Ack('info', 'Deleted room', id).getJSON());
+                console.log(room);
+                callback(new Ack('info', 'Deleted room', room._id).getJSON());
                 const show = Provider.getShow();
+                removeSMsFromRoom(io, room.roomName);
                 socket.emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms, 
                     socketId => {logSocketIdEvent(socketId, 'has deleted room')}
                 );

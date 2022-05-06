@@ -9,10 +9,11 @@ export interface Message {
     _id: string,
     userName: string,
     fromSocketId: string,
-    sendTo: Array<string>,
-    timestamp: string // ISO
-    isPinned: boolean
+    sendTo: string,
+    timestamp: string, // ISO
     contents: string,
+    isPrivate: boolean,
+    isPinned: boolean
 }
 
 export class ChatRoom {
@@ -49,7 +50,7 @@ export class ChatRoom {
             this.firstMsgIndex = msgIndex;
             this.currMsgIndex = msgIndex;
             this.messages.push(message);
-            console.log('init', this.messages)
+            console.log('init', this.messages, 'start from', msgIndex);
         } else if (msgIndex < this.nextNewMsgIndexRecv()) {
             // if this is a missing message OR message to replace
             this.messages[msgIndex - this.firstMsgIndex] = message;
@@ -157,18 +158,16 @@ const ChatRoomProvider = (props: any) => {
                 // handled by emit's ack
                 if (message.fromSocketId === socket.id) 
                     return;
-                message.sendTo.forEach(recepient => {
-                    if (!chatRooms.has(recepient))  {
-                        chatRooms.set(recepient, 
-                            new ChatRoom(show.rooms.find(room => room.roomName === recepient), CHANNELS.MAIN_ROOM));
-                    }
-                    chatRooms.get(recepient).addMessage(message, msgIndex);
-                });
+                if (!chatRooms.has(message.sendTo))  {
+                    chatRooms.set(message.sendTo, 
+                        new ChatRoom(show.rooms.find(room => room.roomName === message.sendTo), CHANNELS.MAIN_ROOM));
+                }
+                chatRooms.get(message.sendTo).addMessage(message, msgIndex);
                 // if this chat is the current chat room
-                if (message.sendTo.find(name => name === chatRoomName) != null) {
+                if (message.sendTo === chatRoomName) {
                     const currChatRoom = chatRooms.get(chatRoomName);
-                    setMessages(currChatRoom.messages);
-                    setPins(currChatRoom.pins);
+                    setMessages([...currChatRoom.messages]);
+                    setPins([...currChatRoom.pins]);
                 }
             });
 

@@ -55,13 +55,14 @@ export class Show {
         return newRoom._id.toString();
     }
 
-    public async deleteRoom(_id: string): Promise<string> {
+    public async deleteRoom(_id: string): Promise<Room> {
         if (!this.dbShow) await this.loadShow()
         if (_id === this.dbShow.rooms[0]._id.toString() && this.dbShow.rooms.length > 1) {
             this.dbShow.rooms[1].isLocked = false;
             Logger.warn(`Room ${this.dbShow.rooms[1].name} is now the new main room.`);
         }
-        const room = await this.dbShow.rooms.id(_id).remove();
+        const room = {...this.dbShow.rooms.id(_id)};
+        await this.dbShow.rooms.id(_id).remove();
         await this.dbShow.save(err => {
             if (err) {
                 Logger.error(err);
@@ -70,7 +71,7 @@ export class Show {
         });
         Logger.info(`Updated room list:`);
         Logger.info(this.dbShow.rooms);
-        return _id;
+        return room;
     }
 
     public async findRoomNameById(_id: string, defaultRoom : string): Promise<string> {

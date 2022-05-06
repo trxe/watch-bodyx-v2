@@ -84,7 +84,8 @@ const ViewerContainer = ({isAdmin}) => {
         </div>
         <div className={styles.chatWrapper}>
             {isChatNotPoll ? 'Chat' : 'Poll'} (in progress)
-            <ChatContainer chatName={roomName || CHANNELS.SM_ROOM} isAdmin={isAdmin} label={show.rooms[roomIndex].name}/>
+            <ChatContainer chatName={roomName || CHANNELS.SM_ROOM} isAdmin={isAdmin} 
+                label={roomIndex < show.rooms.length ? show.rooms[roomIndex].name : 'Moving rooms...'}/>
             <button onClick={() => setChatNotPoll(!isChatNotPoll)}>
                 {isChatNotPoll ? 'POLL' : 'CHAT'}
             </button>

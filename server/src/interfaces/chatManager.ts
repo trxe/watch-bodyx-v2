@@ -1,4 +1,3 @@
-import Provider from "../provider";
 import { Client } from "./client";
 import { Message } from "./message";
 import { Room } from "./room";
@@ -70,21 +69,14 @@ export class ChatManager {
     }
 
     public createPrivateChat(client: Client) : void{
-        this.chatRooms.set(client.socketId, new PrivateChatRoom(client.socketId, ));
+        this.chatRooms.set(client.socketId, new PrivateChatRoom(client.socketId, client));
+    }
+
+    public hasRoom(chatName: string): boolean {
+        return this.chatRooms.has(chatName);
     }
 
     public addMessageToRoom(chatName: string, message: Message): number {
-        if (!this.chatRooms.has(chatName)) {
-            const roomFound = this.show.rooms.find(room => room.roomName === chatName);
-            if (roomFound)  {
-                this.createPublicChat(roomFound);
-            } else {
-                const clientFound = Provider.getClientBySocket(chatName);
-                if (clientFound) {
-                    this.createPrivateChat(clientFound)
-                }
-            }
-        }
         const chatRoom = this.chatRooms.get(chatName);
         if (!chatRoom) return null;
         return chatRoom.addMessage(message);

@@ -107,9 +107,10 @@ const ChatContainer = ({chatName, isAdmin, label}) => {
             _id: null, // cannot pin when id is null
             userName: user.name, 
             fromSocketId: socket.id,
-            sendTo: [chatName],
+            sendTo: chatName,
             timestamp: new Date().toISOString(),
             contents: newMessageRef.current.value,
+            isPrivate: false,
             isPinned: false,
         };
         setMessages([...messages, partialMsg]);

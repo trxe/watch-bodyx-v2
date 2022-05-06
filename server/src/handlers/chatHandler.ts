@@ -47,17 +47,28 @@ export const registerChatHandlers = (io, socket) => {
     const recvMessage = (message: Message, callback) => {
         // TODO: Fix the missing admins
         message._id = new ObjectID().toString();
-        const recepients: Array<string> = message.sendTo;
-        if (recepients.length == 0) 
-            return;
-        // possibly need to implement concurrency handling for each room
-        const primaryRecepient: string = recepients[0];
-        const msgIndex = Provider.getChatManager().addMessageToRoom(primaryRecepient, message);
+        const recepient = message.sendTo;
+        const chatManager = Provider.getChatManager();
+        if (!chatManager.hasRoom(recepient)) {
+            if (message.isPrivate) {
+                const client = Provider.getClientBySocket(socket.id);
+                if (client != null) chatManager.createPrivateChat(client);
+                else callback(new Ack('error', 'Message failed to send, refresh to reconnect'));
+            } else {
+                const room = Provider.getShow().rooms.find(r => r.roomName === recepient);
+                if (room != null) chatManager.createPublicChat(room);
+                else callback(new Ack('error', 'Message failed to send.', 'Please wait for administrator reset the rooms.'));
+            }
+        }
 
-        recepients.forEach(recepient => {
-            sendMessage(io, recepient, {message, msgIndex});
-        });
+        const msgIndex = Provider.getChatManager().addMessageToRoom(recepient, message);
+        sendMessage(io, recepient, {message, msgIndex});
+
         callback(new Ack('info', 'Message with id', JSON.stringify({message, msgIndex})));
+    }
+
+    const createPM = () => {
+
     }
 
     // Receive a message to be pinned/saved to a list, present for each room
