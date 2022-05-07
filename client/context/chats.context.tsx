@@ -53,18 +53,15 @@ export class ChatRoom {
             this.firstMsgIndex = msgIndex;
             this.currMsgIndex = msgIndex;
             this.messages.push(message);
-            console.log('init', this.messages, 'start from', msgIndex);
         } else if (msgIndex < this.nextNewMsgIndexRecv()) {
             // if this is a missing message OR message to replace
             this.messages[msgIndex - this.firstMsgIndex] = message;
-            console.log('filling', this.messages)
         } else {
             // if this is a new message
             for (let i = this.nextNewMsgIndexRecv(); i < msgIndex; i++) {
                 this.messages.push(null);
             }
             this.messages.push(message);
-            console.log('adding', this.messages)
         }
 
         // move msg index to last position
@@ -72,7 +69,6 @@ export class ChatRoom {
             && this.messages[this.currMsgIndex + 1 - this.firstMsgIndex]) {
                 this.currMsgIndex += 1;
         }
-        console.log('my message list', this.messages)
     }
 
     public pinMessage(msgIndex: number, message: Message) {
@@ -140,13 +136,12 @@ const ChatRoomProvider = (props: any) => {
     const [isFirstLoad, setFirstLoad] = useState(true);
 
     const requestPinLists = () => {
-        console.log('requesting for pins');
         socket.emit(EVENTS.CLIENT.GET_INFO, {request: 'all_pins'});
     }
 
     useEffect(() => {
         if (!isFirstLoad || !show || !socket) return;
-        console.log('first load');
+        console.log('first chatroom load');
         chatRooms.set(chatWithAdmins.chatName, chatWithAdmins);
         const hasRooms = setChatRooms(show.rooms) != null;
         if (hasRooms) {
@@ -195,7 +190,6 @@ const ChatRoomProvider = (props: any) => {
             const pinArray = Array.from(chatRooms.get(name).pins)
                 .map(rawPin => {return {msgIndex: rawPin[0], message: rawPin[1]}});
             const sortedPinArray = [...pinArray.sort((a,b) => a.msgIndex - b.msgIndex)];
-            console.log('updated Pins', sortedPinArray);
             setPins(sortedPinArray);
         }
         if (!roomName) update(chatRoomName);
@@ -206,15 +200,12 @@ const ChatRoomProvider = (props: any) => {
         socket.off(EVENTS.SERVER.ALL_PINNED_MESSAGES)
             .on(EVENTS.SERVER.ALL_PINNED_MESSAGES, (allPinsList, callback) => {
                 if (allPinsList == null) return;
-                console.log('all pins', allPinsList);
                 allPinsList.forEach(roomData => {
                     const {chatName, pinList} = roomData
-                    console.log('roomdata', roomData);
                     // fix to add chatRoom when not found
                     if (!chatRooms.has(chatName) || !pinList) return;
                     const chatRoom = chatRooms.get(chatName);
                     pinList.forEach(pinData => {
-                        console.log('pindata', pinData);
                         chatRoom.pinMessage(pinData.msgIndex, pinData.message);
                     });
                     if (chatName === chatRoomName) updatePinList();
@@ -225,7 +216,6 @@ const ChatRoomProvider = (props: any) => {
 
         socket.off(EVENTS.SERVER.DELIVER_MESSAGE)
             .on(EVENTS.SERVER.DELIVER_MESSAGE, ({message, msgIndex}) => {
-                console.log("message", message, msgIndex);
                 // handled by emit's ack
                 if (message.fromSocketId === socket.id) 
                     return;
@@ -243,7 +233,6 @@ const ChatRoomProvider = (props: any) => {
         
         socket.off(EVENTS.SERVER.PINNED_MESSAGE)
             .on(EVENTS.SERVER.PINNED_MESSAGE, ({message, msgIndex}) => {
-                console.log("pin", msgIndex);
                 // handled by emit's ack
                 if (!chatRooms.has(message.sendTo)) 
                     return;
@@ -256,7 +245,6 @@ const ChatRoomProvider = (props: any) => {
         
         socket.off(EVENTS.SERVER.UNPINNED_MESSAGE)
             .on(EVENTS.SERVER.UNPINNED_MESSAGE, ({message, msgIndex}) => {
-                console.log("pin", msgIndex);
                 // handled by emit's ack
                 if (!chatRooms.has(message.sendTo)) 
                     return;
@@ -269,7 +257,6 @@ const ChatRoomProvider = (props: any) => {
 
         socket.off(EVENTS.SERVER.TOGGLE_AUDIENCE_CHAT)
             .on(EVENTS.SERVER.TOGGLE_AUDIENCE_CHAT, ({status}) => {
-                console.log("viewer", status);
                 setViewerChatEnabled(status);
             });
     }

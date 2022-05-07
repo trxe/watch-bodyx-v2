@@ -56,14 +56,14 @@ const ChatContextMenu = ({_id, message, msgIndex}) => {
     const isPin = () => currentChatRoom.pins.has(msgIndex);
 
     const sendPinMessage = () => {
-        console.log('pinning', msgIndex, 'to', chatRoomName, message);
+        // console.log('pinning', msgIndex, 'to', chatRoomName, message);
         socket.emit(EVENTS.CLIENT.PIN_MESSAGE, {msgIndex, chatName: chatRoomName}, (res) => {
             if (res.messageType !== 'info') setNotif(res);
         });
     }
 
     const unpinMessage = () => {
-        console.log('unpinning', message, 'to', chatRoomName);
+        // console.log('unpinning', message, 'to', chatRoomName);
         socket.emit(EVENTS.CLIENT.UNPIN_MESSAGE, {msgIndex, chatName: chatRoomName}, (res) => {
             if (res.messageType !== 'info') setNotif(res);
         });
@@ -78,7 +78,7 @@ const ChatContextMenu = ({_id, message, msgIndex}) => {
 }
 
 const PinContainer = ({msgIndex, isAdmin, message}) => {
-    console.log(msgIndex, message, isAdmin);
+    // console.log(msgIndex, message, isAdmin);
     return <div id={`message-${msgIndex}`} 
             className={`${styles.message} ${styles.messagePin}`}>
         {isAdmin && <ChatContextMenu _id={`message-${msgIndex}`} message={message} msgIndex={msgIndex}/>}
@@ -158,7 +158,6 @@ const ChatContainer = ({chatName, isAdmin, label}) => {
         </div>;
     }
 
-    console.log('mypins rn', pins);
 
     return <div className={styles.chatWrapper}>
         <div className={styles.chatHeader}>

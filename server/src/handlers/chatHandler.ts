@@ -15,28 +15,51 @@ const CHAT_EVENTS = {
     TOGGLE_AUDIENCE_CHAT: 'TOGGLE_AUDIENCE_CHAT'
 }
 
-// Send a message to a list of rooms/sockets 
+/**
+ * Send a message to all recepients, 
+ * which update their message log based on the sendTo field in message.
+ * @param io 
+ * @param recepient 
+ * @param data message and msgIndex
+ */
 export const sendMessage = (io: Server, recepient: string, 
     data: {message: Message, msgIndex: number}) => {
         Logger.info(`Sending message to ${recepient}`);
         io.to(recepient).emit(CHAT_EVENTS.DELIVER_MESSAGE, data);
 }
 
-// Pin a message in a room
+/**
+ * Pin a message in a room for all recepients, 
+ * which update their message log based on the sendTo field in message.
+ * @param io 
+ * @param recepient 
+ * @param data message and msgIndex
+ */
 export const pinMessage = (io: Server, recepient: string, 
     data: {message: Message, msgIndex: number}) => {
         Logger.info(`Pinning message to ${recepient}`);
         io.to(recepient).emit(CHAT_EVENTS.PINNED_MESSAGE, data);
 }
 
-// Unpin a message in a room
+// 
+/**
+ * Unpin a message in a room for all recepients, 
+ * which update their message log based on the sendTo field in message.
+ * @param io 
+ * @param recepient 
+ * @param data message and msgIndex
+ */
 export const unpinMessage = (io: Server, recepient: string, 
     data: {message: Message, msgIndex: number}) => {
         Logger.info(`Pinning message to ${recepient}`);
         io.to(recepient).emit(CHAT_EVENTS.UNPINNED_MESSAGE, data);
 }
 
-// Send list of pinned messages to a socket
+/**
+ * Send entire list of pinned messages to socket, in format
+ * Array<{chatName: string, pinList: Array<msgIndex: number, message: Message>}>
+ * @param socket 
+ */
 export const sendPinnedMessagesToSocket = (socket) => {
     const allPinsList = Provider.getChatManager().getPinList();
     socket.emit(CHAT_EVENTS.ALL_PINNED_MESSAGES, allPinsList, (user) => {
@@ -53,7 +76,11 @@ export const informSocketChatStatus = (socket, audienceChatStatus: boolean) => {
     socket.emit(CHAT_EVENTS.TOGGLE_AUDIENCE_CHAT, {status: audienceChatStatus});
 }
 
-// Inform all MAIN_ROOM audience the chat is disabled.
+/**
+ * Inform all MAIN_ROOM audience the chat is disabled.
+ * @param io 
+ * @param audienceChatStatus 
+ */
 export const informAudienceChatStatus = (io: Server, audienceChatStatus: boolean) => {
     io.to(CHANNELS.MAIN_ROOM).emit(CHAT_EVENTS.TOGGLE_AUDIENCE_CHAT, {status: audienceChatStatus});
 }
@@ -62,7 +89,6 @@ export const registerChatHandlers = (io, socket) => {
     // Receive a message to be sent to a list of rooms/sockets 
     // e.g. all breakout rooms, SM_ROOM and one socket
     const recvMessage = (message: Message, callback) => {
-        // TODO: Fix the missing admins
         message._id = new ObjectID().toString();
         const recepient = message.sendTo;
         const chatManager = Provider.getChatManager();
@@ -92,10 +118,6 @@ export const registerChatHandlers = (io, socket) => {
         callback(new Ack('info', 'Message with id', JSON.stringify({message, msgIndex})));
     }
 
-    const createPM = () => {
-
-    }
-
     // Receive a message to be pinned/saved to a list, present for each room
     const recvPin = ({msgIndex, chatName}, callback) => {
         // add pin to list
@@ -111,6 +133,7 @@ export const registerChatHandlers = (io, socket) => {
         callback(new Ack('info', 'Pin with id', JSON.stringify({message, msgIndex})));
     }
 
+    // Unpin this message (given msgIndex) from this chat
     const recvUnpin = ({msgIndex, chatName}, callback) => {
         console.log(msgIndex, chatName);
         const chatManager = Provider.getChatManager();
@@ -124,7 +147,7 @@ export const registerChatHandlers = (io, socket) => {
         callback(new Ack('info', 'Pin with id', JSON.stringify({message, msgIndex})));
     }
 
-    // toggle chat settings
+    // Toggle chat availability
     const adminToggleAudienceChat = ({status}, callback) => {
         const audienceChatStatus = Provider.getChatManager().toggleAudienceChat(!status);
         informAudienceChatStatus(io, audienceChatStatus);
