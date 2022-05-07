@@ -24,14 +24,14 @@ const ViewerContainer = ({isAdmin}) => {
     const handleSwitchRooms = (index) => {
         if (!show.rooms || show.rooms.length == 0 || index < 0) {
             setRoomIndex(-1);
-            console.log("current room", -1, show.rooms)
+            // console.log("current room", -1, show.rooms)
         } else if (isAdmin) {
             setRoomIndex(index);
             setRoomName(show.rooms[index].roomName);
-            console.log("current room", index, show.rooms);
+            // console.log("current room", index, show.rooms);
         } else {
             const viewerIndex = index >= show.rooms.length ? 0 : index;
-            console.log("current room", viewerIndex, show.rooms);
+            // console.log("current room", viewerIndex, show.rooms);
             socket.emit(EVENTS.CLIENT.JOIN_ROOM, show.rooms[viewerIndex]._id, 
                 (response) => {
                     console.log(response);

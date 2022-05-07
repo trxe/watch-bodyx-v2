@@ -7,6 +7,11 @@
     height: 70vh;
 }
 
+.pinList {
+    overflow-y: auto;
+    max-height: 20vh;
+}
+
 .chatHeader {
     text-align: center;
     background-color: antiquewhite;

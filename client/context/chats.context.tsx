@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { CHANNELS } from "../config/channels";
 import EVENTS from "../config/events";
 import { IRoom } from "../containers/Rooms"
@@ -20,8 +20,7 @@ export class ChatRoom {
     room: IRoom
     chatName: string
     messages: Array<Message>
-    pins: Array<{message: Message, msgIndex: number}>
-    pinMsgIndices: Set<number>
+    pins: Map<number, Message>
     firstMsgIndex: number
     currMsgIndex: number
 
@@ -29,8 +28,7 @@ export class ChatRoom {
         this.room = room;
         this.chatName = chatName;
         this.messages = [];
-        this.pins = [];
-        this.pinMsgIndices = new Set<number>();
+        this.pins = new Map<number, Message>();
         this.firstMsgIndex = -1;
         this.currMsgIndex = -1;
     }
@@ -42,6 +40,11 @@ export class ChatRoom {
 
     nextNewMsgIndexRecv(): number {
         return this.messages.length + this.firstMsgIndex;
+    }
+
+    public serverMsgIndex(localMsgIndex: number) : number {
+        if (this.currMsgIndex < 0) return -1;
+        return localMsgIndex + this.firstMsgIndex;
     }
 
     // Add messages
@@ -72,13 +75,13 @@ export class ChatRoom {
         console.log('my message list', this.messages)
     }
 
-    public pinMessage(msgIndex: number, pinIndex: number): Message {
-        // only pin messages that are in order.
-        if (msgIndex > this.currMsgIndex) return null;
-        const localMsgIndex = this.getLocalMsgIndex(msgIndex);
-        const message = {...this.messages[localMsgIndex], isPinned: true};
-        this.messages[localMsgIndex] = message;
-        return message;
+    public pinMessage(msgIndex: number, message: Message) {
+        this.pins.set(msgIndex, message);
+        if (msgIndex > this.firstMsgIndex && this.currMsgIndex > 0 && this.currMsgIndex > msgIndex) {
+            const localMsgIndex = msgIndex - this.firstMsgIndex;
+            const updateMsg = {...this.messages[localMsgIndex], isPinned: true};
+            this.messages[localMsgIndex] = updateMsg;
+        }
     }
 }
 
@@ -93,9 +96,9 @@ interface IChatRoomContext {
     setViewerChatEnabled: Function
 
     messages: Array<Message>
-    setMessages: Function
-    pins: Array<Message>
-    setPins: Function
+    updateMessageList: Function
+    pins: Array<any>
+    updatePinList: Function
 }
 
 const ChatRoomContext = createContext<IChatRoomContext>({
@@ -109,9 +112,9 @@ const ChatRoomContext = createContext<IChatRoomContext>({
     setViewerChatEnabled: () => false,
 
     messages: [],
-    setMessages: () => false,
+    updateMessageList: () => false,
     pins: [],
-    setPins: () => false,
+    updatePinList: () => false,
 });
 
 
@@ -122,9 +125,25 @@ const ChatRoomProvider = (props: any) => {
     const [isViewerChatEnabled, setViewerChatEnabled] = useState(false);
     const [messages, setMessages] = useState([]);
     const [pins, setPins] = useState([]);
-    const {socket, show} = useSockets();
+    const {socket, user, show} = useSockets();
 
-    chatRooms.set(chatWithAdmins.chatName, chatWithAdmins);
+    const [isFirstLoad, setFirstLoad] = useState(true);
+
+    const requestPinLists = () => {
+        console.log('requesting for pins');
+        socket.emit(EVENTS.CLIENT.GET_INFO, {request: 'all_pins'});
+    }
+
+    useEffect(() => {
+        if (!isFirstLoad || !show || !socket) return;
+        console.log('first load');
+        chatRooms.set(chatWithAdmins.chatName, chatWithAdmins);
+        const hasRooms = setChatRooms(show.rooms) != null;
+        if (hasRooms) {
+            requestPinLists();
+            setFirstLoad(false);
+        }
+    }, [show])
 
     const setChatRooms = (rooms: Array<IRoom>): Map<string, ChatRoom> => {
         if (!chatRooms.has(CHANNELS.MAIN_ROOM)) {
@@ -146,12 +165,54 @@ const ChatRoomProvider = (props: any) => {
                 new ChatRoom(show.rooms.find(room => room.roomName === roomName), CHANNELS.MAIN_ROOM));
         }
         setChatRoomName(roomName);
-        const currChatRoom = chatRooms.get(roomName);
-        setMessages(currChatRoom.messages);
-        setPins(currChatRoom.pins);
+        updateMessageList(roomName);
+        // TODO: check how tuple works here
+        updatePinList(roomName);
+    }
+
+    const updateMessageList = (roomName?: string) => {
+        const update = (name) => {
+            if (!chatRooms.has(name)) return;
+            setMessages([...chatRooms.get(name).messages]);
+        }
+        if (!roomName) update(chatRoomName);
+        else update(roomName);
+    }
+
+    const updatePinList = (roomName?: string) => {
+        const update = (name) => {
+            if (!chatRooms.has(name)) return;
+            const pinArray = Array.from(chatRooms.get(name).pins)
+                .map(rawPin => {return {msgIndex: rawPin[0], message: rawPin[1]}});
+            const sortedPinArray = [...pinArray.sort((a,b) => a.msgIndex - b.msgIndex)];
+            console.log('updated Pins', sortedPinArray);
+            setPins(sortedPinArray);
+        }
+        if (!roomName) update(chatRoomName);
+        else update(roomName);
     }
 
     if (socket != null) {
+        socket.off(EVENTS.SERVER.ALL_PINNED_MESSAGES)
+            .on(EVENTS.SERVER.ALL_PINNED_MESSAGES, (allPinsList, callback) => {
+                if (allPinsList == null) return;
+                console.log('all pins', allPinsList);
+                allPinsList.forEach(roomData => {
+                    const {chatName, pinList} = roomData
+                    console.log('roomdata', roomData);
+                    // fix to add chatRoom when not found
+                    if (!chatRooms.has(chatName) || !pinList) return;
+                    const chatRoom = chatRooms.get(chatName);
+                    pinList.forEach(pinData => {
+                        console.log('pindata', pinData);
+                        chatRoom.pinMessage(pinData.msgIndex, pinData.message);
+                    });
+                    if (chatName === chatRoomName) updatePinList();
+                })
+
+                callback(user);
+            });
+
         socket.off(EVENTS.SERVER.DELIVER_MESSAGE)
             .on(EVENTS.SERVER.DELIVER_MESSAGE, ({message, msgIndex}) => {
                 console.log("message", message, msgIndex);
@@ -166,8 +227,22 @@ const ChatRoomProvider = (props: any) => {
                 // if this chat is the current chat room
                 if (message.sendTo === chatRoomName) {
                     const currChatRoom = chatRooms.get(chatRoomName);
-                    setMessages([...currChatRoom.messages]);
-                    setPins([...currChatRoom.pins]);
+                    updateMessageList();
+                    // set pins? no need
+                }
+            });
+        
+        socket.off(EVENTS.SERVER.PINNED_MESSAGE)
+            .on(EVENTS.SERVER.PINNED_MESSAGE, ({message, msgIndex}) => {
+                console.log("pin", msgIndex);
+                // handled by emit's ack
+                if (!chatRooms.has(message.sendTo)) 
+                    return;
+                chatRooms.get(message.sendTo).pinMessage(msgIndex, message);
+                if (message.sendTo === chatRoomName) {
+                    const currChatRoom = chatRooms.get(chatRoomName);
+                    currChatRoom.pinMessage(msgIndex, message);
+                    updatePinList();
                 }
             });
 
@@ -189,9 +264,9 @@ const ChatRoomProvider = (props: any) => {
             setChatRooms,
             setViewerChatEnabled,
             messages,
-            setMessages,
+            updateMessageList,
             pins,
-            setPins
+            updatePinList
         }} 
         {...props}
     />

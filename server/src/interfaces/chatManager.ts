@@ -7,32 +7,36 @@ class ChatRoom {
     room: Room
     chatName: string
     messages: Array<Message>
-    pins: Array<{message: Message, msgIndex: number}>
+    pinMsgIndices: Set<number>
 
     constructor(chatName: string, room?: Room) {
         this.room = room;
         this.chatName = chatName;
         this.messages = [];
-        this.pins = [];
+        this.pinMsgIndices = new Set<number>();
+    }
+
+    public getPinsList(): Array<{msgIndex: number, message: Message}> {
+        return Array.from(this.pinMsgIndices)
+            .map(msgIndex => {
+                return {msgIndex, message: this.messages[msgIndex]};
+            });
     }
 
     public addMessage(message: Message): number {
         const msgIndex = this.messages.length;
         this.messages.push(message);
-        this.pins.push({message, msgIndex});
         return msgIndex;
     }
 
-    public pinMessage(msgIndex: number) {
+    public pinMessage(msgIndex: number): Message {
         if (msgIndex >= this.messages.length || msgIndex < 0) 
             throw 'Message not found: index out of bounds';
+        this.pinMsgIndices.add(msgIndex);
+        return this.messages[msgIndex];
     }
 
-    public unpinMessage(pinIndex: number) {
-        if (pinIndex >= this.pins.length || pinIndex < 0) 
-            throw 'Pin not found: index out of bounds';
-        const {message, msgIndex} = this.pins.splice(pinIndex, 1)[0];
-        this.messages[msgIndex] = {...message, isPinned: false};
+    public unpinMessage(msgIndex: number) {
     }
 }
 
@@ -60,15 +64,36 @@ export class ChatManager {
         this.isAudienceChatEnabled = false;
     }
 
-    public clearRooms() {
-        this.chatRooms.clear();
+    public clearRooms(roomName?: string) {
+        if (!roomName) {
+            this.chatRooms.clear();
+        } else {
+            this.chatRooms.delete(roomName);
+        }
     }
 
-    public createPublicChat(room: Room) : void{
+    public getPinList(roomName?: string) {
+        if (roomName != null) {
+            if (!this.chatRooms.has(roomName)) return null;
+            return {
+                chatName: roomName,
+                pinList: this.chatRooms.get(roomName).getPinsList()
+            }
+        }
+        return Array.from(this.chatRooms.entries())
+            .map(chatRoomData => {
+                return {
+                    chatName: chatRoomData[0],
+                    pinList: chatRoomData[1].getPinsList()
+                }
+            });
+    }
+
+    public createPublicChat(room: Room): void {
         this.chatRooms.set(room.roomName, new ChatRoom(room.roomName, room));
     }
 
-    public createPrivateChat(client: Client) : void{
+    public createPrivateChat(client: Client): void {
         this.chatRooms.set(client.socketId, new PrivateChatRoom(client.socketId, client));
     }
 
@@ -80,6 +105,12 @@ export class ChatManager {
         const chatRoom = this.chatRooms.get(chatName);
         if (!chatRoom) return null;
         return chatRoom.addMessage(message);
+    }
+
+    public pinMessageInRoom(chatName: string, msgIndex: number): Message {
+        const chatRoom = this.chatRooms.get(chatName);
+        if (!chatRoom) return null;
+        return chatRoom.pinMessage(msgIndex);
     }
 
     public toggleAudienceChat(status: boolean) {

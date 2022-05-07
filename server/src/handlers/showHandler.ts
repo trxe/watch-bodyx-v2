@@ -7,6 +7,7 @@ import { CHANNELS } from "../protocol/channels";
 import Provider from "../provider"
 import Logger from "../utils/logger";
 import { Room } from "../interfaces/room";
+import { sendPinnedMessagesToSocket } from "./chatHandler";
 
 const SHOW_EVENTS = {
     CURRENT_SHOW: 'CURRENT_SHOW',
@@ -304,12 +305,11 @@ export const registerShowHandlers = (io: Server, socket) => {
 
     // Get particular info
     const getInfo = ({request}) => {
-        switch (request) {
-            case 'clients':
-                sendClients(socket);
-                break;
-            default:
-                break;
+        console.log(`received request for ${request}`)
+        if (request === 'clients') {
+            sendClients(socket);
+        } else if (request === 'all_pins') {
+            sendPinnedMessagesToSocket(socket);
         }
     }
 

@@ -5,10 +5,11 @@ import { Message, useChatRooms } from "../context/chats.context";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Chat.module.css";
 
-const ChatContextMenu = ({_id, message, localMsgIndex, pinIndex}) => {
+const ChatContextMenu = ({_id, message, msgIndex}) => {
     const [contextData, setContextData] = useState({visible: false, posX: 0, posY: 0});
     const contextRef = useRef(null);
-    const {currentChatRoom} = useChatRooms();
+    const {socket, setNotif} = useSockets();
+    const {chatRoomName, currentChatRoom} = useChatRooms();
 
     useEffect(() => {
         const offClickHandler = (event) => {
@@ -52,15 +53,18 @@ const ChatContextMenu = ({_id, message, localMsgIndex, pinIndex}) => {
         };
     }
 
+    const isPin = () => currentChatRoom.pins.has(msgIndex);
+
     const sendPinMessage = () => {
-        console.log('pinning', message);
+        console.log('pinning', msgIndex, 'to', chatRoomName, message);
+        socket.emit(EVENTS.CLIENT.PIN_MESSAGE, {msgIndex, chatName: chatRoomName}, (res) => {
+            if (res.messageType !== 'info') setNotif(res);
+        });
     }
 
     const unpinMessage = () => {
-        console.log('unpinning', message);
+        console.log('unpinning', message, 'to', chatRoomName);
     }
-
-    const isPin = () => pinIndex > 0 || currentChatRoom.pinMsgIndices.has(localMsgIndex);
 
     return <div ref={contextRef} className={styles.contextMenu} style={styling()}>
         <ul className={styles.dropdown}>
@@ -70,14 +74,28 @@ const ChatContextMenu = ({_id, message, localMsgIndex, pinIndex}) => {
     </div>;
 }
 
+const PinContainer = ({msgIndex, isAdmin, message}) => {
+    console.log(msgIndex, message, isAdmin);
+    return <div id={`message-${msgIndex}`} 
+            className={`${styles.message} ${styles.messagePin}`}>
+        {isAdmin && <ChatContextMenu _id={`message-${msgIndex}`} message={message} msgIndex={msgIndex}/>}
+        <div className={styles.textBox}>
+            {message.userName}: {message.contents}
+        </div>
+    </div>;
+
+}
+
 const MessageContainer = ({index, isAdmin, message}) => {
     const {user} = useSockets();
+    const {currentChatRoom} = useChatRooms();
     const isSelf = message.userName === user.name;
+
+    const serverMsgIndex = currentChatRoom.serverMsgIndex(index);
 
     return <div id={`message-${index}`} 
             className={`${styles.message} ${isSelf ? styles.messageSelf : styles.messageOther}`}>
-        {isAdmin && <ChatContextMenu _id={`message-${index}`} 
-                message={message} localMsgIndex={index} pinIndex={-1}/>}
+        {isAdmin && <ChatContextMenu _id={`message-${index}`} message={message} msgIndex={serverMsgIndex}/>}
         <div className={styles.textBox}>
             {isSelf ? '': `${message.userName}: `}{message.contents}
         </div>
@@ -85,8 +103,8 @@ const MessageContainer = ({index, isAdmin, message}) => {
 }
 
 const ChatContainer = ({chatName, isAdmin, label}) => {
-    const {socket, user} = useSockets();
-    const {messages, setMessages, pins, 
+    const {socket, user, roomName} = useSockets();
+    const {messages, updateMessageList, pins, 
             isViewerChatEnabled, 
             selectChatRoomName, 
             currentChatRoom} = useChatRooms();
@@ -98,7 +116,7 @@ const ChatContainer = ({chatName, isAdmin, label}) => {
         // temporary
         selectChatRoomName(chatName);
         scrollToBottom();
-    }, [chatName, messages, pins])
+    }, [roomName])
 
     // sends to a room
     const handleSendMessage = () => {
@@ -113,13 +131,13 @@ const ChatContainer = ({chatName, isAdmin, label}) => {
             isPrivate: false,
             isPinned: false,
         };
-        setMessages([...messages, partialMsg]);
+        updateMessageList();
         newMessageRef.current.value = '';
         socket.emit(EVENTS.CLIENT.NEW_MESSAGE, partialMsg, (res) => {
             if (res.messageType === 'info') {
                 const {message, msgIndex} = JSON.parse(res.message);
                 currentChatRoom.addMessage(message, msgIndex);
-                setMessages([...currentChatRoom.messages]);
+                updateMessageList();
                 scrollToBottom();
             }
         });
@@ -137,9 +155,14 @@ const ChatContainer = ({chatName, isAdmin, label}) => {
         </div>;
     }
 
+    console.log('mypins rn', pins);
+
     return <div className={styles.chatWrapper}>
         <div className={styles.chatHeader}>
             <h3>{label}</h3>
+        </div>
+        <div className={styles.pinList}>
+            {pins.map(pin => <PinContainer key={pin.msgIndex} {...pin} isAdmin={isAdmin} />)}
         </div>
         <div className={styles.messageList}>
             {messages.map((msg, index) => 

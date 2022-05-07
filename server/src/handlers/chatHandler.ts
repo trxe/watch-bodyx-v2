@@ -10,7 +10,7 @@ import Logger from "../utils/logger"
 const CHAT_EVENTS = {
     DELIVER_MESSAGE: 'DELIVER_MESSAGE',
     PINNED_MESSAGE: 'PINNED_MESSAGE',
-    ROOM_PINNED_MESSAGES: 'ROOM_PINNED_MESSAGES',
+    ALL_PINNED_MESSAGES: 'ALL_PINNED_MESSAGES',
     TOGGLE_AUDIENCE_CHAT: 'TOGGLE_AUDIENCE_CHAT'
 }
 
@@ -22,10 +22,19 @@ export const sendMessage = (io: Server, recepient: string,
 }
 
 // Pin a message in a room
-export const informPin = () => {}
+export const pinMessage = (io: Server, recepient: string, 
+    data: {message: Message, msgIndex: number}) => {
+        Logger.info(`Pinning message to ${recepient}`);
+        io.to(recepient).emit(CHAT_EVENTS.PINNED_MESSAGE, data);
+}
 
-// Send list of pinned messages to a room
-export const sendPinnedMessages = () => {}
+// Send list of pinned messages to a socket
+export const sendPinnedMessagesToSocket = (socket) => {
+    const allPinsList = Provider.getChatManager().getPinList();
+    socket.emit(CHAT_EVENTS.ALL_PINNED_MESSAGES, allPinsList, (user) => {
+        Logger.info(`Sent pinned messages to ${!user ? socket.id : user.name}`);
+    });
+}
 
 /**
  * Inform an audience member at socketId of current chat status
@@ -53,17 +62,22 @@ export const registerChatHandlers = (io, socket) => {
             if (message.isPrivate) {
                 const client = Provider.getClientBySocket(socket.id);
                 if (client != null) chatManager.createPrivateChat(client);
-                else callback(new Ack('error', 'Message failed to send, refresh to reconnect'));
+                else {
+                    callback(new Ack('error', 'Message failed to send, refresh to reconnect').getJSON());
+                    return;
+                }
             } else {
                 const room = Provider.getShow().rooms.find(r => r.roomName === recepient);
                 if (room != null) chatManager.createPublicChat(room);
-                else callback(new Ack('error', 'Message failed to send.', 'Please wait for administrator reset the rooms.'));
+                else {
+                    callback(new Ack('error', 'Message failed to send.', 'Please wait for administrator reset the rooms.').getJSON());
+                    return;
+                }
             }
         }
 
         const msgIndex = Provider.getChatManager().addMessageToRoom(recepient, message);
         sendMessage(io, recepient, {message, msgIndex});
-
         callback(new Ack('info', 'Message with id', JSON.stringify({message, msgIndex})));
     }
 
@@ -72,9 +86,17 @@ export const registerChatHandlers = (io, socket) => {
     }
 
     // Receive a message to be pinned/saved to a list, present for each room
-    const recvPin = (message: Message, callback) => {
+    const recvPin = ({msgIndex, chatName}, callback) => {
         // add pin to list
-
+        console.log(msgIndex, chatName);
+        const chatManager = Provider.getChatManager();
+        if (!chatManager.hasRoom(chatName)) {
+            callback(new Ack('error', 'Chat not found', 'Room may have been deleted.').getJSON());
+            return;
+        }
+        const message: Message = chatManager.pinMessageInRoom(chatName, msgIndex);
+        pinMessage(io, chatName, {message, msgIndex});
+        callback(new Ack('info', 'Pin with id', JSON.stringify({message, msgIndex})));
     }
 
     // toggle chat settings
