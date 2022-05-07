@@ -15,7 +15,7 @@ export const RoomSchema = new mongoose.Schema({
         type: Boolean,
         required: true,
     },
-    chatRoomName: {
+    roomName: {
         type: String,
         required: true,
         unique: true,

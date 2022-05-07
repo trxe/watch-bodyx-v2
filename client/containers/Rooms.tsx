@@ -6,16 +6,19 @@ import { useSockets } from "../context/socket.context";
 import dashboardStyles from '../styles/Dashboard.module.css'
 import styles from '../styles/Rooms.module.css'
 import { createNotif } from "./Snackbar";
+import ToggleButton from "../utils/toggleButton";
+import { useChatRooms } from "../context/chats.context";
 
 export interface IRoom {
     name: string;
     url:  string;
     isLocked: boolean;
     index?: number;
+    roomName?: string;
     _id?: string;
 }
 
-const Room:FC<IRoom> = ({name, url, isLocked, _id, index}) => {
+const Room:FC<IRoom> = ({name, url, isLocked, _id, roomName, index}) => {
     const {socket, show, setShow, setNotif} = useSockets();
     const [isEditMode, setEditMode] = useState(false);
     const nameRef = useRef(null);
@@ -49,6 +52,7 @@ const Room:FC<IRoom> = ({name, url, isLocked, _id, index}) => {
             name: updatedName, 
             url: updatedUrl, 
             isLocked: !isLocked,
+            roomName,
             _id
         };
         nameRef.current.value = '';
@@ -102,6 +106,7 @@ const Room:FC<IRoom> = ({name, url, isLocked, _id, index}) => {
 
 const RoomsContainer = () => {
     const {socket, show, setShow, setNotif} = useSockets();
+    const {isViewerChatEnabled, setViewerChatEnabled} = useChatRooms();
     const newRoomName = useRef(null);
     const newRoomUrl = useRef(null);
     const [isAddMode, setAddMode] = useState(false);
@@ -117,13 +122,12 @@ const RoomsContainer = () => {
             setNotif(createNotif('error', 'Duplicate room name', 'Please enter a unique room name.'))
             return;
         }
-        const newRoom: IRoom = {name: newRoomName.current.value, 
+        let newRoom: IRoom = {name: newRoomName.current.value, 
             url: newRoomUrl.current.value, isLocked: show.rooms.length == 0};
         socket.emit(EVENTS.CLIENT.CREATE_ROOM, newRoom,
             (res) => {
-                // server should return the room database id.
-                console.log(res);
-                if (res.messageType === 'info') newRoom._id = res.message;
+                // server should return the room created
+                if (res.messageType === 'info') newRoom = res.message;
                 else setNotif(res);
             }
             );
@@ -132,12 +136,20 @@ const RoomsContainer = () => {
         toggleAddMode();
     }
 
+    const toggleAudienceChat = () => {
+        console.log({status: isViewerChatEnabled});
+        socket.emit(EVENTS.CLIENT.ADMIN_TOGGLE_AUDIENCE_CHAT, 
+            {status: isViewerChatEnabled},
+            (res) => setViewerChatEnabled(res.status));
+    }
+
     return <div className={dashboardStyles.roomsWrapper}>
         <div className={styles.roomHeader}>
             <h2>Rooms</h2>
             <button className={styles.iconButton} onClick={toggleAddMode}>
                 {!isAddMode ? <GrAdd /> : <AiOutlineClose/>}
             </button>
+            <ToggleButton label="Audience Chat" action={toggleAudienceChat} isSelected={isViewerChatEnabled}/>
         </div>
         {isAddMode && <div>
             <input placeholder="Room Name" ref={newRoomName}/>
@@ -150,10 +162,8 @@ const RoomsContainer = () => {
                 show.rooms.map((room, index) => <Room 
                     key={room._id} 
                     index={index} 
-                    name={room.name} 
-                    url={room.url} 
-                    isLocked={room.isLocked} 
-                    _id={room._id} />) 
+                    {...room}
+                     />) 
                 }
         </div>
     </div>

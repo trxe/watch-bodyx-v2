@@ -1,3 +1,4 @@
+import { ChatManager } from "./interfaces/chatManager";
 import { Client } from "./interfaces/client";
 import { Room } from "./interfaces/room";
 import { Show } from "./interfaces/show";
@@ -11,12 +12,14 @@ import Logger from "./utils/logger";
 let show: Show;
 let clients: Map<string, Client>;
 let socketTicket: Map<string, string>;
+let chatManager: ChatManager;
 
-const init = () => {
+const init = async () => {
     show = new Show('Sample Show', '302699441177', false);
-    show.loadShow();
+    await show.loadShow();
     clients = new Map<string, Client>();
     socketTicket = new Map<string, string>();
+    chatManager = new ChatManager(show);
 };
 
 /**
@@ -30,14 +33,13 @@ const removeClientBySocketId = (clientSocketId: string): string => {
     socketTicket.delete(clientSocketId);
     return ticket;
 }
-
 /**
- * Adds a client to the list of connected clients.
+ * Sets a client with ticket and socketId to the list of connected clients.
  * @param clientSocketId 
  * @param ticket 
  * @param client 
  */
-const addClient = (clientSocketId:string, ticket: string, client: Client): void => {
+const setClient = (clientSocketId:string, ticket: string, client: Client): void => {
     clients.set(ticket, client);
     socketTicket.set(clientSocketId, ticket);
 }
@@ -64,6 +66,10 @@ const getClientListJSON = (): Array<Object> => {
  */
 const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) => {
     const clientToSet = getClientBySocket(socketId);
+    if (!clientToSet) {
+        onFailure();
+        return;
+    }
     const originalName = clientToSet.roomName;
     show.findRoomNameById(roomId, clientToSet.roomName)
         .then(newRoomName => {
@@ -84,6 +90,10 @@ const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) =
  */
 const setClientChannel = (socketId: string, channelName: string, onSuccess, onFailure) => {
     const clientToSet = getClientBySocket(socketId);
+    if (!clientToSet) {
+        onFailure();
+        return;
+    }
     const originalName = clientToSet.channelName;
     clients.set(clientToSet.user.ticket, {...clientToSet, channelName: channelName});
     onSuccess(clients.get(clientToSet.user.ticket), originalName);
@@ -128,7 +138,7 @@ async function findUser(query): Promise<User> {
 }
 
 const getShow = (): Show => show;
-const getShowMainRoom = (): string => show.rooms.length == 0 ? null : show.rooms[0].chatRoomName;
+const getShowMainRoom = (): string => show.rooms.length == 0 ? null : show.rooms[0].roomName;
 
 const setShowInfo = (name: string, eventId: string, onSuccess, onFailure) => {
     Logger.info(`Updating show name ${name}, show eventId ${eventId}`);
@@ -158,12 +168,15 @@ const deleteRoom = (_id: string, onSuccess, onFailure) => {
         .catch(onFailure);
 }
 
+const getChatManager = () => chatManager;
+
 const Provider = {
-    addClient,
+    setClient,
     getClientListJSON,
     setClientRoom,
     setClientChannel,
     getClientBySocket, 
+    getClientByTicket, 
     removeClientBySocketId, 
     loadUsers,
     findUser,
@@ -173,6 +186,7 @@ const Provider = {
     setShowInfo,
     getShow,
     getShowMainRoom,
+    getChatManager,
     init
 }
 

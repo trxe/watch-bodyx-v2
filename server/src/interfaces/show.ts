@@ -20,11 +20,14 @@ export class Show {
         this.isOpen = isOpen;
     }
 
-    public async createRoom(name: string, url: string, isLocked: boolean): Promise<string> {
+    public async createRoom(name: string, url: string, isLocked: boolean): Promise<Room> {
         if (!this.dbShow) this.loadShow()
         const _id = new mongoose.Types.ObjectId();
-        const chatRoomName = `${_id.toString()}_ROOM`;
-        const room = new RoomModel({ name, url, isLocked, _id, chatRoomName });
+        const roomName = `${_id.toString()}_ROOM`;
+        const room = new RoomModel({ name, url, isLocked, _id, roomName });
+        if (await this.dbShow.rooms.length == 0) {
+            room.isLocked = false;
+        }
         this.dbShow.rooms.push(room);
         await this.dbShow.save(err => {
             if (!err) return;
@@ -32,7 +35,7 @@ export class Show {
             throw 'Error saving room to database.';
         });
         this.rooms = this.dbShow.rooms;
-        return room._id.toString();
+        return room;
     }
 
     public async updateRoom(newRoom: Room): Promise<string> {
@@ -52,16 +55,28 @@ export class Show {
         return newRoom._id.toString();
     }
 
-    public async deleteRoom(_id: string): Promise<string> {
-        if (!this.dbShow) this.loadShow()
-        const room = await this.dbShow.rooms.id(_id).remove();
+    public async deleteRoom(_id: string): Promise<Room> {
+        if (!this.dbShow) await this.loadShow()
+        if (_id === this.dbShow.rooms[0]._id.toString() && this.dbShow.rooms.length > 1) {
+            this.dbShow.rooms[1].isLocked = false;
+            Logger.warn(`Room ${this.dbShow.rooms[1].name} is now the new main room.`);
+        }
+        const room = {...this.dbShow.rooms.id(_id)};
+        await this.dbShow.rooms.id(_id).remove();
+        await this.dbShow.save(err => {
+            if (err) {
+                Logger.error(err);
+                throw 'Error saving room to database.';
+            }
+        });
+        Logger.info(`Updated room list:`);
         Logger.info(this.dbShow.rooms);
-        return _id;
+        return room;
     }
 
     public async findRoomNameById(_id: string, defaultRoom : string): Promise<string> {
         const room = await this.dbShow.rooms.id(_id);
-        return !room ? defaultRoom : room.name;
+        return !room ? defaultRoom : room.roomName;
     }
 
     public async saveShow(name, eventId): Promise<void> {

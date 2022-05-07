@@ -11,6 +11,7 @@ import registerRouting from './router';
 import Provider from './provider';
 import { registerLoginHandlers } from './handlers/loginHandler';
 import { registerShowHandlers } from './handlers/showHandler';
+import { registerChatHandlers } from './handlers/chatHandler';
 
 dotenv.config();
 
@@ -22,6 +23,11 @@ Logger.info(`Setting up server on port ${port}, host ${host}`);
 
 /* HTTP server */
 const app = express();
+app.use(cors({
+    origin: '*'
+}));
+app.use(express.json());
+
 const httpServer = (mode === 'secure') ? 
     https.createServer({
         key: fs.readFileSync(process.env.SSL_KEY),
@@ -40,9 +46,10 @@ const io = new Server(httpServer, {
 
 /* Registering handlers on socket.io startup */
 const onConnection = (socket) => {
-    Logger.info(`User ${socket.id} connected`);
+    Logger.info(`Socket ${socket.id} connected`);
     registerLoginHandlers(io, socket);
     registerShowHandlers(io, socket);
+    registerChatHandlers(io, socket);
 }
 
 httpServer.listen(port, host, () => {
