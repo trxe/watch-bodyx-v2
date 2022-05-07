@@ -36,7 +36,11 @@ class ChatRoom {
         return this.messages[msgIndex];
     }
 
-    public unpinMessage(msgIndex: number) {
+    public unpinMessage(msgIndex: number): Message {
+        if (msgIndex >= this.messages.length || msgIndex < 0) 
+            throw 'Message not found: index out of bounds';
+        this.pinMsgIndices.delete(msgIndex);
+        return this.messages[msgIndex];
     }
 }
 
@@ -111,6 +115,12 @@ export class ChatManager {
         const chatRoom = this.chatRooms.get(chatName);
         if (!chatRoom) return null;
         return chatRoom.pinMessage(msgIndex);
+    }
+
+    public unpinMessageInRoom(chatName: string, msgIndex: number): Message {
+        const chatRoom = this.chatRooms.get(chatName);
+        if (!chatRoom) return null;
+        return chatRoom.unpinMessage(msgIndex);
     }
 
     public toggleAudienceChat(status: boolean) {

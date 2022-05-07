@@ -64,6 +64,9 @@ const ChatContextMenu = ({_id, message, msgIndex}) => {
 
     const unpinMessage = () => {
         console.log('unpinning', message, 'to', chatRoomName);
+        socket.emit(EVENTS.CLIENT.UNPIN_MESSAGE, {msgIndex, chatName: chatRoomName}, (res) => {
+            if (res.messageType !== 'info') setNotif(res);
+        });
     }
 
     return <div ref={contextRef} className={styles.contextMenu} style={styling()}>

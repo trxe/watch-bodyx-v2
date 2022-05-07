@@ -83,6 +83,16 @@ export class ChatRoom {
             this.messages[localMsgIndex] = updateMsg;
         }
     }
+
+    public unpinMessage(msgIndex: number, message: Message) {
+        if (this.pins.delete(msgIndex)) {
+            if (msgIndex > this.firstMsgIndex && this.currMsgIndex > 0 && this.currMsgIndex > msgIndex) {
+                const localMsgIndex = msgIndex - this.firstMsgIndex;
+                const updateMsg = {...this.messages[localMsgIndex], isPinned: false};
+                this.messages[localMsgIndex] = updateMsg;
+            }
+        }
+    }
 }
 
 interface IChatRoomContext {
@@ -228,7 +238,6 @@ const ChatRoomProvider = (props: any) => {
                 if (message.sendTo === chatRoomName) {
                     const currChatRoom = chatRooms.get(chatRoomName);
                     updateMessageList();
-                    // set pins? no need
                 }
             });
         
@@ -240,8 +249,20 @@ const ChatRoomProvider = (props: any) => {
                     return;
                 chatRooms.get(message.sendTo).pinMessage(msgIndex, message);
                 if (message.sendTo === chatRoomName) {
-                    const currChatRoom = chatRooms.get(chatRoomName);
-                    currChatRoom.pinMessage(msgIndex, message);
+                    updateMessageList();
+                    updatePinList();
+                }
+            });
+        
+        socket.off(EVENTS.SERVER.UNPINNED_MESSAGE)
+            .on(EVENTS.SERVER.UNPINNED_MESSAGE, ({message, msgIndex}) => {
+                console.log("pin", msgIndex);
+                // handled by emit's ack
+                if (!chatRooms.has(message.sendTo)) 
+                    return;
+                chatRooms.get(message.sendTo).unpinMessage(msgIndex, message);
+                if (message.sendTo === chatRoomName) {
+                    updateMessageList();
                     updatePinList();
                 }
             });

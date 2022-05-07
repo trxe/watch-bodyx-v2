@@ -10,6 +10,7 @@ import Logger from "../utils/logger"
 const CHAT_EVENTS = {
     DELIVER_MESSAGE: 'DELIVER_MESSAGE',
     PINNED_MESSAGE: 'PINNED_MESSAGE',
+    UNPINNED_MESSAGE: 'UNPINNED_MESSAGE',
     ALL_PINNED_MESSAGES: 'ALL_PINNED_MESSAGES',
     TOGGLE_AUDIENCE_CHAT: 'TOGGLE_AUDIENCE_CHAT'
 }
@@ -26,6 +27,13 @@ export const pinMessage = (io: Server, recepient: string,
     data: {message: Message, msgIndex: number}) => {
         Logger.info(`Pinning message to ${recepient}`);
         io.to(recepient).emit(CHAT_EVENTS.PINNED_MESSAGE, data);
+}
+
+// Unpin a message in a room
+export const unpinMessage = (io: Server, recepient: string, 
+    data: {message: Message, msgIndex: number}) => {
+        Logger.info(`Pinning message to ${recepient}`);
+        io.to(recepient).emit(CHAT_EVENTS.UNPINNED_MESSAGE, data);
 }
 
 // Send list of pinned messages to a socket
@@ -77,7 +85,10 @@ export const registerChatHandlers = (io, socket) => {
         }
 
         const msgIndex = Provider.getChatManager().addMessageToRoom(recepient, message);
-        sendMessage(io, recepient, {message, msgIndex});
+        // NOTE: The line below is if 
+        // sendMessage(io, recepient, {message, msgIndex});
+        sendMessage(io, CHANNELS.MAIN_ROOM, {message, msgIndex});
+        sendMessage(io, CHANNELS.SM_ROOM, {message, msgIndex});
         callback(new Ack('info', 'Message with id', JSON.stringify({message, msgIndex})));
     }
 
@@ -88,6 +99,19 @@ export const registerChatHandlers = (io, socket) => {
     // Receive a message to be pinned/saved to a list, present for each room
     const recvPin = ({msgIndex, chatName}, callback) => {
         // add pin to list
+        // console.log(msgIndex, chatName);
+        const chatManager = Provider.getChatManager();
+        if (!chatManager.hasRoom(chatName)) {
+            callback(new Ack('error', 'Chat not found', 'Room may have been deleted.').getJSON());
+            return;
+        }
+        const message: Message = chatManager.pinMessageInRoom(chatName, msgIndex);
+        pinMessage(io, CHANNELS.MAIN_ROOM, {message, msgIndex});
+        pinMessage(io, CHANNELS.SM_ROOM, {message, msgIndex});
+        callback(new Ack('info', 'Pin with id', JSON.stringify({message, msgIndex})));
+    }
+
+    const recvUnpin = ({msgIndex, chatName}, callback) => {
         console.log(msgIndex, chatName);
         const chatManager = Provider.getChatManager();
         if (!chatManager.hasRoom(chatName)) {
@@ -95,7 +119,8 @@ export const registerChatHandlers = (io, socket) => {
             return;
         }
         const message: Message = chatManager.pinMessageInRoom(chatName, msgIndex);
-        pinMessage(io, chatName, {message, msgIndex});
+        unpinMessage(io, CHANNELS.MAIN_ROOM, {message, msgIndex});
+        unpinMessage(io, CHANNELS.SM_ROOM, {message, msgIndex});
         callback(new Ack('info', 'Pin with id', JSON.stringify({message, msgIndex})));
     }
 
@@ -108,5 +133,6 @@ export const registerChatHandlers = (io, socket) => {
 
     socket.on(CLIENT_EVENTS.NEW_MESSAGE, recvMessage);
     socket.on(CLIENT_EVENTS.PIN_MESSAGE, recvPin);
+    socket.on(CLIENT_EVENTS.UNPIN_MESSAGE, recvUnpin);
     socket.on(CLIENT_EVENTS.ADMIN_TOGGLE_AUDIENCE_CHAT, adminToggleAudienceChat);
 }
