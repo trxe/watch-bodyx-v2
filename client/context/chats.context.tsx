@@ -125,13 +125,13 @@ const ChatRoomContext = createContext<IChatRoomContext>({
 
 
 const ChatRoomProvider = (props: any) => {
+    const {socket, user, show} = useSockets();
     const [chatRoomName, setChatRoomName] = useState(CHANNELS.SM_ROOM);
-    const [chatWithAdmins] = useState(new ChatRoom(null, CHANNELS.SM_ROOM));
+    const [chatWithAdmins, setChatWithAdmins] = useState(null);
     const [chatRooms] = useState(new Map<string, ChatRoom>()); // identifier, room
     const [isViewerChatEnabled, setViewerChatEnabled] = useState(false);
     const [messages, setMessages] = useState([]);
     const [pins, setPins] = useState([]);
-    const {socket, user, show} = useSockets();
 
     const [isFirstLoad, setFirstLoad] = useState(true);
 
@@ -142,7 +142,6 @@ const ChatRoomProvider = (props: any) => {
     useEffect(() => {
         if (!isFirstLoad || !show || !socket) return;
         console.log('first chatroom load');
-        chatRooms.set(chatWithAdmins.chatName, chatWithAdmins);
         const hasRooms = setChatRooms(show.rooms) != null;
         if (hasRooms) {
             requestPinLists();
@@ -151,14 +150,18 @@ const ChatRoomProvider = (props: any) => {
     }, [show])
 
     const setChatRooms = (rooms: Array<IRoom>): Map<string, ChatRoom> => {
-        if (!chatRooms.has(CHANNELS.MAIN_ROOM)) {
-            chatRooms.set(CHANNELS.MAIN_ROOM, new ChatRoom(null, CHANNELS.MAIN_ROOM));
+        // PM room
+        if (!user || !socket) return;
+        if (!chatRooms.has(socket.id) && !user.isAdmin) {
+            const waitingRoomChat = new ChatRoom(null, socket.id);
+            setChatWithAdmins(waitingRoomChat)
+            chatRooms.set(socket.id, waitingRoomChat);
         }
         console.log('rooms passed in', rooms);
         if (rooms == null || rooms.length == 0) return chatRooms;
         rooms.forEach(room => {
             if (!chatRooms.has(room.roomName)) {
-                chatRooms.set(room.roomName, new ChatRoom(room, CHANNELS.MAIN_ROOM));
+                chatRooms.set(room.roomName, new ChatRoom(room, room.roomName));
             }
         });
         return chatRooms;
@@ -166,8 +169,9 @@ const ChatRoomProvider = (props: any) => {
 
     const selectChatRoomName = (roomName: string) => {
         if (!chatRooms.has(roomName)) {
-            chatRooms.set(roomName, 
-                new ChatRoom(show.rooms.find(room => room.roomName === roomName), CHANNELS.MAIN_ROOM));
+            chatRooms.set(roomName, new ChatRoom(
+                !show.rooms ? null : show.rooms.find(room => room.roomName === roomName), roomName));
+            console.log('did i create a new room');
         }
         setChatRoomName(roomName);
         updateMessageList(roomName);
@@ -201,7 +205,7 @@ const ChatRoomProvider = (props: any) => {
             .on(EVENTS.SERVER.ALL_PINNED_MESSAGES, (allPinsList, callback) => {
                 if (allPinsList == null) return;
                 allPinsList.forEach(roomData => {
-                    const {chatName, pinList} = roomData
+                    const {chatName, pinList} = roomData;
                     // fix to add chatRoom when not found
                     if (!chatRooms.has(chatName) || !pinList) return;
                     const chatRoom = chatRooms.get(chatName);
@@ -217,6 +221,7 @@ const ChatRoomProvider = (props: any) => {
         socket.off(EVENTS.SERVER.DELIVER_MESSAGE)
             .on(EVENTS.SERVER.DELIVER_MESSAGE, ({message, msgIndex}) => {
                 // handled by emit's ack
+                console.log('recv', message, 'with index', msgIndex);
                 if (message.fromSocketId === socket.id) 
                     return;
                 if (!chatRooms.has(message.sendTo))  {

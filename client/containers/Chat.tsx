@@ -86,7 +86,7 @@ const PinContainer = ({msgIndex, message}) => {
     // console.log(msgIndex, message, isAdmin);
     return <div id={`pin-${msgIndex}`} 
             className={`${styles.message} ${styles.messagePin}`}>
-        {user.isAdmin && <ChatContextMenu _id={`pin-${msgIndex}`} message={message} msgIndex={msgIndex}/>}
+        {user.isAdmin && !message.isPrivate && <ChatContextMenu _id={`pin-${msgIndex}`} message={message} msgIndex={msgIndex}/>}
         <div className={styles.textBox}>
             {message.userName}: {message.contents}
         </div>
@@ -103,7 +103,7 @@ const MessageContainer = ({index, message}) => {
 
     return <div id={`message-${index}`} 
             className={`${styles.message} ${isSelf ? styles.messageSelf : styles.messageOther}`}>
-        {user.isAdmin && <ChatContextMenu _id={`message-${index}`} message={message} msgIndex={serverMsgIndex}/>}
+        {user.isAdmin && !message.isPrivate && <ChatContextMenu _id={`message-${index}`} message={message} msgIndex={serverMsgIndex}/>}
         <div className={styles.textBox}>
             {isSelf ? '': `${message.userName}: `}{message.contents}
         </div>
