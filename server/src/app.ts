@@ -12,6 +12,7 @@ import Provider from './provider';
 import { registerLoginHandlers } from './handlers/loginHandler';
 import { registerShowHandlers } from './handlers/showHandler';
 import { registerChatHandlers } from './handlers/chatHandler';
+import { registerPollHandlers } from './handlers/pollHandler';
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ const onConnection = (socket) => {
     registerLoginHandlers(io, socket);
     registerShowHandlers(io, socket);
     registerChatHandlers(io, socket);
+    registerPollHandlers(io, socket);
 }
 
 httpServer.listen(port, host, () => {

@@ -10,6 +10,8 @@ import { CHANNELS } from "../config/channels";
 import ViewerContainer from "./Viewer";
 import { MODES } from "../config/modes";
 import QNAContainer from "./QnA";
+import { SampleModal } from "../utils/modal";
+import PollSettingsContainer from "./Poll";
 
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
@@ -98,7 +100,10 @@ const DashboardContainer = () => {
                 <AttendeesContainer/>
                 <UsersContainer/>
             </div>
-            <RoomsContainer />
+            <div className={styles.roomsWrapper}>
+                <RoomsContainer />
+                <PollSettingsContainer/>
+            </div>
         </div>
     </div>;
 }

@@ -1,0 +1,28 @@
+.pollWrapper {
+  display: flex;
+  padding: 0.5em;
+  background-color: cadetblue;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px;
+}
+
+.pollHeader {
+  display: flex;
+  padding: 0.5em;
+  flex-direction: column;
+  align-items: center;
+  width: 20%;
+}
+
+.pollSettings {
+  display: flex;
+  padding: 0.5em;
+  flex-direction: column;
+  justify-content: center;
+  width: 80%;
+}
+
+.field {
+  margin: 0.3em;
+  width: 100%;
+}

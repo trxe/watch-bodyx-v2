@@ -133,3 +133,52 @@ input:checked + .toggleSlider:before {
   clear: both;
   width: 100%;
 }
+
+/* MODAL */
+.modalWrapper {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  opacity: 0;
+  -webkit-transition: opacity 400ms ease-in;
+  -moz-transition: opacity 400ms ease-in;
+  transition: opacity 400ms ease-in;
+  pointer-events: none;
+}
+
+.modalWrapper:target {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background-color: darksalmon;
+  padding: 1em;
+}
+
+.closeModal {
+  background: #606061;
+  color: #FFFFFF;
+  padding: 0.2em;
+  line-height: 25px;
+  text-align: center;
+  text-decoration: none;
+  font-weight: bold;
+  -webkit-border-radius: 12px;
+  -moz-border-radius: 12px;
+  border-radius: 12px;
+  -moz-box-shadow: 1px 1px 3px #000;
+  -webkit-box-shadow: 1px 1px 3px #000;
+  box-shadow: 1px 1px 3px #000;
+}
+
+.closeModal:hover {
+  background: #00d9ff;
+}
