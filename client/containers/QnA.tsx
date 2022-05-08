@@ -6,13 +6,13 @@ import { Client } from './Clients';
 
 const QNAContainer = () => {
     const {socket, clientsList} = useSockets();
-    const isClientMe = (client: Client) => socket != null && client.socketId == socket.id;
+    const isClientNotMe = (client: Client) => socket != null && client.socketId !== socket.id;
 
     useEffect(() => {
         console.log("private chats", clientsList);
     }, [clientsList]);
 
-    const [chosenClient, setChosenClient] = useState(clientsList.find(c => !isClientMe(c)));
+    const [chosenClient, setChosenClient] = useState(clientsList.find(isClientNotMe));
 
     if (!socket) return null;
     // MAKE PRIVATE CHAT DIFFERENT
@@ -21,10 +21,13 @@ const QNAContainer = () => {
     return <div className={styles.qnaWrapper}>
         <div className={styles.clientsSelect}>
             <ul>
-                {clientsList.map(client => { return isClientMe(client) ? null : 
+                {clientsList.filter(isClientNotMe).map(client => 
                     <li><a href="#" onClick={() => setChosenClient(client)}>{client.user.name}</a></li>
-                })}
+                )}
             </ul>
+        </div>
+        <div>
+
         </div>
     </div>;
 }

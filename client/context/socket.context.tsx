@@ -164,7 +164,7 @@ const SocketsProvider = (props: any) => {
 
         socket.off(EVENTS.SERVER.ADD_CLIENT).on(EVENTS.SERVER.ADD_CLIENT, (client) => {
             clientsMap.set(client.user.ticket, client);
-            console.log("clientsmap curr", clientsMap);
+            // console.log("clientsmap curr", clientsMap);
             setClientsMap(clientsMap);
             setClientsList(Array.from(clientsMap.values()));
             // setClientsMap(new Map<string, Client>(clientsMap));

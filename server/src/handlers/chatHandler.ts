@@ -51,7 +51,7 @@ export const pinMessage = (io: Server, recepient: string,
  */
 export const unpinMessage = (io: Server, recepient: string, 
     data: {message: Message, msgIndex: number}) => {
-        Logger.info(`Pinning message to ${recepient}`);
+        Logger.info(`Unpinning message from ${recepient}`);
         io.to(recepient).emit(CHAT_EVENTS.UNPINNED_MESSAGE, data);
 }
 
@@ -141,10 +141,10 @@ export const registerChatHandlers = (io, socket) => {
             callback(new Ack('error', 'Chat not found', 'Room may have been deleted.').getJSON());
             return;
         }
-        const message: Message = chatManager.pinMessageInRoom(chatName, msgIndex);
+        const message: Message = chatManager.unpinMessageInRoom(chatName, msgIndex);
         unpinMessage(io, CHANNELS.MAIN_ROOM, {message, msgIndex});
         unpinMessage(io, CHANNELS.SM_ROOM, {message, msgIndex});
-        callback(new Ack('info', 'Pin with id', JSON.stringify({message, msgIndex})));
+        callback(new Ack('info', 'Unpin with id', JSON.stringify({message, msgIndex})));
     }
 
     // Toggle chat availability
