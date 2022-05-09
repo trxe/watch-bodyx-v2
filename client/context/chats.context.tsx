@@ -141,7 +141,6 @@ const ChatRoomProvider = (props: any) => {
 
     useEffect(() => {
         if (!isFirstLoad || !show || !socket) return;
-        console.log('first chatroom load');
         chatRooms.set(chatWithAdmins.chatName, chatWithAdmins);
         const hasRooms = setChatRooms(show.rooms) != null;
         if (hasRooms) {
@@ -277,7 +276,7 @@ const ChatRoomProvider = (props: any) => {
             updatePinList
         }} 
         {...props}
-    />
+    />;
 }
 
 export const useChatRooms = () => useContext(ChatRoomContext);

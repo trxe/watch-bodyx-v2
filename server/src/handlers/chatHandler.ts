@@ -144,7 +144,7 @@ export const registerChatHandlers = (io, socket) => {
         const message: Message = chatManager.pinMessageInRoom(chatName, msgIndex);
         unpinMessage(io, CHANNELS.MAIN_ROOM, {message, msgIndex});
         unpinMessage(io, CHANNELS.SM_ROOM, {message, msgIndex});
-        callback(new Ack('info', 'Pin with id', JSON.stringify({message, msgIndex})));
+        callback(new Ack('info', 'Pin with id', JSON.stringify({message, msgIndex})).getJSON());
     }
 
     // Toggle chat availability

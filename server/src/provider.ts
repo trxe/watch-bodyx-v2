@@ -22,7 +22,7 @@ const init = async () => {
     clients = new Map<string, Client>();
     socketTicket = new Map<string, string>();
     chatManager = new ChatManager(show);
-    poll = new Poll('');
+    poll = new Poll();
 };
 
 /**

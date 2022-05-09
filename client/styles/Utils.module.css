@@ -182,3 +182,38 @@ input:checked + .toggleSlider:before {
 .closeModal:hover {
   background: #00d9ff;
 }
+
+.optionBox {
+  height: 3em;
+  width: 90%;
+  background-color: antiquewhite;
+  border-radius: 10px;
+  border-color: gray;
+  border-width: 5px;
+  margin: 0.5em;
+}
+
+.optionLabel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.2em;
+}
+
+.optionLabel input {
+  width: 10%;
+}
+
+.optionLabel span {
+  width: 75%;
+}
+
+.optionLabel .percent {
+  width: 10%;
+}
+
+.optionBar {
+  background-color: rgba(255, 142, 142, 0.5);
+  display: inherit;
+  height: 100%;
+}

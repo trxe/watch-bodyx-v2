@@ -4,6 +4,7 @@ import { Poll } from "../interfaces/poll"
 import { CHANNELS } from "../protocol/channels"
 import { CLIENT_EVENTS } from "../protocol/events"
 import Provider from "../provider"
+import Logger from "../utils/logger"
 
 const POLL_EVENTS = {
     SET_CLIENT_CHOICE: 'SET_CLIENT_CHOICE',
@@ -26,25 +27,33 @@ const sendPollToSocket = (socket, poll: Poll) => {
 export const registerPollHandlers = (io: Server, socket) => {
     const createPoll = (newPoll: Poll, callback) => {
         const poll: Poll = Provider.getPoll();
-        poll.voters = new Map<string, string>();
-        poll.setQuestion(newPoll.question);
-        poll.setOptions(newPoll.options);
-        callback(new Ack('info', 'New Poll created', JSON.stringify(poll.getJSON())));
+        poll.voters = new Map<string, number>();
+        poll.setPoll(newPoll.question, newPoll.options);
+        callback(new Ack('info', 'New Poll created', JSON.stringify(poll.getJSON())).getJSON());
     }
 
     const sendPoll = () => {
         const poll: Poll = Provider.getPoll();
         sendPollToSocket(socket, poll);
+        Logger.info(`Poll has been sent.`);
     }
 
     const updatePoll = ({question, options}, callback) => {
         const poll: Poll = Provider.getPoll();
-        poll.setQuestion(question);
-        const isSuccess = poll.setOptions(options);
-        if (isSuccess) informPoll(io, CHANNELS.SM_ROOM, poll);
+        poll.setPoll(question, options).then(isSuccess => {
+            if (!isSuccess) {
+                callback(new Ack('error', 'No more updates to poll allowed', 'Poll has started'));
+                return;
+            }
+            informPoll(io, CHANNELS.SM_ROOM, poll);
+            Logger.info(`Poll has been updated.`);
+            callback(new Ack('success', 'Poll updated'));
+        });
     }
 
-    const togglePollStartStop = (callback) => {
+    const togglePollStartStop = ({isActive}, callback) => {
+        const poll: Poll = Provider.getPoll();
+        poll.isActive = isActive;
         informPoll(io, CHANNELS.SM_ROOM, Provider.getPoll());
         informPoll(io, CHANNELS.MAIN_ROOM, Provider.getPoll());
         callback(new Ack('success', 'Poll started'));
@@ -62,6 +71,7 @@ export const registerPollHandlers = (io: Server, socket) => {
     }
 
     socket.on(CLIENT_EVENTS.SEND_CLIENT_CHOICE, recvVote);
+    socket.on(CLIENT_EVENTS.TOGGLE_POLL_START, togglePollStartStop)
     socket.on(CLIENT_EVENTS.UPDATE_POLL, updatePoll);
     socket.on(CLIENT_EVENTS.LOAD_POLL, sendPoll);
     socket.on(CLIENT_EVENTS.CREATE_POLL, createPoll);
