@@ -171,7 +171,8 @@ export const registerShowHandlers = (io: Server, socket) => {
                 sendShowToRoom(io, CHANNELS.MAIN_ROOM);
                 callback(SHOW_EVENTS.ACKS.UPDATE_SUCCESS.getJSON());
             },
-            () => { 
+            (error) => { 
+                console.log('showHandler.ts', error)
                 sendShow(socket); 
                 callback(SHOW_EVENTS.ACKS.INVALID_EVENT_ID.getJSON());
             }
