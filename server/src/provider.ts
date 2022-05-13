@@ -1,5 +1,6 @@
 import { ChatManager } from "./interfaces/chatManager";
 import { Client } from "./interfaces/client";
+import { Poll } from "./interfaces/poll";
 import { Room } from "./interfaces/room";
 import { Show } from "./interfaces/show";
 import { User } from "./interfaces/users";
@@ -13,6 +14,7 @@ let show: Show;
 let clients: Map<string, Client>;
 let socketTicket: Map<string, string>;
 let chatManager: ChatManager;
+let poll: Poll;
 
 const init = async () => {
     show = new Show('Sample Show', '302699441177', false);
@@ -20,6 +22,8 @@ const init = async () => {
     clients = new Map<string, Client>();
     socketTicket = new Map<string, string>();
     chatManager = new ChatManager(show);
+    poll = new Poll();
+    await poll.loadPoll();
 };
 
 /**
@@ -169,6 +173,7 @@ const deleteRoom = (_id: string, onSuccess, onFailure) => {
 }
 
 const getChatManager = () => chatManager;
+const getPoll = () => poll;
 
 const Provider = {
     setClient,
@@ -187,6 +192,7 @@ const Provider = {
     getShow,
     getShowMainRoom,
     getChatManager,
+    getPoll,
     init
 }
 

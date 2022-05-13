@@ -3,7 +3,6 @@ import { GrAdd } from 'react-icons/gr'
 import { AiFillEdit, AiFillLock, AiFillUnlock, AiOutlineCheck, AiOutlineClose, AiOutlineDelete } from "react-icons/ai";
 import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
-import dashboardStyles from '../styles/Dashboard.module.css'
 import styles from '../styles/Rooms.module.css'
 import { createNotif } from "./Snackbar";
 import ToggleButton from "../utils/toggleButton";
@@ -143,7 +142,7 @@ const RoomsContainer = () => {
             (res) => setViewerChatEnabled(res.status));
     }
 
-    return <div className={dashboardStyles.roomsWrapper}>
+    return <div>
         <div className={styles.roomHeader}>
             <h2>Rooms</h2>
             <button className={styles.iconButton} onClick={toggleAddMode}>

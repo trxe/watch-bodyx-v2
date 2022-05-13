@@ -9,6 +9,7 @@ const UNKNOWN_ERROR = new Ack('error', 'Unknown error', 'Unknown error from serv
 
 const registerRouting = (app) => {
     app.get('/', (req, res) => res.send('Hello World'));
+    app.get('/auth', (req, res) => res.send('Authentication (provide {email, ticket})'));
 
     app.post('/auth', (req, res) => {
         const {email, ticket} = req.body;

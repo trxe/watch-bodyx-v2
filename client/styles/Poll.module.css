@@ -1,0 +1,80 @@
+.pollWrapper {
+  display: flex;
+  padding: 0.5em;
+  background-color: cadetblue;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px;
+}
+
+.pollHeader {
+  display: flex;
+  padding: 0.5em;
+  flex-direction: column;
+  align-items: center;
+  width: 20%;
+}
+
+.pollSettings {
+  display: flex;
+  padding: 0.5em;
+  flex-direction: column;
+  align-items: center;
+  width: 80%;
+}
+
+.field {
+  margin: 0.3em;
+  padding: 0.2em;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.field button {
+  font-size: large;
+}
+
+.field button:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fieldText {
+  width: 70%;
+  padding-right: 1em;
+}
+
+.addOption {
+  color: gray;
+  text-align: center;
+  background-color: bisque;
+  cursor: pointer;
+  pointer-events: all;
+  transition: all 0.5s ease-out;
+}
+
+.addOption:hover {
+  background-color: burlywood;
+  color: black;
+}
+
+.pollTitle {
+  font-size: 1em;
+  font-weight: 600;
+  background-color: antiquewhite;
+  border-radius: 5px;
+  min-height: 1.5em;
+}
+
+.pollOption {
+  font-size: 1em;
+  background-color: bisque;
+  border-radius: 5px;
+  min-height: 1.5em;
+}
+
+.pollArea {
+  width: 80%
+}

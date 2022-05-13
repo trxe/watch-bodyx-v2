@@ -282,7 +282,7 @@ const ChatRoomProvider = (props: any) => {
             updatePinList
         }} 
         {...props}
-    />
+    />;
 }
 
 export const useChatRooms = () => useContext(ChatRoomContext);

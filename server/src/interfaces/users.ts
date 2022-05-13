@@ -3,5 +3,5 @@ export interface User {
     email: string,
     ticket: string,
     firstName: string,
-    isAdmin: boolean
+    isAdmin: boolean,
 }

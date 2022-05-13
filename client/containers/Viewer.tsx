@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react'
 import { CHANNELS } from '../config/channels';
 import EVENTS from '../config/events';
+import { usePoll } from '../context/poll.context';
 import { useSockets } from '../context/socket.context';
 import styles from '../styles/Viewer.module.css'
 import ChatContainer from './Chat';
+import { PollViewContainer } from './Poll';
 import UserMenu from './UserMenu';
 
 const ViewerContainer = ({isAdmin}) => {
+    const {activeStatus, isResults} = usePoll();
     const {socket, user, show, roomName, setRoomName} = useSockets();
     const [roomIndex, setRoomIndex] = useState(-1)
-    const [isChatNotPoll, setChatNotPoll] = useState(true);
 
     // At startup to enter room
     useEffect(() => {
@@ -36,7 +38,7 @@ const ViewerContainer = ({isAdmin}) => {
                 (response) => {
                     console.log(response);
                     setRoomIndex(viewerIndex);
-                    console.log("roomName", show.rooms[viewerIndex].roomName);
+                    console.log("Viewer.tsx", show.rooms[viewerIndex].roomName);
                     setRoomName(show.rooms[viewerIndex].roomName);
                 });
         }
@@ -83,12 +85,9 @@ const ViewerContainer = ({isAdmin}) => {
             </div>
         </div>
         <div className={styles.chatWrapper}>
-            {isChatNotPoll ? 'Chat' : 'Poll'} (in progress)
             <ChatContainer chatName={roomName || CHANNELS.SM_ROOM} isPrivate={false}
                 label={roomIndex < show.rooms.length ? show.rooms[roomIndex].name : 'Moving rooms...'}/>
-            <button onClick={() => setChatNotPoll(!isChatNotPoll)}>
-                {isChatNotPoll ? 'POLL' : 'CHAT'}
-            </button>
+            {activeStatus && <PollViewContainer isPreview={false} label={isResults ? 'RESULTS' : 'POLL'} />}
         </div>
     </div>
 }

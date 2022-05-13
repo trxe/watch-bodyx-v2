@@ -20,7 +20,7 @@ interface ISocketContext {
         email: string,
         ticket: string,
         firstName: string,
-        isAdmin: boolean
+        isAdmin: boolean,
     }
     setUser: Function,
     show?: {
@@ -167,14 +167,12 @@ const SocketsProvider = (props: any) => {
             // console.log("clientsmap curr", clientsMap);
             setClientsMap(clientsMap);
             setClientsList(Array.from(clientsMap.values()));
-            // setClientsMap(new Map<string, Client>(clientsMap));
         })
 
         socket.off(EVENTS.SERVER.DISCONNECTED_CLIENT).on(EVENTS.SERVER.DISCONNECTED_CLIENT, ({ticket, socketId}) => {
             clientsMap.delete(ticket);
             setClientsMap(clientsMap);
             setClientsList(Array.from(clientsMap.values()));
-            // setClientsMap(new Map<string, Client>(clientsMap));
         })
 
         // Rooms info
