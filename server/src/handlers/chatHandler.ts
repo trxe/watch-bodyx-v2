@@ -29,6 +29,22 @@ export const sendMessage = (io: Server, recepient: string,
 }
 
 /**
+ * Send a message to socket, found via searching through io,
+ * which updates their message log based on the sendTo field in message.
+ * @param socket 
+ * @param data message and msgIndex
+ */
+export const sendMessageSocket = (io: Server, socketId: string, data: {message: Message, msgIndex: number}) => {
+    const socket = io.sockets.sockets.get(socketId);
+    if (!socket) {
+        Logger.error(`Socket with id ${socketId} not found, message cannot be sent`);
+        return;
+    }
+    Logger.info(`Sending message to ${socket.id}`);
+    socket.emit(CHAT_EVENTS.DELIVER_MESSAGE, data);
+}
+
+/**
  * Pin a message in a room for all recepients, 
  * which update their message log based on the sendTo field in message.
  * @param io 
@@ -51,7 +67,7 @@ export const pinMessage = (io: Server, recepient: string,
  */
 export const unpinMessage = (io: Server, recepient: string, 
     data: {message: Message, msgIndex: number}) => {
-        Logger.info(`Pinning message to ${recepient}`);
+        Logger.info(`Unpinning message from ${recepient}`);
         io.to(recepient).emit(CHAT_EVENTS.UNPINNED_MESSAGE, data);
 }
 
@@ -94,7 +110,7 @@ export const registerChatHandlers = (io, socket) => {
         const chatManager = Provider.getChatManager();
         if (!chatManager.hasRoom(recepient)) {
             if (message.isPrivate) {
-                const client = Provider.getClientBySocket(socket.id);
+                const client = Provider.getClientBySocket(recepient);
                 if (client != null) chatManager.createPrivateChat(client);
                 else {
                     callback(new Ack('error', 'Message failed to send, refresh to reconnect').getJSON());
@@ -111,9 +127,10 @@ export const registerChatHandlers = (io, socket) => {
         }
 
         const msgIndex = Provider.getChatManager().addMessageToRoom(recepient, message);
-        // NOTE: The line below is if 
+        // console.log(`chat number ${msgIndex} in chat ${recepient}`, message)
         // sendMessage(io, recepient, {message, msgIndex});
-        sendMessage(io, CHANNELS.MAIN_ROOM, {message, msgIndex});
+        if (message.isPrivate) sendMessageSocket(io, recepient, {message, msgIndex});
+        else sendMessage(io, CHANNELS.MAIN_ROOM, {message, msgIndex});
         sendMessage(io, CHANNELS.SM_ROOM, {message, msgIndex});
         callback(new Ack('info', 'Message with id', JSON.stringify({message, msgIndex})));
     }
@@ -141,10 +158,10 @@ export const registerChatHandlers = (io, socket) => {
             callback(new Ack('error', 'Chat not found', 'Room may have been deleted.').getJSON());
             return;
         }
-        const message: Message = chatManager.pinMessageInRoom(chatName, msgIndex);
+        const message: Message = chatManager.unpinMessageInRoom(chatName, msgIndex);
         unpinMessage(io, CHANNELS.MAIN_ROOM, {message, msgIndex});
         unpinMessage(io, CHANNELS.SM_ROOM, {message, msgIndex});
-        callback(new Ack('info', 'Pin with id', JSON.stringify({message, msgIndex})));
+        callback(new Ack('info', 'Unpin with id', JSON.stringify({message, msgIndex})));
     }
 
     // Toggle chat availability
