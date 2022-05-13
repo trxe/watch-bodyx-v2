@@ -41,7 +41,6 @@ export class Show {
     public async updateRoom(newRoom: Room): Promise<string> {
         if (!this.dbShow) this.loadShow()
         const room = await this.dbShow.rooms.id(newRoom._id);
-        console.log(room);
         room.name = newRoom.name;
         room.url = newRoom.url;
         room.isLocked = newRoom.isLocked;

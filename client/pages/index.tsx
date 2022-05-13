@@ -2,8 +2,7 @@ import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 import { useSockets } from '../context/socket.context'
 
-import { useRef, useState } from 'react'
-import EVENTS from '../config/events'
+import { useRef, useEffect } from 'react'
 import DashboardContainer from '../containers/Dashboard'
 import ViewerContainer from '../containers/Viewer'
 import Snackbar, { createNotif } from '../containers/Snackbar'
@@ -12,9 +11,14 @@ import WaitingRoomContainer from '../containers/WaitingRoom'
 import DisconnectedContainer from '../containers/DisconnectedPage'
 
 export default function Home() {
-  const {socket, channel, user, notif, setNotif, loginRequest} = useSockets();
+  const {channel, user, notif, setNotif, loginRequest} = useSockets();
   const emailRef = useRef(null);
   const ticketRef = useRef(null);
+
+  useEffect(() => {
+    // resetting any hash fragments from poll
+    location.hash = '';
+  }, [])
 
   const handleSetTicket = () => {
     const email = emailRef.current.value;

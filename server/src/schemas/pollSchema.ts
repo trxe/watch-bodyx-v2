@@ -15,8 +15,8 @@ export const VoterSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    option: {
-        type: String
+    optionIndex: {
+        type: Number
     }
 })
 
@@ -29,6 +29,10 @@ export const PollSchema = new mongoose.Schema({
     },
     voters: {
         type: [VoterSchema]
+    },
+    isResults: {
+        type: Boolean,
+        required: true
     }
 })
 
