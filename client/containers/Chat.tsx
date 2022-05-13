@@ -1,5 +1,4 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { CHANNELS } from "../config/channels";
 import EVENTS from "../config/events";
 import { Message, useChatRooms } from "../context/chats.context";
 import { useSockets } from "../context/socket.context";
@@ -14,6 +13,7 @@ const ChatContextMenu = ({_id, message, msgIndex}) => {
     useEffect(() => {
         const offClickHandler = (event) => {
             if(contextRef.current && !contextRef.current.contains(event.target)){
+                console.log('close', event.target, contextRef.current);
                 setContextData({ ...contextData, visible: false })
             }
         }
@@ -21,9 +21,10 @@ const ChatContextMenu = ({_id, message, msgIndex}) => {
         const contextMenuHandler = (event) => {
             const element  = document.getElementById(_id);
             if (element && element.contains(event.target)) {
+                console.log('open', event.target, element);
                 event.preventDefault();
                 setContextData({visible: true, posX: event.clientX, posY: event.clientY});
-            } else {
+            } else if (element && !element.contains(event.target)) {
                 offClickHandler(event);
             }
         }
@@ -43,7 +44,7 @@ const ChatContextMenu = ({_id, message, msgIndex}) => {
         if (contextData.posY + contextRef.current?.offsetHeight > window.innerHeight){
             setContextData({ ...contextData, posY: contextData.posY - contextRef.current?.offsetHeight})
         }
-    }, [contextData]);
+    }, []);
 
     const styling = () => {
         return {
@@ -53,7 +54,7 @@ const ChatContextMenu = ({_id, message, msgIndex}) => {
         };
     }
 
-    const isPin = () => currentChatRoom.pins.has(msgIndex);
+    const isPin = () => message.isPinned || currentChatRoom.pins.has(msgIndex);
 
     const sendPinMessage = () => {
         // console.log('pinning', msgIndex, 'to', chatRoomName, message);
@@ -77,11 +78,15 @@ const ChatContextMenu = ({_id, message, msgIndex}) => {
     </div>;
 }
 
-const PinContainer = ({msgIndex, isAdmin, message}) => {
+const PinContainer = ({msgIndex, message}) => {
+    const {user} = useSockets();
+
+    if (!user) return null;
+
     // console.log(msgIndex, message, isAdmin);
-    return <div id={`message-${msgIndex}`} 
+    return <div id={`pin-${msgIndex}`} 
             className={`${styles.message} ${styles.messagePin}`}>
-        {isAdmin && <ChatContextMenu _id={`message-${msgIndex}`} message={message} msgIndex={msgIndex}/>}
+        {user.isAdmin && !message.isPrivate && <ChatContextMenu _id={`pin-${msgIndex}`} message={message} msgIndex={msgIndex}/>}
         <div className={styles.textBox}>
             {message.userName}: {message.contents}
         </div>
@@ -89,7 +94,7 @@ const PinContainer = ({msgIndex, isAdmin, message}) => {
 
 }
 
-const MessageContainer = ({index, isAdmin, message}) => {
+const MessageContainer = ({index, message}) => {
     const {user} = useSockets();
     const {currentChatRoom} = useChatRooms();
     const isSelf = message.userName === user.name;
@@ -98,14 +103,14 @@ const MessageContainer = ({index, isAdmin, message}) => {
 
     return <div id={`message-${index}`} 
             className={`${styles.message} ${isSelf ? styles.messageSelf : styles.messageOther}`}>
-        {isAdmin && <ChatContextMenu _id={`message-${index}`} message={message} msgIndex={serverMsgIndex}/>}
+        {user.isAdmin && !message.isPrivate && <ChatContextMenu _id={`message-${index}`} message={message} msgIndex={serverMsgIndex}/>}
         <div className={styles.textBox}>
             {isSelf ? '': `${message.userName}: `}{message.contents}
         </div>
     </div>;
 }
 
-const ChatContainer = ({chatName, isAdmin, label}) => {
+const ChatContainer = ({chatName, isPrivate, label}) => {
     const {socket, user, roomName} = useSockets();
     const {messages, updateMessageList, pins, 
             isViewerChatEnabled, 
@@ -131,7 +136,7 @@ const ChatContainer = ({chatName, isAdmin, label}) => {
             sendTo: chatName,
             timestamp: new Date().toISOString(),
             contents: newMessageRef.current.value,
-            isPrivate: false,
+            isPrivate,
             isPinned: false,
         };
         updateMessageList();
@@ -150,7 +155,7 @@ const ChatContainer = ({chatName, isAdmin, label}) => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
     }
     
-    if (!currentChatRoom) {
+    if (!currentChatRoom || !user) {
         return <div className={styles.chatWrapper}>
             <div className={styles.chatHeader}>
                 <h3>Chat Unavailable</h3>
@@ -158,21 +163,20 @@ const ChatContainer = ({chatName, isAdmin, label}) => {
         </div>;
     }
 
-
     return <div className={styles.chatWrapper}>
         <div className={styles.chatHeader}>
             <h3>{label}</h3>
         </div>
         <div className={styles.pinList}>
-            {pins.map(pin => <PinContainer key={pin.msgIndex} {...pin} isAdmin={isAdmin} />)}
+            {pins.map(pin => <PinContainer key={pin.msgIndex} {...pin} />)}
         </div>
         <div className={styles.messageList}>
             {messages.map((msg, index) => 
-                <MessageContainer key={index} index={index} isAdmin={isAdmin} message={msg} />
+                <MessageContainer key={index} index={index} message={msg} />
             )}
             <div ref={messagesEndRef} />
         </div>
-        {(chatName == CHANNELS.SM_ROOM || isViewerChatEnabled || isAdmin) &&
+        {(isPrivate || isViewerChatEnabled || user.isAdmin) &&
             <div>
                 <textarea rows={3} placeholder={`Send a message (max length ${maxCharCount})`} 
                     maxLength={maxCharCount} ref={newMessageRef}/>
