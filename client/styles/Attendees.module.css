@@ -30,6 +30,10 @@
   transition: background-color 0.5s ease;
 }
 
+.attendee button:hover {
+  background-color: var(--secondaryColor);
+}
+
 .header button {
   margin-left: 0.2em;
   color: var(--primaryFont);
@@ -46,10 +50,6 @@
   padding: 0.2em;
   background-color: transparent;
   transition: background-color 0.5s ease;
-}
-
-.attendee button:hover {
-  background-color: var(--secondaryColor);
 }
 
 .icon {
@@ -73,4 +73,29 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.search {
+  width: 40%;
+  display: flex;
+  align-items: center;
+}
+
+.search input {
+  width: 100%;
+  height: 30px;
+  margin-right: 0.5em;
+  border-width: 0;
+  border-radius: 5px;
+  padding: 0.5em;
+  font-size: large;
+  font-weight: 600;
+  background-color: var(--field);
+  color: var(--secondaryFont);
+  transition: background-color 0.5s;
+}
+
+.search input:focus {
+  background-color: var(--secondaryTint);
+  color: var(--secondaryFont);
 }

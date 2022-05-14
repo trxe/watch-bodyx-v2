@@ -6,6 +6,8 @@ import { useSockets } from "../context/socket.context";
 import dashboard from '../styles/Dashboard.module.css'
 import styles from "../styles/Clients.module.css"
 import DropdownMenu from "../utils/dropdown";
+import { classList } from "../utils/utils";
+import { BiLink, BiRefresh } from "react-icons/bi";
 
 export interface User {
     name: string,
@@ -54,11 +56,12 @@ const Client:FC<Client> = ({user, socketId, channelName, roomName}) => {
         ...show.rooms.map(room => () => moveUserToRoom(room.name))
     ];
 
-    return <div className={user.isAdmin ? styles.userAdmin : styles.userViewer}>
-        <p>{user.name}</p>
-        <p>{user.email}</p>
-        <p>{channelName}</p>
-        <p>{roomName}</p>
+    return <div className={classList(styles.user, user.isAdmin ? styles.admin : styles.viewer)}>
+        <button className={styles.icon}><BiLink/></button>
+        <div className={styles.shortField}>{user.name}</div>
+        <div className={styles.shortField}>{user.email}</div>
+        <div className={styles.shortField}>{channelName}</div>
+        <div className={styles.shortField}>{roomName}</div>
         <DropdownMenu title={<BsThreeDotsVertical/>} labels={dropDownLabels} actions={dropDownActions}/>
     </div>;
 }
@@ -76,8 +79,21 @@ const UsersContainer = (props) => {
         <div className={dashboard.containerHeader}>
             <BsPeople/>
             <div className={dashboard.containerTitle}>USERS PRESENT</div>
+            <div className={styles.search}>
+                <input placeholder="Filter"/>
+                <DropdownMenu title="List" labels={['Name', 'Email']} actions={[]}/>
+            </div>
+            <div className={classList(dashboard.refresh)}><BiRefresh/></div>
         </div>
         <div className={dashboard.containerContent}>
+            <div className={classList(styles.user, styles.header)}>
+                <button style={{opacity: 0, cursor: 'auto'}} className={styles.icon}><BiLink/></button>
+                <div className={styles.shortField}>NAME</div>
+                <div className={styles.shortField}>EMAIL</div>
+                <div className={styles.shortField}>CHANNEL</div>
+                <div className={styles.shortField}>ROOM</div>
+                <DropdownMenu style={{opacity: 0, cursor: 'none'}} title={<BsThreeDotsVertical/>} labels={[]} actions={[]}/>
+            </div>
             {clientsList.map(c => <Client 
                 key={c.socketId} 
                 socketId={c.socketId} 

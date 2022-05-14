@@ -49,7 +49,7 @@
   width: 26px;
   left: 4px;
   bottom: 4px;
-  background-color: white;
+  background-color: var(--primaryFont);
   -webkit-transition: .4s;
   transition: .4s;
 }
@@ -79,20 +79,21 @@ input:checked + .toggleSlider:before {
 
 /* DROPDOWN */
 .dropdownButton {
-  color: #fff;
-  background: coral;
-  display: block;
-  padding: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   border: none;
-  border-radius: 4px;
-  position: relative;
-  text-decoration: none;
-  transition: background-color 0.5s ease-in;
+  border-radius: 10px;
+  padding: 0.2em;
+  background-color: transparent;
+  transition: background-color 0.5s ease;
 }
 
 .dropdownButton:hover,
 .dropdownButton:focus-within {
-  background: red;
+  background-color: var(--secondaryTint);
   cursor: pointer;
 }
 
@@ -101,7 +102,7 @@ input:checked + .toggleSlider:before {
 }
 
 .dropdown {
-  background: orange;
+  background: var(--primaryFont);
   list-style-type: none;
   visibility: hidden;
   opacity: 0;
@@ -115,14 +116,15 @@ input:checked + .toggleSlider:before {
 }
 
 .dropdown a {
-  text-align: center;
+  text-align: left;
   padding: 2px 10px 2px 10px;
   display: block;
+  color: var(--secondaryFont);
 }
 
 .dropdown li:hover {
-  transition: background-color 0.5s ease-in;
-  background-color: red;
+  transition: background-color 0.3s ease;
+  background-color: var(--secondaryColor);
 }
 
 .dropdownWrapper:hover > .dropdown,

@@ -5,10 +5,11 @@ export interface DropdownOptions {
     title: any;
     labels: Array<string>,
     actions: Array<(string) => void>;
+    style?
 }
 
-const DropdownMenu:FC<DropdownOptions> = ({title, labels, actions}) => {
-    return <div className={styles.dropdownWrapper}>
+const DropdownMenu:FC<DropdownOptions> = ({style, title, labels, actions}) => {
+    return <div style={style} className={styles.dropdownWrapper}>
         <button className={styles.dropdownButton}>{title}</button>
         <ul className={styles.dropdown}>
             {labels.map((label, i) => 
