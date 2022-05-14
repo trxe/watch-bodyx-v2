@@ -41,7 +41,7 @@
 
 .viewer {
   color: var(--secondaryFont);
-  background-color: var(--secondaryColor);
+  background-color: var(--field);
 }
 
 .icon {
