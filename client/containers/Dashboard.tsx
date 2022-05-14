@@ -1,5 +1,8 @@
 import { useRef, useState } from "react";
+import { BiRefresh } from "react-icons/bi"
+import { GiDramaMasks } from "react-icons/gi"
 import EVENTS from "../config/events";
+import styles_old from "../styles/Dashboard_old.module.css"
 import styles from "../styles/Dashboard.module.css"
 import { useSockets } from "../context/socket.context";
 import RoomsContainer from "./Rooms";
@@ -10,8 +13,106 @@ import { CHANNELS } from "../config/channels";
 import ViewerContainer from "./Viewer";
 import { MODES } from "../config/modes";
 import QNAContainer from "./QnA";
-import { SampleModal } from "../utils/modal";
 import PollSettingsContainer from "./Poll";
+import { classList, dayOfWeek, months } from "../utils/utils";
+
+const DateTimeContainer = (props) => {
+    const time = () => {
+        const today = new Date();
+        const h = today.getHours();
+        const m = today.getMinutes().toString().padStart(2, '0');
+        const s = today.getSeconds().toString().padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    }
+
+    const date = () => {
+        const today = new Date();
+        const day = dayOfWeek[today.getDay()];
+        const date = today.getDate();
+        const month = months[today.getMonth()];
+        const year = today.getFullYear();
+        return `${day}, ${date} ${month} ${year}`;
+    }
+
+    return <div {...props}>
+        <div className={styles.time}>{time()}</div>
+        <div className={styles.date}>{date()}</div>
+    </div>;
+}
+
+const ShowInfoContainer = (props) => {
+    const [isEditMode, setEditMode] = useState(false);
+    const newShowTitle = useRef(null);
+    const newEventId = useRef(null);
+    const {show, socket, setNotif} = useSockets();
+
+    const edit = () => setEditMode(true);
+
+    const cancelUpdate = () => {
+        newShowTitle.current.value = !show || !show.name ? '' : show.name;
+        newEventId.current.value = !show || !show.eventId ? '' : show.eventId;
+        setEditMode(false);
+    }
+
+    const handleUpdateShow = () => {
+        if (newShowTitle.current.value == show.name &&
+            newEventId.current.value == show.eventId) {
+                setEditMode(false);
+                return;
+            }
+        setNotif({messageType: 'warning', title: 'Loading event info...', 
+            message: 'Loading event from server.'})
+        socket.emit(EVENTS.CLIENT.UPDATE_SHOW, {
+            name: newShowTitle.current.value,
+            eventId: newEventId.current.value,
+        }, (res) => {
+            setNotif(res);
+        });
+        setEditMode(false);
+    }
+
+    const toggleShowStart = () => {
+        console.log('Toggle show start', !show.isOpen);
+        socket.emit(EVENTS.CLIENT.TOGGLE_SHOW_START, {
+            fromChannel: !show.isOpen ? CHANNELS.WAITING_ROOM : CHANNELS.MAIN_ROOM,
+            toChannel: !show.isOpen ? CHANNELS.MAIN_ROOM : CHANNELS.WAITING_ROOM,
+            isShowOpen: !show.isOpen
+        }, (res) => {
+            setNotif(res);
+        });
+    }
+            <button onClick={handleUpdateShow}>UPDATE</button>
+
+    return <div {...props}>
+        <div className={styles.containerHeader}> 
+            <GiDramaMasks/>
+            <div className={styles.containerTitle}>SHOW</div>
+            {isEditMode && <button>Update</button>}
+            <button onClick={isEditMode ? cancelUpdate : edit}>
+                {isEditMode ? 'Cancel' : 'Edit'}
+            </button>
+            <div className={classList(styles.refresh)}><BiRefresh/></div>
+        </div>
+        <div className={styles.containerContent}>
+            <div className={styles.field}>
+                <label>Show Title</label>
+                <input placeholder='Title' 
+                    disabled={!isEditMode}
+                    ref={newShowTitle} 
+                    defaultValue={show.name}
+                />
+            </div>
+            <div className={styles.field}>
+                <label>Event ID</label>
+                <input placeholder='Event ID' 
+                    disabled={!isEditMode}
+                    ref={newEventId} 
+                    defaultValue={show.eventId}
+                />
+            </div>
+        </div>
+    </div>;
+}
 
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
@@ -21,6 +122,13 @@ const DashboardContainer = () => {
     const [mode, setMode] = useState(MODES.DASHBOARD);
     const newShowTitle = useRef(null);
     const newEventId = useRef(null);
+
+    if (mode === MODES.DASHBOARD) {
+        return <div className={styles.dashboard}>
+            <DateTimeContainer className={classList(styles.container, styles.row, styles.clock)} />
+            <ShowInfoContainer className={classList(styles.container, styles.showInfo)}/>
+        </div>;
+    }
 
     const handleUpdateShow = () => {
         if (newShowTitle.current.value == show.name &&
@@ -51,7 +159,7 @@ const DashboardContainer = () => {
     }
 
     const showInfo = isEditMode ?
-        <div className={styles.editShowInfo}>
+        <div className={styles_old.editShowInfo}>
             <input placeholder='Show Title' 
                 ref={newShowTitle} 
                 defaultValue={show.name}
@@ -62,14 +170,14 @@ const DashboardContainer = () => {
             />
             <button onClick={handleUpdateShow}>UPDATE</button>
         </div> :
-        <div className={styles.showInfo}>
+        <div className={styles_old.showInfo}>
             <p>Show Title: {show.name}</p>
-            <p className={!show.attendees ? styles.error : styles.success}>Event ID: {show.eventId}</p>
+            <p className={!show.attendees ? styles_old.error : styles_old.success}>Event ID: {show.eventId}</p>
             <button onClick={toggleShowStart}>{show.isOpen ? 'END' : 'START'}</button>
         </div>
 
     if (mode == MODES.THEATRE) {
-        return <div className={styles.dashboardWrapper}>
+        return <div className={styles_old.dashboardWrapper}>
             <UserMenu/>
             <button onClick={() => setMode(MODES.DASHBOARD)}>{MODES.DASHBOARD}</button>
             <button onClick={() => setMode(MODES.QNA)}>{MODES.QNA}</button>
@@ -78,15 +186,15 @@ const DashboardContainer = () => {
     }
     
     if (mode == MODES.QNA) {
-        return <div className={styles.dashboardWrapper}>
+        return <div className={styles_old.dashboardWrapper}>
             <UserMenu/>
             <button onClick={() => setMode(MODES.THEATRE)}>{MODES.THEATRE}</button>
-            <button onClick={() => setMode(MODES.QNA)}>{MODES.QNA}</button>
+            <button onClick={() => setMode(MODES.DASHBOARD)}>{MODES.DASHBOARD}</button>
             <QNAContainer />
         </div>;
     }
 
-    return <div className={styles.dashboardWrapper}>
+    return <div className={styles_old.dashboardWrapper}>
         <UserMenu/>
         <button onClick={() => setMode(MODES.THEATRE)}>{MODES.THEATRE}</button>
         <button onClick={() => setMode(MODES.QNA)}>{MODES.QNA}</button>
@@ -95,12 +203,12 @@ const DashboardContainer = () => {
         <button onClick={() => setEditMode(!isEditMode)}>
             {isEditMode ? 'CANCEL' : 'EDIT'}
         </button>
-        <div className={styles.bottom}>
-            <div className={styles.attendeesWrapper}>
+        <div className={styles_old.bottom}>
+            <div className={styles_old.attendeesWrapper}>
                 <AttendeesContainer/>
                 <UsersContainer/>
             </div>
-            <div className={styles.roomsWrapper}>
+            <div className={styles_old.roomsWrapper}>
                 <RoomsContainer />
                 <PollSettingsContainer/>
             </div>

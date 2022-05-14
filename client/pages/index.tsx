@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import themes from '../styles/Themes.module.css'
 import styles from '../styles/Home.module.css'
 import { useSockets } from '../context/socket.context'
 
@@ -14,6 +15,7 @@ export default function Home() {
   const {channel, user, notif, setNotif, loginRequest} = useSockets();
   const emailRef = useRef(null);
   const ticketRef = useRef(null);
+  const TEMP = true;
 
   useEffect(() => {
     // resetting any hash fragments from poll
@@ -29,6 +31,8 @@ export default function Home() {
       loginRequest({email, ticket});
     }
   }
+
+  if (TEMP) return <div className={themes.default}><DashboardContainer /></div>
 
   return (
     <div>

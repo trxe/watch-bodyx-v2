@@ -1,8 +1,10 @@
+@import "Themes.module.css";
+
 html,
 body {
   padding: 0;
   margin: 0;
-  font-family: 'Red Hat Mono', monospace;
+  font-family: 'Inter', sans-serif;
   background-image: url(/mathias-p-r-reding-6xDMwb9iucY-unsplash.jpg);
   background-position: center;
   background-repeat: no-repeat;
@@ -17,10 +19,25 @@ a {
 
 * {
   box-sizing: border-box;
+  scrollbar-color: var(--secondaryColor) var(--bgColor);
+}
+
+*::-webkit-scrollbar {
+  width: 0.5em;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--bgColor);
+  border-radius: 20px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--secondaryColor);
+  border-radius: 20px;
 }
 
 button {
-  font-family: 'Red Hat Mono', monospace;
+  font-family: 'Inter', sans-serif;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -32,5 +49,5 @@ button {
     padding: 2px;
     margin-top: 0.2rem;
     margin-right: 1rem;
-    color: gray;
+    cursor: pointer;
 }
