@@ -19,6 +19,7 @@ import { MdLiveHelp, MdOutlineTheaterComedy, MdOutlineTheaters, MdSpaceDashboard
 import ToggleButton from "../utils/toggleButton";
 import { useChatRooms } from "../context/chats.context";
 import { NOTIF } from "../config/notifications";
+import { usePoll } from "../context/poll.context";
 
 const NavbarContainer = ({mode, setMode}) => {
     return <div className={styles.navbar}>
@@ -64,6 +65,7 @@ const DateTimeContainer = (props) => {
 }
 
 const ShowInfoContainer = (props) => {
+    const {activeStatus, poll, setPoll, question, isResults, isEditPoll, setEditPoll, currentVotes} = usePoll();
     const [isEditMode, setEditMode] = useState(false);
     const {isViewerChatEnabled, setViewerChatEnabled} = useChatRooms();
     const newShowTitle = useRef(null);
@@ -117,6 +119,44 @@ const ShowInfoContainer = (props) => {
             (res) => setViewerChatEnabled(res.status));
     }
 
+    const toggleAudienceVoting = (toggleRef) => {
+        if (!socket || socket.disconnected) {
+            toggleRef.current.checked = activeStatus;
+            setNotif(NOTIF.DISCONNECTED);
+            return;
+        }
+        const newActiveStatus = !activeStatus;
+        // to prevent accidental updates
+        setEditPoll(true);
+        socket.emit(EVENTS.CLIENT.ADMIN_TOGGLE_POLL_STATUS, {isActive: newActiveStatus}, 
+            (res) => {
+                setEditPoll(false);
+                if (res && res.messageType === 'error') {
+                    setNotif(res);
+                } else {
+                    toggleRef.current.checked = newActiveStatus;
+                }
+            });
+    }
+
+    const publishPoll = (toggleRef) => {
+        if (!socket || socket.disconnected) {
+            toggleRef.current.checked = activeStatus;
+            setNotif(NOTIF.DISCONNECTED);
+            return;
+        }
+        const newPublishStatus = !isResults;
+        socket.emit(EVENTS.CLIENT.ADMIN_PUBLISH_POLL_RESULTS, {isResults: newPublishStatus}, (res) => {
+            setNotif(res);
+            if (res && res.messageType === 'success') {
+                poll.isResults = true;
+                setPoll(poll);
+            } else {
+                toggleRef.current.checked = newPublishStatus;
+            }
+        });
+    }
+
     return <div {...props}>
         <div className={styles.containerHeader}> 
             <MdOutlineTheaterComedy/>
@@ -147,9 +187,9 @@ const ShowInfoContainer = (props) => {
                 />
             </div>
             <div className={styles.row}>
-                <ToggleButton label="Chat" action={toggleAudienceChat} isSelected={isViewerChatEnabled}/>
-                <ToggleButton action={() => console.log('e')} label="Voting" isSelected={false}/>
-                <ToggleButton action={() => console.log('e')} label="Results" isSelected={false}/>
+                <ToggleButton label="Chat" action={toggleAudienceChat} isSelected={isViewerChatEnabled} disabled={false}/>
+                <ToggleButton label="Voting" action={toggleAudienceVoting} isSelected={activeStatus} disabled={isEditPoll || !question}/>
+                <ToggleButton label="Results" action={publishPoll} isSelected={isResults} disabled={isEditPoll || !question || currentVotes == 0}/>
             </div>
         </div>
     </div>;
@@ -192,23 +232,6 @@ const DashboardContainer = () => {
         });
     }
 
-    const showInfo = isEditMode ?
-        <div className={styles_old.editShowInfo}>
-            <input placeholder='Show Title' 
-                ref={newShowTitle} 
-                defaultValue={show.name}
-            />
-            <input placeholder='Event ID' 
-                ref={newEventId}
-                defaultValue={show.eventId}
-            />
-            <button onClick={handleUpdateShow}>UPDATE</button>
-        </div> :
-        <div className={styles_old.showInfo}>
-            <p>Show Title: {show.name}</p>
-            <p className={!show.attendees ? styles_old.error : styles_old.success}>Event ID: {show.eventId}</p>
-            <button onClick={toggleShowStart}>{show.isOpen ? 'END' : 'START'}</button>
-        </div>
 
     if (mode == MODES.THEATRE) {
         return <div className={styles_old.dashboardWrapper}>
@@ -249,7 +272,6 @@ const DashboardContainer = () => {
         <button onClick={() => setMode(MODES.THEATRE)}>{MODES.THEATRE}</button>
         <button onClick={() => setMode(MODES.QNA)}>{MODES.QNA}</button>
         <h1>Show Settings</h1>
-        {showInfo}
         <button onClick={() => setEditMode(!isEditMode)}>
             {isEditMode ? 'CANCEL' : 'EDIT'}
         </button>

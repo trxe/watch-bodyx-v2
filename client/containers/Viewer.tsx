@@ -87,7 +87,7 @@ const ViewerContainer = ({isAdmin}) => {
         <div className={styles.chatWrapper}>
             <ChatContainer chatName={roomName || CHANNELS.SM_ROOM} isPrivate={false}
                 label={roomIndex < show.rooms.length ? show.rooms[roomIndex].name : 'Moving rooms...'}/>
-            {activeStatus && <PollViewContainer isPreview={false} label={isResults ? 'RESULTS' : 'POLL'} />}
+            {(activeStatus || isResults) && <PollViewContainer isPreview={false} label={isResults ? 'RESULTS' : 'POLL'} />}
         </div>
     </div>
 }

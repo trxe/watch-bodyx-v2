@@ -68,6 +68,15 @@ input:checked + .toggleSlider:before {
   transform: translateX(26px);
 }
 
+input:disabled + .toggleSlider {
+  cursor: default;
+}
+
+input:disabled + .toggleSlider:before {
+  background-color: var(--disabled);
+  cursor: default;
+}
+
 /* Rounded toggleSliders */
 .toggleSlider.round {
   border-radius: 34px;

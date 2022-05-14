@@ -9,5 +9,6 @@
     --success: rgb(62, 197, 118);
     --error: rgb(210, 80, 80);
     --warning: rgb(234, 113, 0);
+    --disabled: rgb(99, 99, 99);
     --shadow: rgba(0, 0, 0, 0.8);
 }

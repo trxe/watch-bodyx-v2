@@ -15,7 +15,6 @@ export default function Home() {
   const {channel, user, notif, setNotif, loginRequest} = useSockets();
   const emailRef = useRef(null);
   const ticketRef = useRef(null);
-  const TEMP = true;
 
   useEffect(() => {
     // resetting any hash fragments from poll
