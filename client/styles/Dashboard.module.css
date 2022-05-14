@@ -12,9 +12,44 @@
   color: var(--primaryFont);
 }
 
-.dashboard button {
+.navbar {
+  position: absolute;
+  top: 0px;
+  right: 2em;
+}
+
+.navbar button {
+  font-size: 32px;
+  border-radius: 0px 0px 5px 5px;
+  padding: 5px 10px 0 10px;
+  margin-left: 0.3em;
+}
+
+.locationButton {
+  background-color: var(--secondaryColor);
+  border: none;
+  color: var(--secondaryFont);
+  transition: background-color 0.5s;
+}
+
+.locationButton:hover {
+  background-color: var(--secondaryTint);
+}
+
+.otherButton {
+  background: transparent;
+  border: none;
+  color: var(--primaryFont);
+  transition: background-color 0.5s;
+}
+
+.otherButton:hover {
+  background-color: var(--primaryColor);
+}
+
+.containerHeader button {
     background-color: var(--secondaryColor);
-    border-color: var(--secondaryColor);
+    border-style: none;
     border-radius: 5px;
     margin: 0.2em;
     padding: 0.3em;
@@ -22,6 +57,11 @@
     width: 70px;
     height: 30px;
     font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+.containerHeader button:hover {
+    background-color: var(--secondaryTint);
 }
 
 .refresh {
@@ -40,7 +80,9 @@
 }
 
 .row {
+  display: flex;
   flex-flow: row nowrap;
+  justify-content: center;
   width: 100%;
 }
 
@@ -51,17 +93,30 @@
 }
 
 @media only screen and (max-width: 800px) {
-    .container {
-        min-width: 90%;
-    }
+  .dashboard {
+    width: 100%;
+    height: 100%;
+    margin: auto;
+    background-color: var(--bgColor);
+    color: var(--primaryFont);
+  }
+
+  .row {
+    display: block;
+  }
+
+  .container {
+      min-width: 90%;
+  }
 }
 
 .containerHeader {
-  height: 15%;
+  height: 10%;
+  min-height: fit-content;
   font-size: larger;
   display: flex;
   flex-direction: row;
-  padding: 0.4em;
+  padding: 1em 0.4em 1em 0.4em;
   align-items: center;
 }
 
@@ -108,7 +163,7 @@
 }
 
 .field input:focus {
-  background-color: var(--secondaryColor);
+  background-color: var(--secondaryTint);
   color: var(--secondaryFont);
 
 }
@@ -121,13 +176,10 @@
     height: 85%;
 }
 
-.test1 {
-  background-color: var(--primaryColor);
-  height: 20%;
-}
-
 .clock {
   height: 11%;
+  display: flex;
+  flex-flow: column nowrap;
 }
 
 .time {
@@ -141,7 +193,32 @@
 }
 
 .showInfo {
-    background-color: var(--primaryColor);
-    width: 32%;
-    height: 25vh;
+  background-color: var(--primaryColor);
+  width: 32%;
+  height: 32vh;
+}
+
+.poll {
+  background-color: var(--primaryColor);
+  width: 33%;
+  height: 32vh;
+}
+
+.rooms {
+  background-color: var(--primaryColor);
+  width: 33%;
+  height: 32vh;
+}
+
+.attendees {
+  border: 2px solid white;
+  background-color: var(--bgColor);
+  width: 33%;
+  height: 48vh;
+}
+
+.users {
+  background-color: var(--primaryColor);
+  width: 68%;
+  height: 48vh;
 }

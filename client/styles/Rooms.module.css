@@ -30,12 +30,3 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.roomHeader {
-  display: flex;
-  justify-content: space-between;
-}
-
-.roomHeader .iconButton {
-  padding: 10px;
-}

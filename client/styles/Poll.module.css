@@ -1,10 +1,4 @@
-.pollWrapper {
-  display: flex;
-  padding: 0.5em;
-  background-color: cadetblue;
-  border-radius: 5px;
-  box-shadow: 2px 2px 5px;
-}
+@import "Themes.module.css";
 
 .pollHeader {
   display: flex;
@@ -19,7 +13,6 @@
   padding: 0.5em;
   flex-direction: column;
   align-items: center;
-  width: 80%;
 }
 
 .field {
@@ -29,7 +22,13 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  width: 100%;
+
+  font-size: 1em;
+  background-color: var(--field);
+  color: var(--secondaryFont);
+  box-shadow: 2px 2px 2px var(--shadow);
+  border-radius: 5px;
+  min-height: 2.5em;
 }
 
 .field button {
@@ -49,30 +48,50 @@
 .addOption {
   color: gray;
   text-align: center;
-  background-color: bisque;
+  border-style: none;
+  border-radius: 5px;
+  background-color: var(--field);
+  color: var(--secondaryFont);
+  font-weight: 600;
   cursor: pointer;
   pointer-events: all;
   transition: all 0.5s ease-out;
 }
 
 .addOption:hover {
-  background-color: burlywood;
-  color: black;
+  background-color: var(--secondaryTint);
+}
+
+.field input {
+  font-size: medium;
+  font-weight: 600;
+  background-color: transparent;
+  border-style: solid;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: 3px solid var(--secondaryFont);
+  color: var(--secondaryFont);
+}
+
+.field button {
+  background-color: transparent;
+  border: none;
 }
 
 .pollTitle {
-  font-size: 1em;
   font-weight: 600;
-  background-color: antiquewhite;
-  border-radius: 5px;
-  min-height: 1.5em;
+  background-color: var(--bgColor);
+  color: var(--primaryFont);
 }
 
-.pollOption {
-  font-size: 1em;
-  background-color: bisque;
-  border-radius: 5px;
-  min-height: 1.5em;
+.pollTitle button {
+  color: var(--primaryFont);
+}
+
+.pollTitle input {
+  border-bottom: 3px solid var(--primaryFont);
+  color: var(--primaryFont);
 }
 
 .pollArea {

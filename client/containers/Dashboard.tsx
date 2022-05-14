@@ -1,6 +1,5 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BiRefresh } from "react-icons/bi"
-import { GiDramaMasks } from "react-icons/gi"
 import EVENTS from "../config/events";
 import styles_old from "../styles/Dashboard_old.module.css"
 import styles from "../styles/Dashboard.module.css"
@@ -15,9 +14,23 @@ import { MODES } from "../config/modes";
 import QNAContainer from "./QnA";
 import PollSettingsContainer from "./Poll";
 import { classList, dayOfWeek, months } from "../utils/utils";
+import { AiOutlineMenu } from "react-icons/ai";
+import { MdLiveHelp, MdOutlineTheaterComedy, MdOutlineTheaters, MdSpaceDashboard } from "react-icons/md";
+import ToggleButton from "../utils/toggleButton";
+import { useChatRooms } from "../context/chats.context";
+import { NOTIF } from "../config/notifications";
+
+const NavbarContainer = ({mode, setMode}) => {
+    return <div className={styles.navbar}>
+        {mode !== MODES.THEATRE && <button onClick={() => setMode(MODES.THEATRE)} className={styles.locationButton}><MdOutlineTheaters /></button>}
+        {mode !== MODES.QNA && <button onClick={() => setMode(MODES.QNA)} className={styles.locationButton}><MdLiveHelp /></button>}
+        {mode !== MODES.DASHBOARD && <button onClick={() => setMode(MODES.DASHBOARD)} className={styles.locationButton}><MdSpaceDashboard /></button>}
+        <button className={styles.otherButton}><AiOutlineMenu /></button>
+    </div>;
+}
 
 const DateTimeContainer = (props) => {
-    const time = () => {
+    const calcTime = () => {
         const today = new Date();
         const h = today.getHours();
         const m = today.getMinutes().toString().padStart(2, '0');
@@ -25,7 +38,7 @@ const DateTimeContainer = (props) => {
         return `${h}:${m}:${s}`;
     }
 
-    const date = () => {
+    const calcDate = () => {
         const today = new Date();
         const day = dayOfWeek[today.getDay()];
         const date = today.getDate();
@@ -34,14 +47,25 @@ const DateTimeContainer = (props) => {
         return `${day}, ${date} ${month} ${year}`;
     }
 
+    const [time, setTime] = useState(calcTime());
+    const [date, setDate] = useState(calcDate());
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setTime(calcTime());
+            setDate(calcDate());
+        }, 1000);
+    })
+
     return <div {...props}>
-        <div className={styles.time}>{time()}</div>
-        <div className={styles.date}>{date()}</div>
+        <div className={styles.time}>{time}</div>
+        <div className={styles.date}>{date}</div>
     </div>;
 }
 
 const ShowInfoContainer = (props) => {
     const [isEditMode, setEditMode] = useState(false);
+    const {isViewerChatEnabled, setViewerChatEnabled} = useChatRooms();
     const newShowTitle = useRef(null);
     const newEventId = useRef(null);
     const {show, socket, setNotif} = useSockets();
@@ -81,13 +105,25 @@ const ShowInfoContainer = (props) => {
             setNotif(res);
         });
     }
-            <button onClick={handleUpdateShow}>UPDATE</button>
+
+    const toggleAudienceChat = (toggleRef) => {
+        if (!socket || socket.disconnected) {
+            toggleRef.current.checked = isViewerChatEnabled;
+            setNotif(NOTIF.DISCONNECTED);
+            return;
+        }
+        socket.emit(EVENTS.CLIENT.ADMIN_TOGGLE_AUDIENCE_CHAT, 
+            {status: isViewerChatEnabled},
+            (res) => setViewerChatEnabled(res.status));
+    }
 
     return <div {...props}>
         <div className={styles.containerHeader}> 
-            <GiDramaMasks/>
+            <MdOutlineTheaterComedy/>
             <div className={styles.containerTitle}>SHOW</div>
-            {isEditMode && <button>Update</button>}
+            <button onClick={isEditMode ? handleUpdateShow : toggleShowStart}>
+                {isEditMode ? 'Update' : show && show.isOpen ? 'Stop' : 'Start'}
+            </button>
             <button onClick={isEditMode ? cancelUpdate : edit}>
                 {isEditMode ? 'Cancel' : 'Edit'}
             </button>
@@ -110,6 +146,11 @@ const ShowInfoContainer = (props) => {
                     defaultValue={show.eventId}
                 />
             </div>
+            <div className={styles.row}>
+                <ToggleButton label="Chat" action={toggleAudienceChat} isSelected={isViewerChatEnabled}/>
+                <ToggleButton action={() => console.log('e')} label="Voting" isSelected={false}/>
+                <ToggleButton action={() => console.log('e')} label="Results" isSelected={false}/>
+            </div>
         </div>
     </div>;
 }
@@ -122,13 +163,6 @@ const DashboardContainer = () => {
     const [mode, setMode] = useState(MODES.DASHBOARD);
     const newShowTitle = useRef(null);
     const newEventId = useRef(null);
-
-    if (mode === MODES.DASHBOARD) {
-        return <div className={styles.dashboard}>
-            <DateTimeContainer className={classList(styles.container, styles.row, styles.clock)} />
-            <ShowInfoContainer className={classList(styles.container, styles.showInfo)}/>
-        </div>;
-    }
 
     const handleUpdateShow = () => {
         if (newShowTitle.current.value == show.name &&
@@ -191,6 +225,22 @@ const DashboardContainer = () => {
             <button onClick={() => setMode(MODES.THEATRE)}>{MODES.THEATRE}</button>
             <button onClick={() => setMode(MODES.DASHBOARD)}>{MODES.DASHBOARD}</button>
             <QNAContainer />
+        </div>;
+    }
+
+    if (mode === MODES.DASHBOARD) {
+        return <div className={styles.dashboard}>
+            <NavbarContainer mode={mode} setMode={setMode}/>
+            <DateTimeContainer className={classList(styles.container, styles.row, styles.clock)} />
+            <div className={styles.row}>
+                <ShowInfoContainer className={classList(styles.container, styles.showInfo)}/>
+                <PollSettingsContainer className={classList(styles.container, styles.poll)}/>
+                <RoomsContainer className={classList(styles.container, styles.rooms)}/>
+            </div>
+            <div className={styles.row}>
+                <AttendeesContainer className={classList(styles.container, styles.attendees)}/>
+                <UsersContainer className={classList(styles.container, styles.users)}/>
+            </div>
         </div>;
     }
 

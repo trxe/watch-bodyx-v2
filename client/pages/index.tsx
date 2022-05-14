@@ -32,10 +32,8 @@ export default function Home() {
     }
   }
 
-  if (TEMP) return <div className={themes.default}><DashboardContainer /></div>
-
   return (
-    <div>
+    <div className={themes.default}>
       <Head>
         <title>BODYX</title>
       </Head>

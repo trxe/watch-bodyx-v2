@@ -167,6 +167,7 @@ export const registerChatHandlers = (io, socket) => {
     // Toggle chat availability
     const adminToggleAudienceChat = ({status}, callback) => {
         const audienceChatStatus = Provider.getChatManager().toggleAudienceChat(!status);
+        Logger.info(`Chat ${audienceChatStatus ? 'enabled' : 'disabled'}.`)
         informAudienceChatStatus(io, audienceChatStatus);
         callback({status: audienceChatStatus});
     }

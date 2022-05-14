@@ -1,5 +1,6 @@
 import { useSockets } from "../context/socket.context";
-import dashboardStyles from '../styles/Dashboard.module.css'
+import { HiOutlineTicket } from "react-icons/hi"
+import dashboard from '../styles/Dashboard.module.css'
 import styles from '../styles/Attendees.module.css'
 
 const Attendee = ({name, ticket}) => {
@@ -9,14 +10,15 @@ const Attendee = ({name, ticket}) => {
     </div>;
 }
 
-const AttendeesContainer = () => {
+const AttendeesContainer = (props) => {
     const {show} = useSockets();
 
-    return <div className={dashboardStyles.attendeesWrapper}>
-        <div className={styles.attendeeHeader}>
-            <h2>Attendees</h2>
+    return <div {...props}>
+        <div className={dashboard.containerHeader}>
+            <HiOutlineTicket />
+            <div className={dashboard.containerTitle}>TICKET HOLDERS</div>
         </div>
-        <div>
+        <div className={dashboard.containerContent}>
             {show.attendees && 
                 Array.from(show.attendees.values())
                     .map(attendee => 

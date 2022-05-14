@@ -7,10 +7,11 @@ const ToggleButton = ({action, label, isSelected}) => {
     useEffect(() => {
         if (isSelected) toggleRef.current.checked = true;
     }, [isSelected]);
+
     return <div className={styles.toggleWrapper}>
         <div className={styles.toggleLabel}>{label}</div>
         <label className={styles.toggleBox}>
-            <input type="checkbox" onClick={action} ref={toggleRef}/>
+            <input type="checkbox" onClick={() => action(toggleRef)} ref={toggleRef}/>
             <span className={`${styles.toggleSlider} ${styles.round}`}></span>
         </label>
         </div>;

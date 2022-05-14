@@ -1,8 +1,9 @@
 import { FC, useEffect, useState } from "react";
-import { BsThreeDotsVertical } from "react-icons/bs"
+import { BsThreeDotsVertical, BsPeople } from "react-icons/bs"
 import { CHANNELS } from "../config/channels";
 import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
+import dashboard from '../styles/Dashboard.module.css'
 import styles from "../styles/Clients.module.css"
 import DropdownMenu from "../utils/dropdown";
 
@@ -62,16 +63,8 @@ const Client:FC<Client> = ({user, socketId, channelName, roomName}) => {
     </div>;
 }
 
-const UsersContainer = () => {
+const UsersContainer = (props) => {
     const {socket, show, clientsList} = useSockets();
-    // const [clientList, setClientList] = useState(!clients ? [] : Array.from(clients.values()));
-    // const [clients, setClients] = useState(new Map<string, Client>());
-
-    /*
-    useEffect(() => {
-        socket.emit(EVENTS.CLIENT.GET_INFO, {request: 'clients'});
-    }, []);
-    */
 
     const getHumanReadableRoomName = (roomName: string) => {
         const room = show.rooms.find(room => room.roomName === roomName);
@@ -79,14 +72,19 @@ const UsersContainer = () => {
         else return room.name;
     }
 
-    return <div>
-        <h2>Users</h2>
-        {clientsList.map(c => <Client 
-            key={c.socketId} 
-            socketId={c.socketId} 
-            user={c.user} 
-            roomName={getHumanReadableRoomName(c.roomName)} 
-            channelName={c.channelName}/>)}
+    return <div {...props}>
+        <div className={dashboard.containerHeader}>
+            <BsPeople/>
+            <div className={dashboard.containerTitle}>USERS PRESENT</div>
+        </div>
+        <div className={dashboard.containerContent}>
+            {clientsList.map(c => <Client 
+                key={c.socketId} 
+                socketId={c.socketId} 
+                user={c.user} 
+                roomName={getHumanReadableRoomName(c.roomName)} 
+                channelName={c.channelName}/>)}
+        </div>
     </div>;
 }
 

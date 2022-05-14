@@ -1,8 +1,10 @@
 import { FC, useRef, useState } from "react";
 import { GrAdd } from 'react-icons/gr'
 import { AiFillEdit, AiFillLock, AiFillUnlock, AiOutlineCheck, AiOutlineClose, AiOutlineDelete } from "react-icons/ai";
+import { BsXDiamond } from "react-icons/bs"
 import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
+import dashboard from '../styles/Dashboard.module.css'
 import styles from '../styles/Rooms.module.css'
 import { createNotif } from "./Snackbar";
 import ToggleButton from "../utils/toggleButton";
@@ -103,7 +105,7 @@ const Room:FC<IRoom> = ({name, url, isLocked, _id, roomName, index}) => {
     </div>;
 }
 
-const RoomsContainer = () => {
+const RoomsContainer = (props) => {
     const {socket, show, setShow, setNotif} = useSockets();
     const {isViewerChatEnabled, setViewerChatEnabled} = useChatRooms();
     const newRoomName = useRef(null);
@@ -135,35 +137,30 @@ const RoomsContainer = () => {
         toggleAddMode();
     }
 
-    const toggleAudienceChat = () => {
-        console.log({status: isViewerChatEnabled});
-        socket.emit(EVENTS.CLIENT.ADMIN_TOGGLE_AUDIENCE_CHAT, 
-            {status: isViewerChatEnabled},
-            (res) => setViewerChatEnabled(res.status));
-    }
-
-    return <div>
-        <div className={styles.roomHeader}>
-            <h2>Rooms</h2>
-            <button className={styles.iconButton} onClick={toggleAddMode}>
+    return <div {...props}>
+        <div className={dashboard.containerHeader}>
+            <BsXDiamond/>
+            <div className={dashboard.containerTitle}>ROOMS</div>
+            <button onClick={toggleAddMode}>
                 {!isAddMode ? <GrAdd /> : <AiOutlineClose/>}
             </button>
-            <ToggleButton label="Audience Chat" action={toggleAudienceChat} isSelected={isViewerChatEnabled}/>
         </div>
-        {isAddMode && <div>
-            <input placeholder="Room Name" ref={newRoomName}/>
-            <input placeholder="URL" ref={newRoomUrl}/>
-            <button onClick={handleCreateRoom}>Create</button>
+        <div className={dashboard.containerContent}>
+            {isAddMode && <div>
+                <input placeholder="Room Name" ref={newRoomName}/>
+                <input placeholder="URL" ref={newRoomUrl}/>
+                <button onClick={handleCreateRoom}>Create</button>
+                </div>
+            }
+            <div>
+                {show.rooms && 
+                    show.rooms.map((room, index) => <Room 
+                        key={room._id} 
+                        index={index} 
+                        {...room}
+                        />) 
+                    }
             </div>
-        }
-        <div>
-            {show.rooms && 
-                show.rooms.map((room, index) => <Room 
-                    key={room._id} 
-                    index={index} 
-                    {...room}
-                     />) 
-                }
         </div>
     </div>
 }

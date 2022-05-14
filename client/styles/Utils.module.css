@@ -1,15 +1,20 @@
+@import "Themes.module.css";
+
 /* TOGGLE BUTTON */
 .toggleWrapper {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  padding: 1em;
 }
 
 .toggleLabel {
   height: 1.5em;
   margin-right: 10px;
   display: inline-block;
+  font-size: large;
+  font-weight: 600;
 }
 
 .toggleBox {
@@ -32,7 +37,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: var(--bgColor);
   -webkit-transition: .4s;
   transition: .4s;
 }
@@ -50,11 +55,11 @@
 }
 
 input:checked + .toggleSlider {
-  background-color: #2196F3;
+  background-color: var(--secondaryColor)
 }
 
 input:focus + .toggleSlider {
-  box-shadow: 0 0 1px #2196F3;
+  box-shadow: 0 0 1px var(--secondaryColor);
 }
 
 input:checked + .toggleSlider:before {
