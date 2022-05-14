@@ -7,8 +7,7 @@ import { useSockets } from "../context/socket.context";
 import dashboard from '../styles/Dashboard.module.css'
 import styles from '../styles/Rooms.module.css'
 import { createNotif } from "./Snackbar";
-import ToggleButton from "../utils/toggleButton";
-import { useChatRooms } from "../context/chats.context";
+import { classList } from "../utils/utils";
 
 export interface IRoom {
     name: string;
@@ -93,26 +92,27 @@ const Room:FC<IRoom> = ({name, url, isLocked, _id, roomName, index}) => {
                 {index <= 0 ? 'M': isLocked ? <AiFillLock/> : <AiFillUnlock/>}
             </button>
         }
+        {isEditMode && <button className='iconButton' onClick={handleDeleteRoom}><AiOutlineDelete/></button>}
         {!isEditMode && <p className={styles.roomName}>{name}</p> }
         {!isEditMode && <p className={styles.roomUrl}>{url}</p> }
         {isEditMode && <input className={styles.roomName} defaultValue={name} ref={nameRef}/>}
         {isEditMode && <input className={styles.roomUrl} defaultValue={url} ref={urlRef}/>}
-        {isEditMode && <button className='iconButton' onClick={handleEditRoom}><AiOutlineCheck/></button>}
             
-        <button onClick={isEditMode ? handleDeleteRoom: toggleEditMode} className='iconButton'>
-            {isEditMode ? <AiOutlineDelete/> : <AiFillEdit/>}
+        <button onClick={isEditMode ? handleEditRoom: toggleEditMode} className='iconButton'>
+            {isEditMode ? <AiOutlineCheck/> : <AiFillEdit/>}
         </button>
     </div>;
 }
 
 const RoomsContainer = (props) => {
     const {socket, show, setShow, setNotif} = useSockets();
-    const {isViewerChatEnabled, setViewerChatEnabled} = useChatRooms();
+    const [styling, setStyling] = useState({opacity: '0', height: '0'});
     const newRoomName = useRef(null);
     const newRoomUrl = useRef(null);
     const [isAddMode, setAddMode] = useState(false);
 
     const toggleAddMode = () => {
+        setStyling(!isAddMode ? {opacity: '100', height: '3em'} : {opacity: '0', height: '0'})
         setAddMode(!isAddMode);
     }
 
@@ -146,20 +146,18 @@ const RoomsContainer = (props) => {
             </button>
         </div>
         <div className={dashboard.containerContent}>
-            {isAddMode && <div>
-                <input placeholder="Room Name" ref={newRoomName}/>
-                <input placeholder="URL" ref={newRoomUrl}/>
-                <button onClick={handleCreateRoom}>Create</button>
-                </div>
-            }
-            <div>
-                {show.rooms && 
-                    show.rooms.map((room, index) => <Room 
-                        key={room._id} 
-                        index={index} 
-                        {...room}
-                        />) 
-                    }
+            {show.rooms && 
+                show.rooms.map((room, index) => <Room 
+                    key={room._id} 
+                    index={index} 
+                    {...room}
+                    />) 
+                }
+            <div className={styles.room} style={styling}>
+                <button className='iconButton' onClick={toggleAddMode}><AiOutlineClose/></button>
+                <input className={styles.roomName} placeholder="Room Name" ref={newRoomName}/>
+                <input className={styles.roomUrl} placeholder="URL" ref={newRoomUrl}/>
+                <button onClick={handleCreateRoom} className='iconButton'><AiOutlineCheck/></button>
             </div>
         </div>
     </div>
