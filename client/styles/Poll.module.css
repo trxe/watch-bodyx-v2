@@ -45,6 +45,11 @@
   padding-right: 1em;
 }
 
+.voteCount {
+  font-weight: 500;
+  padding: 0.5em;
+}
+
 .addOption {
   color: gray;
   text-align: center;

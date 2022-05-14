@@ -206,7 +206,7 @@ const PollSettingsContainer = (props) => {
         <div className={dashboard.containerHeader}>
             <MdOutlinePoll />
             <div className={dashboard.containerTitle}>POLL</div>
-            <span>Votes: {currentVotes}/{totalVoters}</span>
+            <div className={styles.voteCount}>{currentVotes}/{totalVoters} voted</div>
             <PollViewContainer label={'Preview'} isPreview={user != null && user.isAdmin}/>
             <button onClick={newPoll} disabled={isEditPoll}>Reset</button>
         </div>
