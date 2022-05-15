@@ -19,6 +19,7 @@ const Attendee:FC<IAttendee> = ({user}) => {
         <div className={styles.icon}>{user.isPresent ? <HiStatusOnline/> : <HiStatusOffline/>}</div>
         <div className={styles.ticket}>{user.ticket}</div>
         <div className={styles.name}>{user.name}</div>
+        <div className={styles.email}>{user.email}</div>
         <DropdownMenu title={<BsThreeDotsVertical/>} labels={[]} actions={[]}/>
     </div>;
 }
@@ -60,6 +61,9 @@ const AttendeesContainer = (props) => {
                     <button><RiArrowDownSFill/></button>
                 </div>
                 <div className={styles.name}>Name
+                    <button><RiArrowDownSLine/></button>
+                </div>
+                <div className={styles.email}>Email
                     <button><RiArrowDownSLine/></button>
                 </div>
                 <DropdownMenu style={{opacity: 0, cursor: 'none'}} title={<BsThreeDotsVertical/>} labels={[]} actions={[]}/>

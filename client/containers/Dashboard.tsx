@@ -70,7 +70,7 @@ const EventInfoContainer = (props) => {
 
     return <div {...props}>
         <div style={{fontSize: "larger", fontWeight: "900"}}>{viewersPresent} of {viewersTotal}</div>
-        <div>present attendees</div>
+        <div>users present</div>
     </div>
 }
 

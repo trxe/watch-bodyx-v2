@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useChatRooms } from '../context/chats.context';
 import { useSockets } from '../context/socket.context';
 import styles from '../styles/QnA.module.css'
+import dashboard from '../styles/Dashboard.module.css'
 import ChatContainer from './Chat';
 import { Client } from './Clients';
 
@@ -23,7 +24,7 @@ const QNAContainer = () => {
 
     if (!socket) return null;
 
-    return <div className={styles.qnaWrapper}>
+    return <div className={dashboard.row}>
         <div className={styles.clientsSelect}>
             <ul>
                 {clientsList.filter(isClientNotMe).map(client => 

@@ -22,13 +22,16 @@ export const UserSchema = new mongoose.Schema({
         type: Boolean,
         required: true,
     },
+    isPresent: {
+        type: Boolean,
+        required: true,
+    },
     hasAttended: {
         type: Boolean,
         required: true,
     },
     eventId: {
         type: String,
-        required: true,
     },
 });
 

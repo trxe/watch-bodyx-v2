@@ -95,7 +95,7 @@ export const PollViewContainer = ({isPreview, label}) => {
 
 const PollSettingsContainer = (props) => {
     const {poll, setPoll, activeStatus, isResults, question, setQuestion, options, setOptions, isEditPoll, setEditPoll, currentVotes, totalVoters} = usePoll();
-    const {socket, setNotif, user} = useSockets();
+    const {socket, setNotif, user, viewersPresent} = useSockets();
     const [isAdding, setAdding] = useState(false);
 
     const newPoll = () => {
@@ -208,7 +208,7 @@ const PollSettingsContainer = (props) => {
         <div className={dashboard.containerHeader}>
             <MdOutlinePoll />
             <div className={dashboard.containerTitle}>POLL</div>
-            <div className={styles.voteCount}>{currentVotes}/{totalVoters} voted</div>
+            <div className={styles.voteCount}>{currentVotes}/{viewersPresent} voted</div>
             <PollViewContainer label={'Preview'} isPreview={user != null && user.isAdmin}/>
             <button onClick={newPoll} disabled={isEditPoll}>Reset</button>
         </div>

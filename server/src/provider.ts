@@ -150,8 +150,11 @@ async function findUser(query): Promise<User> {
 async function logInOutUser(query, isPresent: boolean): Promise<User> {
     const userDoc = await UserModel.findOne(query);
     if (userDoc != null) {
+        userDoc.isPresent = isPresent;
+        await userDoc.save((err) => {if (err) Logger.error(err);});
         const user = {...userDoc._doc, isPresent};
         delete user['__v']
+        show.attendees.set(user.ticket, user);
         return user;
     } 
     return null;

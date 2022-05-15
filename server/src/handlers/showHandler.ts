@@ -225,7 +225,6 @@ export const registerShowHandlers = (io: Server, socket) => {
             (room) => {
                 // TODO: Kick users from this room
                 // io.to(_id + '_ROOM').emit(SHOW_EVENTS.FORCE_JOIN_ROOM, Provider.getShowMainRoom());
-                console.log(room);
                 callback(new Ack('info', 'Deleted room', room._id).getJSON());
                 const show = Provider.getShow();
                 removeSMsFromRoom(io, room.roomName);

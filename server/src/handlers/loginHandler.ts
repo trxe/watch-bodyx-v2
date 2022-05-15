@@ -27,7 +27,6 @@ export const registerLoginHandlers = (io, socket) => {
                     callback(LOGIN_EVENTS.ACKS.INVALID_LOGIN.getJSON());
                     return;
                 }
-                console.log('user', user);
                 if (user.isAdmin) {
                     channelName = CHANNELS.SM_ROOM;
                     // admins have to receive all messages
