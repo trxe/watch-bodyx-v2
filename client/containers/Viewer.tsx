@@ -81,7 +81,7 @@ const ViewerContainer = ({isAdmin}) => {
                 {show.rooms && show.rooms.map && show.rooms.map(({name, isLocked}, index) => 
                     <button className={index === roomIndex ? styles.currentRoomButton: null} 
                         onClick={()=> handleSwitchRooms(index)} 
-                        disabled={isLocked || index == roomIndex} key={name}>{name}</button>)}
+                        disabled={(isLocked || index == roomIndex) && index != 0} key={name}>{name}</button>)}
             </div>
         </div>
         <div className={styles.chatWrapper}>

@@ -11,4 +11,6 @@
     --warning: rgb(234, 113, 0);
     --disabled: rgb(99, 99, 99);
     --shadow: rgba(0, 0, 0, 0.8);
+    --admin: rgb(207, 225, 232);
+    --viewer: rgb(241, 241, 241);
 }

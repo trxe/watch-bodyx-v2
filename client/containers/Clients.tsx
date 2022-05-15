@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { BsThreeDotsVertical, BsPeople } from "react-icons/bs"
 import { CHANNELS } from "../config/channels";
 import EVENTS from "../config/events";
@@ -68,6 +68,35 @@ const Client:FC<Client> = ({user, socketId, channelName, roomName}) => {
 
 const UsersContainer = (props) => {
     const {socket, show, clientsList} = useSockets();
+    const [filterKeyword, setFilterKeyword] = useState('')
+    const [filterType, setFilterType] = useState('Name')
+    const filterRef = useRef(null);
+
+    const contains = (client: Client) => {
+        if (filterType === 'Name') {
+            return client.user.name.indexOf(filterKeyword) >= 0;
+        } else if (filterType === 'Email') {
+            return client.user.email.indexOf(filterKeyword) >= 0;
+        } else if (filterType === 'Channel') {
+            if (!client.channelName) return false;
+            return client.channelName.indexOf(filterKeyword) >= 0;
+        } else if (filterType === 'Room') {
+            if (!client.roomName) return false;
+            return client.roomName.indexOf(filterKeyword) >= 0;
+        } else {
+            return client.user.name.indexOf(filterKeyword) >= 0;
+        }
+    }
+
+    const changeFilter = () => {
+        if (filterRef.current && filterRef.current.value) 
+            setFilterKeyword(filterRef.current.value);
+        else setFilterKeyword('');
+    }
+
+    const filterTypeLabels = [ 'Name', 'Email', 'Channel', 'Room' ];
+
+    const filterTypeActions = filterTypeLabels.map(word => () => setFilterType(word));
 
     const getHumanReadableRoomName = (roomName: string) => {
         const room = show.rooms.find(room => room.roomName === roomName);
@@ -80,8 +109,8 @@ const UsersContainer = (props) => {
             <BsPeople/>
             <div className={dashboard.containerTitle}>USERS PRESENT</div>
             <div className={styles.search}>
-                <input placeholder="Filter"/>
-                <DropdownMenu title="List" labels={['Name', 'Email']} actions={[]}/>
+                <input onChange={changeFilter} ref={filterRef} placeholder={filterType}/>
+                <DropdownMenu title="Filter" labels={filterTypeLabels} actions={filterTypeActions}/>
             </div>
             <div className={classList(dashboard.refresh)}><BiRefresh/></div>
         </div>
@@ -94,7 +123,7 @@ const UsersContainer = (props) => {
                 <div className={styles.shortField}>ROOM</div>
                 <DropdownMenu style={{opacity: 0, cursor: 'none'}} title={<BsThreeDotsVertical/>} labels={[]} actions={[]}/>
             </div>
-            {clientsList.map(c => <Client 
+            {clientsList.filter(contains).map(c => <Client 
                 key={c.socketId} 
                 socketId={c.socketId} 
                 user={c.user} 

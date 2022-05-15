@@ -7,6 +7,8 @@ import { classList } from "../utils/utils";
 import { BiRefresh } from "react-icons/bi";
 import { RiArrowDownSFill, RiArrowDownSLine } from "react-icons/ri";
 import DropdownMenu from "../utils/dropdown";
+import { useRef, useState } from "react";
+import { User } from "./Clients";
 
 const Attendee = ({name, ticket}) => {
     return <div className={classList(styles.attendee, styles.row)}>
@@ -19,13 +21,23 @@ const Attendee = ({name, ticket}) => {
 
 const AttendeesContainer = (props) => {
     const {show} = useSockets();
+    const [filterKeyword, setFilterKeyword] = useState('')
+    const filterRef = useRef(null);
+
+    const contains = (user: User) => user.name.indexOf(filterKeyword) >= 0;
+
+    const changeFilter = () => {
+        if (filterRef.current && filterRef.current.value) 
+            setFilterKeyword(filterRef.current.value);
+        else setFilterKeyword('');
+    }
 
     return <div {...props}>
         <div className={dashboard.containerHeader}>
             <HiOutlineTicket />
             <div className={dashboard.containerTitle}>TICKET HOLDERS</div>
             <div className={styles.search}>
-                <input placeholder="Filter"/>
+                <input onChange={changeFilter} ref={filterRef} placeholder="Filter"/>
             </div>
             <div className={classList(dashboard.refresh)}><BiRefresh/></div>
         </div>
@@ -42,6 +54,7 @@ const AttendeesContainer = (props) => {
             </div>
             {show.attendees && 
                 Array.from(show.attendees.values())
+                    .filter(contains)
                     .map(attendee => 
                         <Attendee key={attendee.ticket} 
                             name={attendee.name} 

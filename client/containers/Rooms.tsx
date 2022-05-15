@@ -7,7 +7,6 @@ import { useSockets } from "../context/socket.context";
 import dashboard from '../styles/Dashboard.module.css'
 import styles from '../styles/Rooms.module.css'
 import { createNotif } from "./Snackbar";
-import { classList } from "../utils/utils";
 
 export interface IRoom {
     name: string;
@@ -130,8 +129,7 @@ const RoomsContainer = (props) => {
                 // server should return the room created
                 if (res.messageType === 'info') newRoom = res.message;
                 else setNotif(res);
-            }
-            );
+            });
         newRoomName.current.value = '';
         newRoomUrl.current.value = '';
         toggleAddMode();

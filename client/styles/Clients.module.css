@@ -36,12 +36,12 @@
 
 .admin {
   color: var(--secondaryFont);
-  background-color: var(--secondaryColor);
+  background-color: var(--admin);
 }
 
 .viewer {
   color: var(--secondaryFont);
-  background-color: var(--field);
+  background-color: var(--viewer);
 }
 
 .icon {
