@@ -9,6 +9,14 @@ import { createNotif, INotif } from '../containers/Snackbar';
 import { Client, User } from '../containers/Clients';
 import { useChatRooms } from './chats.context';
 
+const emptyShow = {
+    name: '',
+    eventId: '', 
+    isOpen: false,
+    rooms: [],
+    attendees: new Map<string, User>(),
+}
+
 interface ISocketContext {
     socket: Socket
     channel: string
@@ -64,7 +72,7 @@ const SocketsProvider = (props: any) => {
     const [user, setUser] =  useState(null);
     const [channel, setChannel] = useState(null);
     const [roomName, setRoomName] = useState(null);
-    const [show, setShow] = useState({});
+    const [show, setShow] = useState(emptyShow);
     const [notif, setNotif] =  useState(null);
     const [disconnectedInfo, setDisconnectedInfo] = useState('');
     const {setChatRooms} = useChatRooms();
@@ -164,13 +172,16 @@ const SocketsProvider = (props: any) => {
 
         socket.off(EVENTS.SERVER.ADD_CLIENT).on(EVENTS.SERVER.ADD_CLIENT, (client) => {
             clientsMap.set(client.user.ticket, client);
-            // console.log("clientsmap curr", clientsMap);
+            console.log("clientsmap curr", client.user);
+            show.attendees.set(client.user.ticket, client.user);
             setClientsMap(clientsMap);
             setClientsList(Array.from(clientsMap.values()));
         })
 
         socket.off(EVENTS.SERVER.DISCONNECTED_CLIENT).on(EVENTS.SERVER.DISCONNECTED_CLIENT, ({ticket, socketId}) => {
+            const client = clientsMap.get(ticket);
             clientsMap.delete(ticket);
+            show.attendees.set(client.user.ticket, {...client.user, isPresent: false});
             setClientsMap(clientsMap);
             setClientsList(Array.from(clientsMap.values()));
         })

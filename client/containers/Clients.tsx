@@ -15,6 +15,9 @@ export interface User {
     ticket: string,
     firstName: string,
     isAdmin: boolean
+    isPresent: boolean,
+    hasAttended: boolean,
+    eventId?: string,
 }
 
 export interface Client {

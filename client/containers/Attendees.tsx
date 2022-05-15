@@ -1,5 +1,5 @@
 import { useSockets } from "../context/socket.context";
-import { HiOutlineTicket, HiStatusOffline } from "react-icons/hi"
+import { HiOutlineTicket, HiStatusOffline, HiStatusOnline } from "react-icons/hi"
 import dashboard from '../styles/Dashboard.module.css'
 import styles from '../styles/Attendees.module.css'
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -7,14 +7,18 @@ import { classList } from "../utils/utils";
 import { BiRefresh } from "react-icons/bi";
 import { RiArrowDownSFill, RiArrowDownSLine } from "react-icons/ri";
 import DropdownMenu from "../utils/dropdown";
-import { useRef, useState } from "react";
+import { FC, useRef, useState } from "react";
 import { User } from "./Clients";
 
-const Attendee = ({name, ticket}) => {
-    return <div className={classList(styles.attendee, styles.row)}>
-        <div className={styles.icon}><HiStatusOffline/></div>
-        <div className={styles.ticket}>{ticket}</div>
-        <div className={styles.name}>{name}</div>
+interface IAttendee {
+    user: User
+}
+
+const Attendee:FC<IAttendee> = ({user}) => {
+    return <div className={classList(styles.attendee, styles.row, user.isPresent ? styles.present : styles.absent)}>
+        <div className={styles.icon}>{user.isPresent ? <HiStatusOnline/> : <HiStatusOffline/>}</div>
+        <div className={styles.ticket}>{user.ticket}</div>
+        <div className={styles.name}>{user.name}</div>
         <DropdownMenu title={<BsThreeDotsVertical/>} labels={[]} actions={[]}/>
     </div>;
 }
@@ -57,8 +61,7 @@ const AttendeesContainer = (props) => {
                     .filter(contains)
                     .map(attendee => 
                         <Attendee key={attendee.ticket} 
-                            name={attendee.name} 
-                            ticket={attendee.ticket}
+                            user={attendee}
                             />)}
         </div>
     </div>

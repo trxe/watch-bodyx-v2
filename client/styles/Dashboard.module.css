@@ -81,7 +81,7 @@
 
 .row {
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   justify-content: center;
   width: 100%;
 }
@@ -194,31 +194,31 @@
 
 .showInfo {
   background-color: var(--primaryColor);
-  width: 32%;
+  width: 30%;
   height: 32vh;
 }
 
 .poll {
   background-color: var(--primaryColor);
-  width: 33%;
+  width: 30%;
   height: 32vh;
 }
 
 .rooms {
   background-color: var(--primaryColor);
-  width: 33%;
+  width: 30%;
   height: 32vh;
 }
 
 .attendees {
   border: 2px solid white;
   background-color: var(--bgColor);
-  width: 33%;
+  width: 30%;
   height: 48vh;
 }
 
 .users {
   background-color: var(--primaryColor);
-  width: 68%;
+  width: 60%;
   height: 48vh;
 }
