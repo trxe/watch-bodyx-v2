@@ -70,6 +70,7 @@ const ViewerContainer = ({isAdmin}) => {
             }
             {roomIndex < show.rooms.length &&
                 <div className={styles.mediaPlayer}>
+                    <div className={styles.overlay}></div>
                     <iframe width="100%" height="100%" 
                         src={show.rooms[roomIndex].url}
                         title="YouTube video player" 
