@@ -1,43 +1,60 @@
-.viewerWrapper {
-    padding: 1rem;
-    display: flex;
-}
+@import "Themes.module.css";
 
 .greeter {
-    height: 5vh;
-    vertical-align: middle;
-    display: flex;
+  height: 8vh;
+  vertical-align: middle;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 24px;
+  padding: 1em;
+  color: var(--primaryFont);
 }
 
 .playerWrapper {
-    width: 70%;
-    color:white;
+  width: 70%;
+  height: 90vh;
+}
+
+.roomButtons {
+  margin-top: 0.5em;
+  display: flex;
+  flex-flow: row nowrap;
+  overflow-x: auto;
 }
 
 .roomButtons button {
-  background-color: black;
-  color: white;
+  background-color: var(--primaryColor);
+  color: var(--primaryFont);
   border: none;
   border-radius: 4px;
+  box-shadow: 0px 4px 4px var(--shadow);
   margin: 0.5rem;
   padding: 0.5rem;
+  font-size: medium;
+  font-weight: 500;
+  transition: background-color 0.5s ease;
+}
+
+.roomButtons button:hover {
+  background-color: var(--primaryTint);
 }
 
 .roomButtons button:disabled {
-    background-color: rgba(256, 256, 256, 0.3);
+    background-color: var(--disabled);
     cursor: default;
 }
 
 .currentRoomButton,
 .currentRoomButton:disabled {
-    background-color: darkorange !important;
-    color: black !important;
-    cursor: default;
+  background-color: var(--secondaryColor) !important;
+  color: var(--secondaryFont) !important;
+  cursor: default;
 }
 
 .mediaPlayer {
-    height: 80vh;
-    position: relative;
+  height: 80vh;
+  position: relative;
 }
 
 .overlay {
@@ -46,15 +63,21 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.0);
+  background-color: transparent;
+}
+
+.mediaPlayer iframe {
+  border: none;
 }
 
 .chatWrapper {
-    width: 30%;
-    height: 90vh;
-    margin: 1rem;
-    text-align: center;
-    background-color: rgba(256, 256, 256, 0.5);
+  width: 25%;
+  height: 88vh;
+  margin: 3em 1em 1em 3em;
+  text-align: center;
+  background-color: var(--primaryColor);
+  border-radius: 10px;
+  box-shadow: 4px 4px 16px var(--shadow);
 }
 
 .chatWrapper button {
@@ -66,7 +89,6 @@
   padding: 0.5rem;
 }
 
-
 .chatWrapper button:disabled {
   background-color: grey;
   pointer-events: none;
@@ -75,4 +97,27 @@
   border-radius: 4px;
   margin: 0.5rem;
   padding: 0.5rem;
+}
+
+@media only screen and (max-width: 880px) {
+  .greeter {
+    width: 60%;
+  }
+
+  .playerWrapper {
+      width: 100%;
+      height: fit-content;
+  }
+
+  .mediaPlayer{
+      height: 40vh;
+  }
+
+  .chatWrapper {
+      width: 100%;
+      height: 40vh;
+      margin: 1em 0 0 0;
+      text-align: center;
+      background-color: var(--primaryColor);
+  }
 }

@@ -3,6 +3,7 @@ import EVENTS from "../config/events";
 import { Message, useChatRooms } from "../context/chats.context";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Chat.module.css";
+import { classList } from "../utils/utils";
 
 const ChatContextMenu = ({_id, message, msgIndex}) => {
     const [contextData, setContextData] = useState({visible: false, posX: 0, posY: 0});
@@ -80,15 +81,15 @@ const ChatContextMenu = ({_id, message, msgIndex}) => {
 
 const PinContainer = ({msgIndex, message}) => {
     const {user} = useSockets();
+    const isSelf = message.userName === user.name;
 
     if (!user) return null;
 
-    // console.log(msgIndex, message, isAdmin);
-    return <div id={`pin-${msgIndex}`} 
-            className={`${styles.message} ${styles.messagePin}`}>
+    return <div className={classList(styles.message, isSelf ? styles.messageSelf : styles.messageOther)}>
         {user.isAdmin && !message.isPrivate && <ChatContextMenu _id={`pin-${msgIndex}`} message={message} msgIndex={msgIndex}/>}
-        <div className={styles.textBox}>
-            {message.userName}: {message.contents}
+        <div id={`pin-${msgIndex}`} className={classList(styles.textBox, isSelf ? styles.textBoxSelf : styles.textBoxOther)}>
+            {!isSelf && <p>{isSelf ? '': message.userName}</p>}
+            {message.contents}
         </div>
     </div>;
 
@@ -101,11 +102,11 @@ const MessageContainer = ({index, message}) => {
 
     const serverMsgIndex = currentChatRoom.serverMsgIndex(index);
 
-    return <div id={`message-${index}`} 
-            className={`${styles.message} ${isSelf ? styles.messageSelf : styles.messageOther}`}>
+    return <div className={classList(styles.message, isSelf ? styles.messageSelf : styles.messageOther)}>
         {user.isAdmin && !message.isPrivate && <ChatContextMenu _id={`message-${index}`} message={message} msgIndex={serverMsgIndex}/>}
-        <div className={styles.textBox}>
-            {isSelf ? '': `${message.userName}: `}{message.contents}
+        <div id={`message-${index}`} className={classList(styles.textBox, isSelf ? styles.textBoxSelf : styles.textBoxOther)}>
+            {!isSelf && <p>{isSelf ? '': message.userName}</p>}
+            {message.contents}
         </div>
     </div>;
 }
@@ -164,11 +165,12 @@ const ChatContainer = ({chatName, isPrivate, label}) => {
     }
 
     return <div className={styles.chatWrapper}>
-        <div className={styles.chatHeader}>
-            <h3>{label}</h3>
-        </div>
-        <div className={styles.pinList}>
+        {pins.length > 0 && <div className={styles.pinList}>
+            <div className={styles.pinHeader}>Pins</div>
             {pins.map(pin => <PinContainer key={pin.msgIndex} {...pin} />)}
+        </div>}
+        <div className={styles.chatHeader}>
+            {label}
         </div>
         <div className={styles.messageList}>
             {messages.map((msg, index) => 
@@ -177,8 +179,8 @@ const ChatContainer = ({chatName, isPrivate, label}) => {
             <div ref={messagesEndRef} />
         </div>
         {(isPrivate || isViewerChatEnabled || user.isAdmin) &&
-            <div>
-                <textarea rows={3} placeholder={`Send a message (max length ${maxCharCount})`} 
+            <div className={styles.sendArea}>
+                <textarea rows={2} placeholder={`Send a message (max length ${maxCharCount})`} 
                     maxLength={maxCharCount} ref={newMessageRef}/>
                 <button onClick={handleSendMessage}>SEND</button>
             </div>

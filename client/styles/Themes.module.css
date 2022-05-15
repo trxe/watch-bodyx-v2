@@ -1,6 +1,7 @@
 .default {
     --bgColor: rgb(33, 54, 93);
     --primaryColor: rgb(61, 93, 152);
+    --primaryTint: rgb(74, 138, 255);
     --secondaryColor: rgb(246, 178, 68);
     --secondaryTint: rgb(255, 233, 198);
     --field: rgb(207, 225, 232);

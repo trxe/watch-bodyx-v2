@@ -4,11 +4,12 @@ import EVENTS from '../config/events';
 import { usePoll } from '../context/poll.context';
 import { useSockets } from '../context/socket.context';
 import styles from '../styles/Viewer.module.css'
+import dashboard from '../styles/Dashboard.module.css'
 import ChatContainer from './Chat';
 import { PollViewContainer } from './Poll';
 import UserMenu from './UserMenu';
 
-const ViewerContainer = ({isAdmin}) => {
+const ViewerContainer = ({className, isAdmin}) => {
     const {activeStatus, isResults} = usePoll();
     const {socket, user, show, roomName, setRoomName} = useSockets();
     const [roomIndex, setRoomIndex] = useState(-1)
@@ -57,11 +58,10 @@ const ViewerContainer = ({isAdmin}) => {
         </div>
     }
 
-    return <div className={styles.viewerWrapper}>
+    return <div className={dashboard.row}>
         <div className={styles.playerWrapper}>
             <div className={styles.greeter}>
-                <UserMenu/>
-                <span>Welcome, Detective {user.name}!</span>
+                Welcome, Detective {user.firstName}!
             </div>
             {roomIndex >= show.rooms.length &&
                 <div className={styles.mediaPlayer}>

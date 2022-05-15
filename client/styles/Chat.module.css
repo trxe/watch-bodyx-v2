@@ -1,51 +1,112 @@
+@import "Themes.module.css";
+
 .chatWrapper {
-    max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+    max-height: 85vh;
+    height: 100%;
 }
 
 .messageList {
+    flex-grow: 10;
     overflow-y: auto;
-    height: 70vh;
+    color: var(--secondaryFont);
 }
 
 .pinList {
     overflow-y: auto;
+    flex-grow: 4;
     max-height: 20vh;
+    margin-bottom: 1vh;
+}
+
+.pinHeader {
+  flex-grow: 1;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
+  padding: 0.2em;
+  border-radius: 5px 5px 0 0;
+  background-color: var(--secondaryColor);
+  color: var(--secondaryFont);
 }
 
 .chatHeader {
-    text-align: center;
-    background-color: antiquewhite;
-    color: black;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 600;
+  padding: 0.2em;
+  border-radius: 5px 5px 0 0;
+  background-color: var(--secondaryFont);
+  color: var(--secondaryColor);
 }
 
-.chatHeader h3 {
-    margin: 0;
+.sendArea {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5em;
+}
+
+.sendArea textarea {
+  flex-grow: 2;
+  width: 80%;
+  padding: 0.5em;
+  box-sizing: border-box;
+  border-radius: 5px;
+  background-color: var(--bgColor);
+  color: var(--primaryFont);
+  box-shadow: 2px 2px 6px var(--shadow);
+  font-size: 16px;
+  resize: none;
 }
 
 .message {
-    overflow-wrap: break-word;
+  overflow-wrap: break-word;
+  display: flex;
 }
 
 .messageSelf {
-    background-color: rgba(238, 238, 255, 0.5);
-    text-align: right;
-    padding-inline-end: 1em;
+  justify-content: right;
+  text-align: right;
+  padding-inline-end: 1em;
 }
 
 .messageOther {
-    background-color: rgba(255, 238, 238, 0.5);
-    text-align: left;
-    padding-inline-start: 1em;
+  justify-content: left;
+  text-align: left;
+  padding-inline-start: 1em;
 }
 
 .messagePin {
-    background-color: rgba(101, 155, 255, 0.7);
-    text-align: left;
-    padding-inline-start: 1em;
+  background-color: rgba(101, 155, 255, 0.7);
+  text-align: left;
+  padding-inline-start: 1em;
 }
 
 .textBox {
-    margin: 5px;
+  padding: 5px 1em 5px 1em;
+  margin: 5px;
+  max-width: 80%;
+}
+
+.textBox p {
+  margin: 0;
+  color: var(--secondaryColor);
+  font-size: small;
+  font-weight: 700;
+}
+
+.textBoxSelf {
+  background-color: var(--field);
+  color: var(--secondaryFont);
+  border-radius: 10px 10px 2px 10px;
+}
+
+.textBoxOther {
+  background-color: var(--bgColor);
+  color: var(--primaryFont);
+  border-radius: 10px 10px 10px 2px;
 }
 
 .unreadMarker {
@@ -63,28 +124,32 @@
 }
 
 .dropdown {
-  background: violet;
+  background-color: var(--primaryFont);
+  color: var(--secondaryFont);
   list-style-type: none;
   min-width: 5rem;
   margin-top: 0;
   z-index: 1;
   padding-inline-start: 0;
-  padding: 2px;
-  border-radius: 5px;
+  padding: 2px 0px 2px 0px;
 }
 
 .dropdown a {
   text-align: center;
-  padding: 2px 10px 2px 10px;
   display: block;
 }
 
 .dropdown li {
-  border-radius: 5px;
   margin: 5px;
 }
 
 .dropdown li:hover {
   transition: background-color 0.2s ease-in;
-  background-color: blueviolet;
+  background-color: var(--secondaryColor);
+}
+
+@media only screen and (max-width: 880px) {
+  .messageList {
+    height: 75%;
+  }
 }

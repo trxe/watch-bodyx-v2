@@ -216,19 +216,15 @@ const DashboardContainer = () => {
     const [mode, setMode] = useState(MODES.DASHBOARD);
 
     if (mode == MODES.THEATRE) {
-        return <div className={styles_old.dashboardWrapper}>
-            <UserMenu/>
-            <button onClick={() => setMode(MODES.DASHBOARD)}>{MODES.DASHBOARD}</button>
-            <button onClick={() => setMode(MODES.QNA)}>{MODES.QNA}</button>
-            <ViewerContainer isAdmin={true} />
+        return <div className={styles.dashboard}>
+            <NavbarContainer mode={mode} setMode={setMode}/>
+            <ViewerContainer className={styles.row} isAdmin={true} />
         </div>;
     }
     
     if (mode == MODES.QNA) {
         return <div className={styles_old.dashboardWrapper}>
-            <UserMenu/>
-            <button onClick={() => setMode(MODES.THEATRE)}>{MODES.THEATRE}</button>
-            <button onClick={() => setMode(MODES.DASHBOARD)}>{MODES.DASHBOARD}</button>
+            <NavbarContainer mode={mode} setMode={setMode}/>
             <QNAContainer />
         </div>;
     }
