@@ -74,6 +74,10 @@ const ShowInfoContainer = (props) => {
 
     const edit = () => setEditMode(true);
 
+    const requestShow = () => {
+        socket.emit(EVENTS.CLIENT.GET_INFO, {request: 'show'});
+    }
+
     const cancelUpdate = () => {
         newShowTitle.current.value = !show || !show.name ? '' : show.name;
         newEventId.current.value = !show || !show.eventId ? '' : show.eventId;
@@ -167,7 +171,7 @@ const ShowInfoContainer = (props) => {
             <button onClick={isEditMode ? cancelUpdate : edit}>
                 {isEditMode ? 'Cancel' : 'Edit'}
             </button>
-            <div className={classList(styles.refresh)}><BiRefresh/></div>
+            <div className={classList(styles.refresh)} onClick={requestShow}><BiRefresh/></div>
         </div>
         <div className={styles.containerContent}>
             <div className={styles.field}>
@@ -198,40 +202,8 @@ const ShowInfoContainer = (props) => {
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
     // and EventInfo, including Time, Duration, Title
-    const {socket, show, setNotif} = useSockets();
     const [isEditMode, setEditMode] = useState(false);
     const [mode, setMode] = useState(MODES.DASHBOARD);
-    const newShowTitle = useRef(null);
-    const newEventId = useRef(null);
-
-    const handleUpdateShow = () => {
-        if (newShowTitle.current.value == show.name &&
-            newEventId.current.value == show.eventId) {
-                setEditMode(false);
-                return;
-            }
-        setNotif({messageType: 'warning', title: 'Loading event info...', 
-            message: 'Loading event from server.'})
-        socket.emit(EVENTS.CLIENT.UPDATE_SHOW, {
-            name: newShowTitle.current.value,
-            eventId: newEventId.current.value,
-        }, (res) => {
-            setNotif(res);
-        });
-        setEditMode(false);
-    }
-
-    const toggleShowStart = () => {
-        console.log('Toggle show start', !show.isOpen);
-        socket.emit(EVENTS.CLIENT.TOGGLE_SHOW_START, {
-            fromChannel: !show.isOpen ? CHANNELS.WAITING_ROOM : CHANNELS.MAIN_ROOM,
-            toChannel: !show.isOpen ? CHANNELS.MAIN_ROOM : CHANNELS.WAITING_ROOM,
-            isShowOpen: !show.isOpen
-        }, (res) => {
-            setNotif(res);
-        });
-    }
-
 
     if (mode == MODES.THEATRE) {
         return <div className={styles_old.dashboardWrapper}>

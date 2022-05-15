@@ -100,5 +100,11 @@
 }
 
 .pollArea {
-  width: 80%
+  color: var(--secondaryFont);
+}
+
+.pollFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

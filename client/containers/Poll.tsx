@@ -72,7 +72,7 @@ export const PollViewContainer = ({isPreview, label}) => {
 
     console.log('curr votes', currentVotes, poll.voters);
 
-    return <div>
+    return <div className={styles.pollArea}>
         <button onClick={openPoll}>{label}</button>
         <Modal id="poll" width={'60%'}>
             <h3>{poll != null && poll.question} {user != null && user.isAdmin && `[Votes: ${currentVotes}/${totalVoters}]`}</h3>
@@ -85,8 +85,10 @@ export const PollViewContainer = ({isPreview, label}) => {
             {!isResults && vote == null && user!= null && !user.isAdmin && 
                 poll.options.map((option, index) => <PollBar key={index} index={index} option={option.label} 
                     handleSelect={handleSelect} selected={selected}/>)}
-            <button disabled={vote != null} onClick={submit}>Vote</button>
-            <a href="#" title="Close" className={styles.closeModal}>Close</a>
+            <div className={styles.pollFooter}>
+                <button disabled={vote != null} onClick={submit}>Vote</button>
+                <button onClick={() => location.hash = '#'}>Close</button>
+            </div>
         </Modal>
     </div>
 }

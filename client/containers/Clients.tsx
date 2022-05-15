@@ -98,6 +98,10 @@ const UsersContainer = (props) => {
 
     const filterTypeActions = filterTypeLabels.map(word => () => setFilterType(word));
 
+    const requestClients = () => {
+        socket.emit(EVENTS.CLIENT.GET_INFO, {request: 'clients'});
+    }
+
     const getHumanReadableRoomName = (roomName: string) => {
         const room = show.rooms.find(room => room.roomName === roomName);
         if (!room) return roomName;
@@ -112,7 +116,7 @@ const UsersContainer = (props) => {
                 <input onChange={changeFilter} ref={filterRef} placeholder={filterType}/>
                 <DropdownMenu title="Filter" labels={filterTypeLabels} actions={filterTypeActions}/>
             </div>
-            <div className={classList(dashboard.refresh)}><BiRefresh/></div>
+            <div className={classList(dashboard.refresh)} onClick={requestClients}><BiRefresh/></div>
         </div>
         <div className={dashboard.containerContent}>
             <div className={classList(styles.user, styles.header)}>

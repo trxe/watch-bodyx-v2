@@ -306,11 +306,13 @@ export const registerShowHandlers = (io: Server, socket) => {
 
     // Get particular info
     const getInfo = ({request}) => {
-        console.log(`received request for ${request}`)
+        Logger.warn(`Received request for ${request}`)
         if (request === 'clients') {
             sendClients(socket);
         } else if (request === 'all_pins') {
             sendPinnedMessagesToSocket(socket);
+        } else if (request === 'show') {
+            sendShow(socket);
         }
     }
 
@@ -322,5 +324,5 @@ export const registerShowHandlers = (io: Server, socket) => {
     socket.on(CLIENT_EVENTS.JOIN_CHANNEL, joinChannel);
     socket.on(CLIENT_EVENTS.TOGGLE_SHOW_START, toggleShowStart);
     socket.on(CLIENT_EVENTS.MOVE_SOCKET_TO, moveSocketTo);
-    socket.once(CLIENT_EVENTS.GET_INFO, getInfo);
+    socket.on(CLIENT_EVENTS.GET_INFO, getInfo);
 }

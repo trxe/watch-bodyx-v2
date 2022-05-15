@@ -175,13 +175,13 @@ input:disabled + .toggleSlider:before {
 }
 
 .modal {
-  background-color: darksalmon;
+  background-color: var(--primaryColor);
+  color: var(--primaryFont);
   padding: 1em;
 }
 
 .closeModal {
   background: #606061;
-  color: #FFFFFF;
   padding: 0.2em;
   line-height: 25px;
   text-align: center;
@@ -202,9 +202,8 @@ input:disabled + .toggleSlider:before {
 .optionBox {
   height: 3em;
   width: 90%;
-  background-color: antiquewhite;
+  background-color: var(--bgColor);
   border-radius: 10px;
-  border-color: gray;
   border-width: 5px;
   margin: 0.5em;
 }
@@ -229,7 +228,7 @@ input:disabled + .toggleSlider:before {
 }
 
 .optionBar {
-  background-color: rgba(255, 142, 142, 0.5);
+  background-color: var(--secondaryColor);
+  height: 30%;
   display: inherit;
-  height: 100%;
 }
