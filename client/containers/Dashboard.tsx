@@ -64,6 +64,16 @@ const DateTimeContainer = (props) => {
     </div>;
 }
 
+const EventInfoContainer = (props) => {
+    const {show, viewersPresent, viewersTotal} = useSockets();
+    if (!show || show.attendees.size == 0) return null;
+
+    return <div {...props}>
+        <div style={{fontSize: "larger", fontWeight: "900"}}>{viewersPresent} of {viewersTotal}</div>
+        <div>present attendees</div>
+    </div>
+}
+
 const ShowInfoContainer = (props) => {
     const {activeStatus, poll, setPoll, question, isResults, isEditPoll, setEditPoll, currentVotes} = usePoll();
     const [isEditMode, setEditMode] = useState(false);
@@ -227,6 +237,7 @@ const DashboardContainer = () => {
         return <div className={styles.dashboard}>
             <NavbarContainer mode={mode} setMode={setMode}/>
             <DateTimeContainer className={classList(styles.container, styles.row, styles.clock)} />
+            <EventInfoContainer className={styles.eventInfo} />
             <div className={styles.row}>
                 <ShowInfoContainer className={classList(styles.container, styles.showInfo)}/>
                 <PollSettingsContainer className={classList(styles.container, styles.poll)}/>

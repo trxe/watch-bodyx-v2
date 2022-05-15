@@ -44,6 +44,8 @@ interface ISocketContext {
     setNotif: Function
     disconnectedInfo: string
     loginRequest: Function
+    viewersTotal: number
+    viewersPresent: number
 }
 
 let socket;
@@ -63,6 +65,8 @@ const SocketContext = createContext<ISocketContext>({
     setShow: () => false,
     disconnectedInfo: '',
     loginRequest: () => false,
+    viewersPresent: 0,
+    viewersTotal: 0
 })
 
 /* Every Context object comes with a Provider React component 
@@ -74,6 +78,8 @@ const SocketsProvider = (props: any) => {
     const [roomName, setRoomName] = useState(null);
     const [show, setShow] = useState(emptyShow);
     const [notif, setNotif] =  useState(null);
+    const [viewersTotal, setViewersTotal] = useState(0);
+    const [viewersPresent, setViewersPresent] = useState(0);
     const [disconnectedInfo, setDisconnectedInfo] = useState('');
     const {setChatRooms} = useChatRooms();
 
@@ -154,6 +160,9 @@ const SocketsProvider = (props: any) => {
             const currShow = {...newShow, attendees: null};
             if (newShow.attendees != null) {
                 currShow.attendees = new Map(Object.entries(newShow.attendees));
+                const attendeesList = Object.values(newShow.attendees).filter((a: User) => !a.isAdmin);
+                setViewersTotal(attendeesList.length);
+                setViewersPresent(attendeesList.filter((a: User) => a.isPresent).length);
             }
             setShow(currShow);
             setChatRooms(newShow.rooms);
@@ -173,6 +182,7 @@ const SocketsProvider = (props: any) => {
         socket.off(EVENTS.SERVER.ADD_CLIENT).on(EVENTS.SERVER.ADD_CLIENT, (client) => {
             clientsMap.set(client.user.ticket, client);
             console.log("clientsmap curr", client.user);
+            if (!client.user.isAdmin) setViewersPresent(viewersPresent + 1);
             show.attendees.set(client.user.ticket, client.user);
             setClientsMap(clientsMap);
             setClientsList(Array.from(clientsMap.values()));
@@ -181,6 +191,7 @@ const SocketsProvider = (props: any) => {
         socket.off(EVENTS.SERVER.DISCONNECTED_CLIENT).on(EVENTS.SERVER.DISCONNECTED_CLIENT, ({ticket, socketId}) => {
             const client = clientsMap.get(ticket);
             clientsMap.delete(ticket);
+            if (!client.user.isAdmin) setViewersPresent(viewersPresent - 1);
             show.attendees.set(client.user.ticket, {...client.user, isPresent: false});
             setClientsMap(clientsMap);
             setClientsList(Array.from(clientsMap.values()));
@@ -254,6 +265,8 @@ const SocketsProvider = (props: any) => {
             setNotif, 
             disconnectedInfo,
             loginRequest,
+            viewersPresent,
+            viewersTotal
         }} 
         {...props} 
     />

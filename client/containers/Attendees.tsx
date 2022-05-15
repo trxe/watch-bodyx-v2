@@ -5,7 +5,7 @@ import styles from '../styles/Attendees.module.css'
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { classList } from "../utils/utils";
 import { BiRefresh } from "react-icons/bi";
-import { RiArrowDownSFill, RiArrowDownSLine } from "react-icons/ri";
+import { RiArrowDownSFill, RiArrowDownSLine, RiUserFill, RiUserStarFill } from "react-icons/ri";
 import DropdownMenu from "../utils/dropdown";
 import { FC, useRef, useState } from "react";
 import { User } from "./Clients";
@@ -25,10 +25,17 @@ const Attendee:FC<IAttendee> = ({user}) => {
 
 const AttendeesContainer = (props) => {
     const {show} = useSockets();
-    const [filterKeyword, setFilterKeyword] = useState('')
+    const [filterKeyword, setFilterKeyword] = useState('');
+    const [isAdminFilter, setAdminFilter] = useState(false);
     const filterRef = useRef(null);
 
-    const contains = (user: User) => user.name.indexOf(filterKeyword) >= 0;
+    const containsKeyword = (user: User) => {
+        return (user.name.indexOf(filterKeyword) >= 0 
+            || user.ticket.indexOf(filterKeyword) >= 0)
+            && isAdminFilter === user.isAdmin;
+    }
+
+    const changeUserType = () => setAdminFilter(!isAdminFilter);
 
     const changeFilter = () => {
         if (filterRef.current && filterRef.current.value) 
@@ -39,11 +46,12 @@ const AttendeesContainer = (props) => {
     return <div {...props}>
         <div className={dashboard.containerHeader}>
             <HiOutlineTicket />
-            <div className={dashboard.containerTitle}>TICKET HOLDERS</div>
+            <div className={dashboard.containerTitle}>{isAdminFilter ? 'ADMINS' : 'TICKET HOLDERS'}</div>
             <div className={styles.search}>
                 <input onChange={changeFilter} ref={filterRef} placeholder="Filter"/>
             </div>
-            <div className={classList(dashboard.refresh)}><BiRefresh/></div>
+            <div className={classList(styles.toggleView)} onClick={changeUserType}>
+                {isAdminFilter ? <RiUserStarFill/> : <RiUserFill/>}</div>
         </div>
         <div className={dashboard.containerContent}>
             <div className={classList(styles.attendee, styles.header)}>
@@ -58,7 +66,7 @@ const AttendeesContainer = (props) => {
             </div>
             {show.attendees && 
                 Array.from(show.attendees.values())
-                    .filter(contains)
+                    .filter(containsKeyword)
                     .map(attendee => 
                         <Attendee key={attendee.ticket} 
                             user={attendee}
