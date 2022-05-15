@@ -218,7 +218,7 @@ const DashboardContainer = () => {
     if (mode == MODES.THEATRE) {
         return <div className={styles.dashboard}>
             <NavbarContainer mode={mode} setMode={setMode}/>
-            <ViewerContainer className={styles.row} isAdmin={true} />
+            <ViewerContainer isAdmin={true} />
         </div>;
     }
     

@@ -9,7 +9,7 @@ import ChatContainer from './Chat';
 import { PollViewContainer } from './Poll';
 import UserMenu from './UserMenu';
 
-const ViewerContainer = ({className, isAdmin}) => {
+const ViewerContainer = ({isAdmin}) => {
     const {activeStatus, isResults} = usePoll();
     const {socket, user, show, roomName, setRoomName} = useSockets();
     const [roomIndex, setRoomIndex] = useState(-1)
