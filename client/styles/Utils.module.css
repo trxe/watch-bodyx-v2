@@ -1,15 +1,20 @@
+@import "Themes.module.css";
+
 /* TOGGLE BUTTON */
 .toggleWrapper {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  padding: 1em;
 }
 
 .toggleLabel {
   height: 1.5em;
   margin-right: 10px;
   display: inline-block;
+  font-size: large;
+  font-weight: 600;
 }
 
 .toggleBox {
@@ -32,7 +37,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: var(--bgColor);
   -webkit-transition: .4s;
   transition: .4s;
 }
@@ -44,23 +49,32 @@
   width: 26px;
   left: 4px;
   bottom: 4px;
-  background-color: white;
+  background-color: var(--primaryFont);
   -webkit-transition: .4s;
   transition: .4s;
 }
 
 input:checked + .toggleSlider {
-  background-color: #2196F3;
+  background-color: var(--secondaryColor)
 }
 
 input:focus + .toggleSlider {
-  box-shadow: 0 0 1px #2196F3;
+  box-shadow: 0 0 1px var(--secondaryColor);
 }
 
 input:checked + .toggleSlider:before {
   -webkit-transform: translateX(26px);
   -ms-transform: translateX(26px);
   transform: translateX(26px);
+}
+
+input:disabled + .toggleSlider {
+  cursor: default;
+}
+
+input:disabled + .toggleSlider:before {
+  background-color: var(--disabled);
+  cursor: default;
 }
 
 /* Rounded toggleSliders */
@@ -74,20 +88,21 @@ input:checked + .toggleSlider:before {
 
 /* DROPDOWN */
 .dropdownButton {
-  color: #fff;
-  background: coral;
-  display: block;
-  padding: 1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   border: none;
-  border-radius: 4px;
-  position: relative;
-  text-decoration: none;
-  transition: background-color 0.5s ease-in;
+  border-radius: 10px;
+  padding: 0.2em;
+  background-color: transparent;
+  transition: background-color 0.5s ease;
 }
 
 .dropdownButton:hover,
 .dropdownButton:focus-within {
-  background: red;
+  background-color: var(--secondaryTint);
   cursor: pointer;
 }
 
@@ -96,7 +111,7 @@ input:checked + .toggleSlider:before {
 }
 
 .dropdown {
-  background: orange;
+  background: var(--primaryFont);
   list-style-type: none;
   visibility: hidden;
   opacity: 0;
@@ -110,14 +125,15 @@ input:checked + .toggleSlider:before {
 }
 
 .dropdown a {
-  text-align: center;
+  text-align: left;
   padding: 2px 10px 2px 10px;
   display: block;
+  color: var(--secondaryFont);
 }
 
 .dropdown li:hover {
-  transition: background-color 0.5s ease-in;
-  background-color: red;
+  transition: background-color 0.3s ease;
+  background-color: var(--secondaryColor);
 }
 
 .dropdownWrapper:hover > .dropdown,
@@ -159,13 +175,13 @@ input:checked + .toggleSlider:before {
 }
 
 .modal {
-  background-color: darksalmon;
+  background-color: var(--primaryColor);
+  color: var(--primaryFont);
   padding: 1em;
 }
 
 .closeModal {
   background: #606061;
-  color: #FFFFFF;
   padding: 0.2em;
   line-height: 25px;
   text-align: center;
@@ -186,9 +202,8 @@ input:checked + .toggleSlider:before {
 .optionBox {
   height: 3em;
   width: 90%;
-  background-color: antiquewhite;
+  background-color: var(--bgColor);
   border-radius: 10px;
-  border-color: gray;
   border-width: 5px;
   margin: 0.5em;
 }
@@ -213,7 +228,7 @@ input:checked + .toggleSlider:before {
 }
 
 .optionBar {
-  background-color: rgba(255, 142, 142, 0.5);
+  background-color: var(--secondaryColor);
+  height: 30%;
   display: inherit;
-  height: 100%;
 }

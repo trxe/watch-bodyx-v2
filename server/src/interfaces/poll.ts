@@ -57,7 +57,6 @@ export class Poll {
         this.options = this.dbPoll.options.map(opt => {return { _id: opt._id.toString(), label: opt.label, votes: opt.votes }});
         this.dbPoll.voters.forEach(opt => this.voters.set(opt.ticket, opt.optionIndex));
         this.isResults = this.dbPoll.isResults;
-        console.log('current POLL',this.question, this.options, this.voters);
     }
 
     public async setPoll(question: string, options: Array<Option>): Promise<boolean> {

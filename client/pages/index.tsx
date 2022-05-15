@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import themes from '../styles/Themes.module.css'
 import styles from '../styles/Home.module.css'
 import { useSockets } from '../context/socket.context'
 
@@ -31,7 +32,7 @@ export default function Home() {
   }
 
   return (
-    <div>
+    <div className={themes.default}>
       <Head>
         <title>BODYX</title>
       </Head>

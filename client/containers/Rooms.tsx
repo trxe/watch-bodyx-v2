@@ -1,12 +1,12 @@
 import { FC, useRef, useState } from "react";
 import { GrAdd } from 'react-icons/gr'
 import { AiFillEdit, AiFillLock, AiFillUnlock, AiOutlineCheck, AiOutlineClose, AiOutlineDelete } from "react-icons/ai";
+import { BsXDiamond } from "react-icons/bs"
 import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
+import dashboard from '../styles/Dashboard.module.css'
 import styles from '../styles/Rooms.module.css'
 import { createNotif } from "./Snackbar";
-import ToggleButton from "../utils/toggleButton";
-import { useChatRooms } from "../context/chats.context";
 
 export interface IRoom {
     name: string;
@@ -91,26 +91,27 @@ const Room:FC<IRoom> = ({name, url, isLocked, _id, roomName, index}) => {
                 {index <= 0 ? 'M': isLocked ? <AiFillLock/> : <AiFillUnlock/>}
             </button>
         }
+        {isEditMode && <button className='iconButton' onClick={handleDeleteRoom}><AiOutlineDelete/></button>}
         {!isEditMode && <p className={styles.roomName}>{name}</p> }
         {!isEditMode && <p className={styles.roomUrl}>{url}</p> }
         {isEditMode && <input className={styles.roomName} defaultValue={name} ref={nameRef}/>}
         {isEditMode && <input className={styles.roomUrl} defaultValue={url} ref={urlRef}/>}
-        {isEditMode && <button className='iconButton' onClick={handleEditRoom}><AiOutlineCheck/></button>}
             
-        <button onClick={isEditMode ? handleDeleteRoom: toggleEditMode} className='iconButton'>
-            {isEditMode ? <AiOutlineDelete/> : <AiFillEdit/>}
+        <button onClick={isEditMode ? handleEditRoom: toggleEditMode} className='iconButton'>
+            {isEditMode ? <AiOutlineCheck/> : <AiFillEdit/>}
         </button>
     </div>;
 }
 
-const RoomsContainer = () => {
+const RoomsContainer = (props) => {
     const {socket, show, setShow, setNotif} = useSockets();
-    const {isViewerChatEnabled, setViewerChatEnabled} = useChatRooms();
+    const [styling, setStyling] = useState({opacity: '0', height: '0'});
     const newRoomName = useRef(null);
     const newRoomUrl = useRef(null);
     const [isAddMode, setAddMode] = useState(false);
 
     const toggleAddMode = () => {
+        setStyling(!isAddMode ? {opacity: '100', height: '3em'} : {opacity: '0', height: '0'})
         setAddMode(!isAddMode);
     }
 
@@ -128,42 +129,34 @@ const RoomsContainer = () => {
                 // server should return the room created
                 if (res.messageType === 'info') newRoom = res.message;
                 else setNotif(res);
-            }
-            );
+            });
         newRoomName.current.value = '';
         newRoomUrl.current.value = '';
         toggleAddMode();
     }
 
-    const toggleAudienceChat = () => {
-        console.log({status: isViewerChatEnabled});
-        socket.emit(EVENTS.CLIENT.ADMIN_TOGGLE_AUDIENCE_CHAT, 
-            {status: isViewerChatEnabled},
-            (res) => setViewerChatEnabled(res.status));
-    }
-
-    return <div>
-        <div className={styles.roomHeader}>
-            <h2>Rooms</h2>
-            <button className={styles.iconButton} onClick={toggleAddMode}>
+    return <div {...props}>
+        <div className={dashboard.containerHeader}>
+            <BsXDiamond/>
+            <div className={dashboard.containerTitle}>ROOMS</div>
+            <button onClick={toggleAddMode}>
                 {!isAddMode ? <GrAdd /> : <AiOutlineClose/>}
             </button>
-            <ToggleButton label="Audience Chat" action={toggleAudienceChat} isSelected={isViewerChatEnabled}/>
         </div>
-        {isAddMode && <div>
-            <input placeholder="Room Name" ref={newRoomName}/>
-            <input placeholder="URL" ref={newRoomUrl}/>
-            <button onClick={handleCreateRoom}>Create</button>
-            </div>
-        }
-        <div>
+        <div className={dashboard.containerContent}>
             {show.rooms && 
                 show.rooms.map((room, index) => <Room 
                     key={room._id} 
                     index={index} 
                     {...room}
-                     />) 
+                    />) 
                 }
+            <div className={styles.room} style={styling}>
+                <button className='iconButton' onClick={toggleAddMode}><AiOutlineClose/></button>
+                <input className={styles.roomName} placeholder="Room Name" ref={newRoomName}/>
+                <input className={styles.roomUrl} placeholder="URL" ref={newRoomUrl}/>
+                <button onClick={handleCreateRoom} className='iconButton'><AiOutlineCheck/></button>
+            </div>
         </div>
     </div>
 }

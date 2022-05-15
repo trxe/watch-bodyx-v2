@@ -1,0 +1,16 @@
+.default {
+    --bgColor: rgb(33, 54, 93);
+    --primaryColor: rgb(61, 93, 152);
+    --secondaryColor: rgb(246, 178, 68);
+    --secondaryTint: rgb(255, 233, 198);
+    --field: rgb(207, 225, 232);
+    --primaryFont: white;
+    --secondaryFont: black;
+    --success: rgb(62, 197, 118);
+    --error: rgb(210, 80, 80);
+    --warning: rgb(234, 113, 0);
+    --disabled: rgb(99, 99, 99);
+    --shadow: rgba(0, 0, 0, 0.8);
+    --admin: rgb(207, 225, 232);
+    --viewer: rgb(241, 241, 241);
+}

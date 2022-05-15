@@ -1,10 +1,13 @@
-import { FC, useEffect, useState } from "react";
-import { BsThreeDotsVertical } from "react-icons/bs"
+import { FC, useEffect, useRef, useState } from "react";
+import { BsThreeDotsVertical, BsPeople } from "react-icons/bs"
 import { CHANNELS } from "../config/channels";
 import EVENTS from "../config/events";
 import { useSockets } from "../context/socket.context";
+import dashboard from '../styles/Dashboard.module.css'
 import styles from "../styles/Clients.module.css"
 import DropdownMenu from "../utils/dropdown";
+import { classList } from "../utils/utils";
+import { BiLink, BiRefresh } from "react-icons/bi";
 
 export interface User {
     name: string,
@@ -53,25 +56,51 @@ const Client:FC<Client> = ({user, socketId, channelName, roomName}) => {
         ...show.rooms.map(room => () => moveUserToRoom(room.name))
     ];
 
-    return <div className={user.isAdmin ? styles.userAdmin : styles.userViewer}>
-        <p>{user.name}</p>
-        <p>{user.email}</p>
-        <p>{channelName}</p>
-        <p>{roomName}</p>
+    return <div className={classList(styles.user, user.isAdmin ? styles.admin : styles.viewer)}>
+        <button className={styles.icon}><BiLink/></button>
+        <div className={styles.shortField}>{user.name}</div>
+        <div className={styles.shortField}>{user.email}</div>
+        <div className={styles.shortField}>{channelName}</div>
+        <div className={styles.shortField}>{roomName}</div>
         <DropdownMenu title={<BsThreeDotsVertical/>} labels={dropDownLabels} actions={dropDownActions}/>
     </div>;
 }
 
-const UsersContainer = () => {
+const UsersContainer = (props) => {
     const {socket, show, clientsList} = useSockets();
-    // const [clientList, setClientList] = useState(!clients ? [] : Array.from(clients.values()));
-    // const [clients, setClients] = useState(new Map<string, Client>());
+    const [filterKeyword, setFilterKeyword] = useState('')
+    const [filterType, setFilterType] = useState('Name')
+    const filterRef = useRef(null);
 
-    /*
-    useEffect(() => {
+    const contains = (client: Client) => {
+        if (filterType === 'Name') {
+            return client.user.name.indexOf(filterKeyword) >= 0;
+        } else if (filterType === 'Email') {
+            return client.user.email.indexOf(filterKeyword) >= 0;
+        } else if (filterType === 'Channel') {
+            if (!client.channelName) return false;
+            return client.channelName.indexOf(filterKeyword) >= 0;
+        } else if (filterType === 'Room') {
+            if (!client.roomName) return false;
+            return client.roomName.indexOf(filterKeyword) >= 0;
+        } else {
+            return client.user.name.indexOf(filterKeyword) >= 0;
+        }
+    }
+
+    const changeFilter = () => {
+        if (filterRef.current && filterRef.current.value) 
+            setFilterKeyword(filterRef.current.value);
+        else setFilterKeyword('');
+    }
+
+    const filterTypeLabels = [ 'Name', 'Email', 'Channel', 'Room' ];
+
+    const filterTypeActions = filterTypeLabels.map(word => () => setFilterType(word));
+
+    const requestClients = () => {
         socket.emit(EVENTS.CLIENT.GET_INFO, {request: 'clients'});
-    }, []);
-    */
+    }
 
     const getHumanReadableRoomName = (roomName: string) => {
         const room = show.rooms.find(room => room.roomName === roomName);
@@ -79,14 +108,32 @@ const UsersContainer = () => {
         else return room.name;
     }
 
-    return <div>
-        <h2>Users</h2>
-        {clientsList.map(c => <Client 
-            key={c.socketId} 
-            socketId={c.socketId} 
-            user={c.user} 
-            roomName={getHumanReadableRoomName(c.roomName)} 
-            channelName={c.channelName}/>)}
+    return <div {...props}>
+        <div className={dashboard.containerHeader}>
+            <BsPeople/>
+            <div className={dashboard.containerTitle}>USERS PRESENT</div>
+            <div className={styles.search}>
+                <input onChange={changeFilter} ref={filterRef} placeholder={filterType}/>
+                <DropdownMenu title="Filter" labels={filterTypeLabels} actions={filterTypeActions}/>
+            </div>
+            <div className={classList(dashboard.refresh)} onClick={requestClients}><BiRefresh/></div>
+        </div>
+        <div className={dashboard.containerContent}>
+            <div className={classList(styles.user, styles.header)}>
+                <button style={{opacity: 0, cursor: 'auto'}} className={styles.icon}><BiLink/></button>
+                <div className={styles.shortField}>NAME</div>
+                <div className={styles.shortField}>EMAIL</div>
+                <div className={styles.shortField}>CHANNEL</div>
+                <div className={styles.shortField}>ROOM</div>
+                <DropdownMenu style={{opacity: 0, cursor: 'none'}} title={<BsThreeDotsVertical/>} labels={[]} actions={[]}/>
+            </div>
+            {clientsList.filter(contains).map(c => <Client 
+                key={c.socketId} 
+                socketId={c.socketId} 
+                user={c.user} 
+                roomName={getHumanReadableRoomName(c.roomName)} 
+                channelName={c.channelName}/>)}
+        </div>
     </div>;
 }
 

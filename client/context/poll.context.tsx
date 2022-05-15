@@ -90,6 +90,8 @@ interface IPollContext {
     setQuestion: Function
     options: Array<Option>
     setOptions: Function
+    isEditPoll: boolean
+    setEditPoll: Function
     totalVoters: number
     currentVotes: number
 }
@@ -105,6 +107,8 @@ const PollContext = createContext<IPollContext>({
     setQuestion: () => console.log('dummy qn'),
     options: [],
     setOptions: () => console.log('dummy log'),
+    isEditPoll: true,
+    setEditPoll: () => console.log('dummy toggle editing'),
     totalVoters: 0,
     currentVotes: 0
 });
@@ -117,6 +121,7 @@ const PollProvider = (props: any) => {
     const [question, setQuestion] = useState(poll.question);
     const [options, setOptions] = useState(poll.options);
     const [isResults, setIsResults] = useState(false);
+    const [isEditPoll, setEditPoll] = useState(false);
     const {socket, setNotif, show} = useSockets();
 
     const [isFirstLoad, setFirstLoad] = useState(true);
@@ -169,6 +174,8 @@ const PollProvider = (props: any) => {
             setQuestion,
             options,
             setOptions,
+            isEditPoll,
+            setEditPoll,
             totalVoters,
             currentVotes,
         }} {...props}/>;

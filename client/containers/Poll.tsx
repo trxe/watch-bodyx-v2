@@ -2,10 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { usePoll } from "../context/poll.context";
 import { useSockets } from "../context/socket.context";
 import { AiOutlineCheck, AiOutlineClose, AiFillEdit, AiFillDelete } from "react-icons/ai"
+import { MdOutlinePoll } from "react-icons/md"
+import dashboard from "../styles/Dashboard.module.css"
 import styles from "../styles/Poll.module.css"
 import Modal from "../utils/modal";
 import PollBar from "../utils/pollbar";
 import EVENTS from "../config/events";
+import { classList } from "../utils/utils";
 
 const Field = ({index, type, placeholder, startEdit, editing, text, cancelling, saving, deleting}) => {
     const [isEdit, setEdit] = useState(startEdit);
@@ -20,13 +23,13 @@ const Field = ({index, type, placeholder, startEdit, editing, text, cancelling, 
 
     return <div className={`${styles.field} ${type}`}>
         <div className={`${styles.fieldText}`}>
-            {isEdit && <textarea ref={textRef} rows={1} defaultValue={text} placeholder={placeholder}/>}
+            {isEdit && <input ref={textRef} defaultValue={text} placeholder={placeholder}/>}
             {!isEdit && (text || <em>{placeholder}</em>)}
         </div>
-        {!isEdit && <button className="iconButton" onClick={addToggle(editing)}><AiFillEdit/></button>}
-        {isEdit && <button className="iconButton" onClick={addToggle(saving)}><AiOutlineCheck/></button>}
-        {!isEdit && <button className="iconButton" onClick={() => deleting(textRef, index)} disabled={!deleting}><AiFillDelete/></button>}
-        {isEdit && <button className="iconButton" onClick={addToggle(cancelling)}><AiOutlineClose/></button>}
+        {!isEdit && <button onClick={addToggle(editing)}><AiFillEdit/></button>}
+        {isEdit && <button onClick={addToggle(saving)}><AiOutlineCheck/></button>}
+        {!isEdit && <button onClick={() => deleting(textRef, index)} disabled={!deleting}><AiFillDelete/></button>}
+        {isEdit && <button onClick={addToggle(cancelling)}><AiOutlineClose/></button>}
     </div>
 }
 
@@ -37,6 +40,7 @@ export const PollViewContainer = ({isPreview, label}) => {
     const [vote, setVote] = useState(null);
 
     useEffect(() => {
+        if (!socket) return;
         socket.emit(EVENTS.CLIENT.CHECK_VOTE, {ticket: user.ticket}, (res) => {
             if (res && res.messageType === 'success') {
                 const optionIndex = JSON.parse(res.message);
@@ -68,35 +72,36 @@ export const PollViewContainer = ({isPreview, label}) => {
 
     console.log('curr votes', currentVotes, poll.voters);
 
-    return <div>
+    return <div className={styles.pollArea}>
         <button onClick={openPoll}>{label}</button>
         <Modal id="poll" width={'60%'}>
-            <h3>{poll.question} {user.isAdmin && `[Votes: ${currentVotes}/${totalVoters}]`}</h3>
-            {(isResults || user.isAdmin) && 
+            <h3>{poll != null && poll.question} {user != null && user.isAdmin && `[Votes: ${currentVotes}/${totalVoters}]`}</h3>
+            {(isResults || user != null && user.isAdmin) && 
                 poll.options.map((option, index) => <PollBar key={index} index={index} option={option.label} value={option.votes} maxValue={currentVotes} 
                     handleSelect={null} selected={selected}/>)}
             {!isResults && vote != null && 
                 poll.options.map((option, index) => <PollBar key={index} index={index} option={option.label} 
                     handleSelect={null} selected={selected}/>)}
-            {!isResults && vote == null && !user.isAdmin && 
+            {!isResults && vote == null && user!= null && !user.isAdmin && 
                 poll.options.map((option, index) => <PollBar key={index} index={index} option={option.label} 
                     handleSelect={handleSelect} selected={selected}/>)}
-            <button disabled={vote != null} onClick={submit}>Vote</button>
-            <a href="#" title="Close" className={styles.closeModal}>Close</a>
+            <div className={styles.pollFooter}>
+                <button disabled={vote != null} onClick={submit}>Vote</button>
+                <button onClick={() => location.hash = '#'}>Close</button>
+            </div>
         </Modal>
     </div>
 }
 
-const PollSettingsContainer = () => {
-    const {poll, setPoll, activeStatus, isResults, question, setQuestion, options, setOptions, currentVotes, totalVoters} = usePoll();
+const PollSettingsContainer = (props) => {
+    const {poll, setPoll, activeStatus, isResults, question, setQuestion, options, setOptions, isEditPoll, setEditPoll, currentVotes, totalVoters} = usePoll();
     const {socket, setNotif, user} = useSockets();
     const [isAdding, setAdding] = useState(false);
-    const [isEditing, setEditing] = useState(false);
 
     const newPoll = () => {
-        setEditing(true);
+        setEditPoll(true);
         socket.emit(EVENTS.CLIENT.CREATE_POLL, {}, (res) => {
-            setEditing(false);
+            setEditPoll(false);
             if (res && res.messageType === 'error') {
                 setNotif(res);
             }
@@ -106,10 +111,10 @@ const PollSettingsContainer = () => {
     // toggle poll 
     const togglePoll = () => {
         // to prevent accidental updates
-        setEditing(true);
+        setEditPoll(true);
         socket.emit(EVENTS.CLIENT.ADMIN_TOGGLE_POLL_STATUS, {isActive: !activeStatus}, 
             (res) => {
-                setEditing(false);
+                setEditPoll(false);
                 if (res && res.messageType === 'error') {
                     setNotif(res);
                 }
@@ -118,7 +123,7 @@ const PollSettingsContainer = () => {
 
     //  editing the question
     const editQuestion = (textRef, index) => {
-        setEditing(false);
+        setEditPoll(false);
         const prevQn = poll.question;
         poll.question = textRef.current.value;
         setQuestion(poll.question);
@@ -144,6 +149,7 @@ const PollSettingsContainer = () => {
         setPoll(poll);
         // send to server
         socket.emit(EVENTS.CLIENT.UPDATE_POLL, {question: poll.question, options: poll.options}, (res) => {
+            setEditPoll(false);
             if (textRef.current && textRef.current.value.length != 0) textRef.current.value = '';
             // there is an issue with poll, which is that it's values aren't updating
             // considering removing the poll class
@@ -157,7 +163,7 @@ const PollSettingsContainer = () => {
 
     // edit poll option
     const editOption = (textRef, index: number) => {
-        setEditing(false);
+        setEditPoll(false);
         console.log('edit', index);
         if (index >= poll.options.length || index < 0) return;
         const prevOptions = [...poll.options];
@@ -179,7 +185,7 @@ const PollSettingsContainer = () => {
 
     // delete poll option
     const deleteOption = (textRef, index: number) => {
-        setEditing(false);
+        setEditPoll(false);
         console.log('delete', textRef.current, index);
         if (index >= poll.options.length || index < 0) return;
         const prevOptions = [...poll.options];
@@ -198,32 +204,21 @@ const PollSettingsContainer = () => {
         });
     }
 
-    const publishPoll = () => {
-        socket.emit(EVENTS.CLIENT.ADMIN_PUBLISH_POLL_RESULTS, {isResults: !isResults}, (res) => {
-            setNotif(res);
-            if (res && res.messageType === 'success') {
-                poll.isResults = true;
-                setPoll(poll);
-            }
-        });
-    }
-
-    return <div className={styles.pollWrapper}>
-        <div className={styles.pollHeader}>
-            <h3>Poll</h3>
+    return <div {...props}>
+        <div className={dashboard.containerHeader}>
+            <MdOutlinePoll />
+            <div className={dashboard.containerTitle}>POLL</div>
+            <div className={styles.voteCount}>{currentVotes}/{totalVoters} voted</div>
             <PollViewContainer label={'Preview'} isPreview={user != null && user.isAdmin}/>
-            <button onClick={newPoll} disabled={isEditing}>Reset</button>
-            <button onClick={togglePoll} disabled={isEditing || !question} >{activeStatus ? 'Stop' : 'Start'}</button>
-            <button onClick={publishPoll} disabled={isEditing || currentVotes == 0}>{isResults ? 'Unpublish' : 'Publish'}</button>
-            <span>Votes: {currentVotes}/{totalVoters}</span>
+            <button onClick={newPoll} disabled={isEditPoll}>Reset</button>
         </div>
-        <div className={styles.pollSettings}>
+        <div className={dashboard.containerContent}>
             <Field type={styles.pollTitle} 
                 index={0}
                 startEdit={false}
                 placeholder={'Insert Title'} 
-                editing={() => setEditing(true)}
-                cancelling={() => setEditing(false)}
+                editing={() => setEditPoll(true)}
+                cancelling={() => setEditPoll(false)}
                 saving={editQuestion}
                 deleting={null}
                 text={question} />
@@ -233,8 +228,8 @@ const PollSettingsContainer = () => {
                     index={index}
                     startEdit={false}
                     placeholder={'Edit option'} 
-                    editing={() => setEditing(true)}
-                    cancelling={() => setEditing(false)}
+                    editing={() => setEditPoll(true)}
+                    cancelling={() => setEditPoll(false)}
                     saving={editOption}
                     deleting={deleteOption}
                     text={option.label} />
@@ -250,7 +245,7 @@ const PollSettingsContainer = () => {
                     deleting={null}
                     text={null} />
             }
-            {!isAdding && <div onClick={() => setAdding(true)} 
+            {!isAdding && <div onClick={() => {setAdding(true); setEditPoll(true);}} 
                 className={`${styles.field} ${styles.addOption}`}>
                 Add option</div>}
         </div>
