@@ -169,6 +169,7 @@ export const registerShowHandlers = (io: Server, socket) => {
             () => { 
                 sendShow(socket); 
                 sendShowToRoom(io, CHANNELS.MAIN_ROOM);
+                sendShowToRoom(io, CHANNELS.SM_ROOM);
                 callback(SHOW_EVENTS.ACKS.UPDATE_SUCCESS.getJSON());
             },
             (error) => { 
@@ -190,6 +191,7 @@ export const registerShowHandlers = (io: Server, socket) => {
                 callback(new Ack('info', 'Room created', JSON.stringify(room)).getJSON())
                 const show = Provider.getShow();
                 io.to(CHANNELS.MAIN_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
+                io.to(CHANNELS.SM_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
                 addSMsToRoom(io, room.roomName);
                 socket.emit(SHOW_EVENTS.CURRENT_ROOMS,  show.getJSON().rooms, 
                     (socketId) => {
@@ -211,6 +213,7 @@ export const registerShowHandlers = (io: Server, socket) => {
                 callback(new Ack('info', room, id).getJSON())
                 const show = Provider.getShow();
                 io.to(CHANNELS.MAIN_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
+                io.to(CHANNELS.SM_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
             }, 
             (err) => {
                 Logger.error(err);
@@ -232,6 +235,7 @@ export const registerShowHandlers = (io: Server, socket) => {
                     socketId => {logSocketIdEvent(socketId, 'has deleted room')}
                 );
                 io.to(CHANNELS.MAIN_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
+                io.to(CHANNELS.SM_ROOM).emit(SHOW_EVENTS.CURRENT_ROOMS, show.getJSON().rooms);
             }, 
             (err) => {
                 Logger.error(err);

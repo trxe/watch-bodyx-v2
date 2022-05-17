@@ -175,26 +175,29 @@ const SocketsProvider = (props: any) => {
             newClientList.forEach(client => {
                 clientsMap.set(client.user.ticket, client);
             });
-            setClientsList(Array.from(clientsMap.values()));
+            setClientsList(newClientList);
+            setViewersPresent(newClientList.filter((a: Client) => a.user.isAdmin).length);
             if (callback != null) callback(socket.id);
         });
 
         socket.off(EVENTS.SERVER.ADD_CLIENT).on(EVENTS.SERVER.ADD_CLIENT, (client) => {
             clientsMap.set(client.user.ticket, client);
             console.log("clientsmap curr", client.user);
-            if (!client.user.isAdmin) setViewersPresent(viewersPresent + 1);
             show.attendees.set(client.user.ticket, client.user);
             setClientsMap(clientsMap);
-            setClientsList(Array.from(clientsMap.values()));
+            const newClientList = Array.from(clientsMap.values());
+            setClientsList(newClientList);
+            setViewersPresent(newClientList.filter((a: Client) => !a.user.isAdmin).length);
         })
 
         socket.off(EVENTS.SERVER.DISCONNECTED_CLIENT).on(EVENTS.SERVER.DISCONNECTED_CLIENT, ({ticket, socketId}) => {
             const client = clientsMap.get(ticket);
             clientsMap.delete(ticket);
-            if (!client.user.isAdmin) setViewersPresent(viewersPresent - 1);
             show.attendees.set(client.user.ticket, {...client.user, isPresent: false});
             setClientsMap(clientsMap);
-            setClientsList(Array.from(clientsMap.values()));
+            const newClientList = Array.from(clientsMap.values());
+            setClientsList(newClientList);
+            setViewersPresent(newClientList.filter((a: Client) => !a.user.isAdmin).length);
         })
 
         // Rooms info
