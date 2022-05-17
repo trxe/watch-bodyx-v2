@@ -1,0 +1,48 @@
+.dashboardWrapper {
+  width: 80%;
+  height: 100vh;
+  display: block;
+  margin: auto;
+  padding: 1rem;
+  background-color: rgba(256, 256, 256, 0.7);
+}
+
+.showInfo button {
+  background-color: black;
+  color: white;
+  border: none;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.showInfo {
+    display: flex;
+}
+
+.showInfo p {
+    padding: 0.5rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+    background-color: aliceblue;
+}
+
+.success {
+  background-color: darkseagreen !important;
+}
+
+.error {
+  background-color: palevioletred  !important;
+}
+
+.bottom {
+  display: flex;
+}
+
+.attendeesWrapper {
+  width: 50%;
+}
+
+.roomsWrapper {
+  width: 50%;
+}

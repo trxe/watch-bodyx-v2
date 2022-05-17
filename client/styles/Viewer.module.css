@@ -28,6 +28,13 @@
     cursor: default;
 }
 
+.currentRoomButton,
+.currentRoomButton:disabled {
+    background-color: darkorange !important;
+    color: black !important;
+    cursor: default;
+}
+
 .mediaPlayer {
     height: 80vh;
 }
@@ -42,6 +49,17 @@
 
 .chatWrapper button {
   background-color: black;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin: 0.5rem;
+  padding: 0.5rem;
+}
+
+
+.chatWrapper button:disabled {
+  background-color: grey;
+  pointer-events: none;
   color: white;
   border: none;
   border-radius: 4px;

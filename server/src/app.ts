@@ -4,10 +4,15 @@ import https from 'https'
 import { Server } from 'socket.io';
 import cors from 'cors';
 import Logger from './utils/logger';
-import socket from './socket';
 import fs from 'fs'
 import * as dotenv from 'dotenv';
 import { mongoInit } from './mongo';
+import registerRouting from './router';
+import Provider from './provider';
+import { registerLoginHandlers } from './handlers/loginHandler';
+import { registerShowHandlers } from './handlers/showHandler';
+import { registerChatHandlers } from './handlers/chatHandler';
+import { registerPollHandlers } from './handlers/pollHandler';
 
 dotenv.config();
 
@@ -17,7 +22,12 @@ const mode: string = process.env.MODE // secure or not (dev)
 
 Logger.info(`Setting up server on port ${port}, host ${host}`);
 
+/* HTTP server */
 const app = express();
+app.use(cors({
+    origin: '*'
+}));
+app.use(express.json());
 
 const httpServer = (mode === 'secure') ? 
     https.createServer({
@@ -26,16 +36,28 @@ const httpServer = (mode === 'secure') ?
     },app) : 
     http.createServer(app);
 
+registerRouting(app);
+
+/* socket.io server */
 const io = new Server(httpServer, {
     cors: {
         origin: '*',
     }
 });
 
-app.get('/', (req, res) => res.send('Hello World'));
+/* Registering handlers on socket.io startup */
+const onConnection = (socket) => {
+    Logger.info(`Socket ${socket.id} connected`);
+    registerLoginHandlers(io, socket);
+    registerShowHandlers(io, socket);
+    registerChatHandlers(io, socket);
+    registerPollHandlers(io, socket);
+}
 
 httpServer.listen(port, host, () => {
     Logger.info(`Listening at ${JSON.stringify(httpServer.address())}`);
-    socket({ io });
     mongoInit();
+    Provider.loadUsers();
+    Provider.init();
+    io.on("connect", onConnection);
 });

@@ -1,0 +1,24 @@
+.dashboardWrapper {
+  width: 80%;
+  height: 100vh;
+  display: block;
+  margin: auto;
+  padding: 1rem;
+  background-color: rgba(256, 256, 256, 0.7);
+}
+
+.qnaWrapper {
+  display: flex;
+  flex-direction: row;
+  padding: 1em;
+  align-items: center;
+  justify-content: center;
+}
+
+.clientsSelect {
+  color: red;
+  margin-right: 2em;
+  height: 80vh;
+  width: 30%;
+  background-color: gray;
+}

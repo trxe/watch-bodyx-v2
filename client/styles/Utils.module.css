@@ -1,0 +1,234 @@
+@import "Themes.module.css";
+
+/* TOGGLE BUTTON */
+.toggleWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+}
+
+.toggleLabel {
+  height: 1.5em;
+  margin-right: 10px;
+  display: inline-block;
+  font-size: large;
+  font-weight: 600;
+}
+
+.toggleBox {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.toggleBox input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggleSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bgColor);
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.toggleSlider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--primaryFont);
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .toggleSlider {
+  background-color: var(--secondaryColor)
+}
+
+input:focus + .toggleSlider {
+  box-shadow: 0 0 1px var(--secondaryColor);
+}
+
+input:checked + .toggleSlider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+input:disabled + .toggleSlider {
+  cursor: default;
+}
+
+input:disabled + .toggleSlider:before {
+  background-color: var(--disabled);
+  cursor: default;
+}
+
+/* Rounded toggleSliders */
+.toggleSlider.round {
+  border-radius: 34px;
+}
+
+.toggleSlider.round:before {
+  border-radius: 50%;
+}
+
+/* DROPDOWN */
+.dropdownButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 10px;
+  padding: 0.2em;
+  background-color: transparent;
+  transition: background-color 0.5s ease;
+}
+
+.dropdownButton:hover,
+.dropdownButton:focus-within {
+  background-color: var(--secondaryTint);
+  cursor: pointer;
+}
+
+.dropdownButton:focus-within a {
+  outline: none;
+}
+
+.dropdown {
+  background: var(--primaryFont);
+  list-style-type: none;
+  visibility: hidden;
+  opacity: 0;
+  min-width: 5rem;
+  margin-top: 0;
+  display: none;
+  position: absolute;
+  z-index: 1;
+  left: auto;
+  padding-inline-start: 0;
+}
+
+.dropdown a {
+  text-align: left;
+  padding: 2px 10px 2px 10px;
+  display: block;
+  color: var(--secondaryFont);
+}
+
+.dropdown li:hover {
+  transition: background-color 0.3s ease;
+  background-color: var(--secondaryColor);
+}
+
+.dropdownWrapper:hover > .dropdown,
+.dropdownWrapper:focus-within > .dropdown,
+.dropdown:hover,
+.dropdown:focus {
+  visibility: visible;
+  opacity: 1;
+  display: block;
+}
+
+.dropdown li {
+  clear: both;
+  width: 100%;
+}
+
+/* MODAL */
+.modalWrapper {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  opacity: 0;
+  -webkit-transition: opacity 400ms ease-in;
+  -moz-transition: opacity 400ms ease-in;
+  transition: opacity 400ms ease-in;
+  pointer-events: none;
+}
+
+.modalWrapper:target {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background-color: var(--primaryColor);
+  color: var(--primaryFont);
+  padding: 1em;
+}
+
+.closeModal {
+  background: #606061;
+  padding: 0.2em;
+  line-height: 25px;
+  text-align: center;
+  text-decoration: none;
+  font-weight: bold;
+  -webkit-border-radius: 12px;
+  -moz-border-radius: 12px;
+  border-radius: 12px;
+  -moz-box-shadow: 1px 1px 3px #000;
+  -webkit-box-shadow: 1px 1px 3px #000;
+  box-shadow: 1px 1px 3px #000;
+}
+
+.closeModal:hover {
+  background: #00d9ff;
+}
+
+.optionBox {
+  height: 3em;
+  width: 90%;
+  background-color: var(--bgColor);
+  border-radius: 10px;
+  border-width: 5px;
+  margin: 0.5em;
+}
+
+.optionLabel {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.2em;
+}
+
+.optionLabel input {
+  width: 10%;
+}
+
+.optionLabel span {
+  width: 75%;
+}
+
+.optionLabel .percent {
+  width: 10%;
+}
+
+.optionBar {
+  background-color: var(--secondaryColor);
+  height: 30%;
+  display: inherit;
+}
