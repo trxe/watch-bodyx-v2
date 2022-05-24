@@ -42,6 +42,8 @@ interface ISocketContext {
     clientsList?: Array<Client>
     notif?: INotif
     setNotif: Function
+    selectedClient?: Client
+    setSelectedClient: Function
     disconnectedInfo: string
     loginRequest: Function
     viewersTotal: number
@@ -63,6 +65,7 @@ const SocketContext = createContext<ISocketContext>({
     setUser: () => false, 
     setNotif: () => false,
     setShow: () => false,
+    setSelectedClient: () => false,
     disconnectedInfo: '',
     loginRequest: () => false,
     viewersPresent: 0,
@@ -81,10 +84,15 @@ const SocketsProvider = (props: any) => {
     const [viewersTotal, setViewersTotal] = useState(0);
     const [viewersPresent, setViewersPresent] = useState(0);
     const [disconnectedInfo, setDisconnectedInfo] = useState('');
+    const [selectedClient, setSelectedClient] = useState(null);
     const {setChatRooms} = useChatRooms();
 
     const [clientsMap, setClientsMap] = useState(new Map<string, Client>());
     const [clientsList, setClientsList] = useState(new Array<Client>());
+
+    const selectClient = (ticket: string) => {
+        setSelectedClient(clientsMap.get(ticket));
+    }
 
     const loginInfo = (request) => {
         socket.emit(EVENTS.CLIENT.LOGIN, request, 
@@ -267,6 +275,8 @@ const SocketsProvider = (props: any) => {
             notif, 
             setNotif, 
             disconnectedInfo,
+            selectedClient,
+            setSelectedClient: selectClient,
             loginRequest,
             viewersPresent,
             viewersTotal

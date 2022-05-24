@@ -226,12 +226,12 @@
 .attendees {
   border: 2px solid white;
   background-color: var(--bgColor);
-  width: 40%;
+  width: 53%;
   height: 48vh;
 }
 
 .users {
   background-color: var(--primaryColor);
-  width: 56%;
+  width: 43%;
   height: 48vh;
 }

@@ -4,31 +4,44 @@ import dashboard from '../styles/Dashboard.module.css'
 import styles from '../styles/Attendees.module.css'
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { classList } from "../utils/utils";
-import { BiRefresh } from "react-icons/bi";
 import { RiArrowDownSFill, RiArrowDownSLine, RiUserFill, RiUserStarFill } from "react-icons/ri";
 import DropdownMenu from "../utils/dropdown";
-import { FC, useRef, useState } from "react";
+import { FC, Ref, useEffect, useRef, useState } from "react";
 import { User } from "./Clients";
 
 interface IAttendee {
     user: User
+    refObj?
+    refDiv?
 }
 
-const Attendee:FC<IAttendee> = ({user}) => {
+const Attendee:FC<IAttendee> = ({user, refObj, refDiv}) => {
+    useEffect(() => {
+        console.log('help', refObj, refDiv);
+        if (refObj && refObj.current) console.log('ref');
+        refObj?.current?.scrollIntoView({ behavior: "smooth" });
+    }, [refObj, refDiv])
+
     return <div className={classList(styles.attendee, styles.row, user.isPresent ? styles.present : styles.absent)}>
         <div className={styles.icon}>{user.isPresent ? <HiStatusOnline/> : <HiStatusOffline/>}</div>
         <div className={styles.ticket}>{user.ticket}</div>
         <div className={styles.name}>{user.name}</div>
         <div className={styles.email}>{user.email}</div>
+        {refDiv}
         <DropdownMenu title={<BsThreeDotsVertical/>} labels={[]} actions={[]}/>
     </div>;
 }
 
 const AttendeesContainer = (props) => {
-    const {show} = useSockets();
+    const {show, selectedClient} = useSockets();
     const [filterKeyword, setFilterKeyword] = useState('');
     const [isAdminFilter, setAdminFilter] = useState(false);
+    const focusUserRef = useRef(null);
     const filterRef = useRef(null);
+
+    useEffect(() => {
+        console.log(selectedClient);
+    }, [selectedClient])
 
     const containsKeyword = (user: User) => {
         return (user.name.indexOf(filterKeyword) >= 0 
@@ -43,6 +56,8 @@ const AttendeesContainer = (props) => {
             setFilterKeyword(filterRef.current.value);
         else setFilterKeyword('');
     }
+
+    const refDiv = <div ref={focusUserRef}></div>;
 
     return <div {...props}>
         <div className={dashboard.containerHeader}>
@@ -68,12 +83,15 @@ const AttendeesContainer = (props) => {
                 </div>
                 <DropdownMenu style={{opacity: 0, cursor: 'none'}} title={<BsThreeDotsVertical/>} labels={[]} actions={[]}/>
             </div>
+            {!selectedClient && refDiv}
             {show.attendees && 
                 Array.from(show.attendees.values())
                     .filter(containsKeyword)
                     .map(attendee => 
                         <Attendee key={attendee.ticket} 
                             user={attendee}
+                            refObj={selectedClient != null && selectedClient.user.ticket === attendee.ticket ? focusUserRef : null}
+                            refDiv={selectedClient != null && selectedClient.user.ticket === attendee.ticket ? refDiv : null}
                             />)}
         </div>
     </div>

@@ -240,8 +240,8 @@ const DashboardContainer = () => {
                 <RoomsContainer className={classList(styles.container, styles.rooms)}/>
             </div>
             <div className={styles.row}>
-                <AttendeesContainer className={classList(styles.container, styles.attendees)}/>
                 <UsersContainer className={classList(styles.container, styles.users)}/>
+                <AttendeesContainer className={classList(styles.container, styles.attendees)}/>
             </div>
         </div>;
     }

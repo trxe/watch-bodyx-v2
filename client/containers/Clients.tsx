@@ -29,7 +29,7 @@ export interface Client {
 }
 
 const Client:FC<Client> = ({user, socketId, channelName, roomName}) => {
-    const {show, socket, setNotif} = useSockets();
+    const {show, socket, setNotif, setSelectedClient} = useSockets();
 
     const kickUser = () => {
         const socketMoveInfo = {socketId, newChannel: CHANNELS.DISCONNECTED};
@@ -60,9 +60,8 @@ const Client:FC<Client> = ({user, socketId, channelName, roomName}) => {
     ];
 
     return <div className={classList(styles.user, user.isAdmin ? styles.admin : styles.viewer)}>
-        <button className={styles.icon}><BiLink/></button>
+        <button className={styles.icon} onClick={() => setSelectedClient(user.ticket)}><BiLink/></button>
         <div className={styles.shortField}>{user.name}</div>
-        <div className={styles.shortField}>{user.email}</div>
         <div className={styles.shortField}>{channelName}</div>
         <div className={styles.shortField}>{roomName}</div>
         <DropdownMenu title={<BsThreeDotsVertical/>} labels={dropDownLabels} actions={dropDownActions}/>
@@ -97,7 +96,7 @@ const UsersContainer = (props) => {
         else setFilterKeyword('');
     }
 
-    const filterTypeLabels = [ 'Name', 'Email', 'Channel', 'Room' ];
+    const filterTypeLabels = [ 'Name', 'Channel', 'Room' ];
 
     const filterTypeActions = filterTypeLabels.map(word => () => setFilterType(word));
 
@@ -125,7 +124,6 @@ const UsersContainer = (props) => {
             <div className={classList(styles.user, styles.header)}>
                 <button style={{opacity: 0, cursor: 'auto'}} className={styles.icon}><BiLink/></button>
                 <div className={styles.shortField}>NAME</div>
-                <div className={styles.shortField}>EMAIL</div>
                 <div className={styles.shortField}>CHANNEL</div>
                 <div className={styles.shortField}>ROOM</div>
                 <DropdownMenu style={{opacity: 0, cursor: 'none'}} title={<BsThreeDotsVertical/>} labels={[]} actions={[]}/>
