@@ -46,6 +46,7 @@ interface ISocketContext {
     setSelectedClient: Function
     disconnectedInfo: string
     loginRequest: Function
+    createAccount: Function
     viewersTotal: number
     viewersPresent: number
 }
@@ -68,6 +69,7 @@ const SocketContext = createContext<ISocketContext>({
     setSelectedClient: () => false,
     disconnectedInfo: '',
     loginRequest: () => false,
+    createAccount: () => false,
     viewersPresent: 0,
     viewersTotal: 0
 })
@@ -110,7 +112,15 @@ const SocketsProvider = (props: any) => {
                     socket.emit(event, client, (ack) => console.log(ack));
                 }
             });
-    }
+    };
+
+    const createAccount = (request) => {
+        axios.post(SOCKET_URL + 'create-account', request)
+            .then(({data}) => {
+                console.log(data);
+                if (data.messageType != null) setNotif(data);
+            });
+    };
 
     const loginRequest = (request) => {
         axios.post(SOCKET_URL + "auth", request)
@@ -278,6 +288,7 @@ const SocketsProvider = (props: any) => {
             selectedClient,
             setSelectedClient: selectClient,
             loginRequest,
+            createAccount,
             viewersPresent,
             viewersTotal
         }} 
