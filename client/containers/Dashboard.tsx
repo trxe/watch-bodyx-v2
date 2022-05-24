@@ -64,6 +64,16 @@ const DateTimeContainer = (props) => {
     </div>;
 }
 
+const EventInfoContainer = (props) => {
+    const {show, viewersPresent, viewersTotal} = useSockets();
+    if (!show || show.attendees.size == 0) return null;
+
+    return <div {...props}>
+        <div style={{fontSize: "larger", fontWeight: "900"}}>{viewersPresent} of {viewersTotal}</div>
+        <div>attendees present</div>
+    </div>
+}
+
 const ShowInfoContainer = (props) => {
     const {activeStatus, poll, setPoll, question, isResults, isEditPoll, setEditPoll, currentVotes} = usePoll();
     const [isEditMode, setEditMode] = useState(false);
@@ -206,19 +216,15 @@ const DashboardContainer = () => {
     const [mode, setMode] = useState(MODES.DASHBOARD);
 
     if (mode == MODES.THEATRE) {
-        return <div className={styles_old.dashboardWrapper}>
-            <UserMenu/>
-            <button onClick={() => setMode(MODES.DASHBOARD)}>{MODES.DASHBOARD}</button>
-            <button onClick={() => setMode(MODES.QNA)}>{MODES.QNA}</button>
+        return <div className={styles.dashboard}>
+            <NavbarContainer mode={mode} setMode={setMode}/>
             <ViewerContainer isAdmin={true} />
         </div>;
     }
     
     if (mode == MODES.QNA) {
         return <div className={styles_old.dashboardWrapper}>
-            <UserMenu/>
-            <button onClick={() => setMode(MODES.THEATRE)}>{MODES.THEATRE}</button>
-            <button onClick={() => setMode(MODES.DASHBOARD)}>{MODES.DASHBOARD}</button>
+            <NavbarContainer mode={mode} setMode={setMode}/>
             <QNAContainer />
         </div>;
     }
@@ -227,14 +233,15 @@ const DashboardContainer = () => {
         return <div className={styles.dashboard}>
             <NavbarContainer mode={mode} setMode={setMode}/>
             <DateTimeContainer className={classList(styles.container, styles.row, styles.clock)} />
+            <EventInfoContainer className={styles.eventInfo} />
             <div className={styles.row}>
                 <ShowInfoContainer className={classList(styles.container, styles.showInfo)}/>
                 <PollSettingsContainer className={classList(styles.container, styles.poll)}/>
                 <RoomsContainer className={classList(styles.container, styles.rooms)}/>
             </div>
             <div className={styles.row}>
-                <AttendeesContainer className={classList(styles.container, styles.attendees)}/>
                 <UsersContainer className={classList(styles.container, styles.users)}/>
+                <AttendeesContainer className={classList(styles.container, styles.attendees)}/>
             </div>
         </div>;
     }

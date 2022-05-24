@@ -141,6 +141,25 @@ async function findUser(query): Promise<User> {
     return null;
 }
 
+/**
+ * Marks the user as present or absent.
+ * @param query 
+ * @param isPresent
+ * @returns the attendee or admin if found, else null.
+ */
+async function logInOutUser(query, isPresent: boolean): Promise<User> {
+    const userDoc = await UserModel.findOne(query);
+    if (userDoc != null) {
+        userDoc.isPresent = isPresent;
+        await userDoc.save((err) => {if (err) Logger.error(err);});
+        const user = {...userDoc._doc, isPresent};
+        delete user['__v']
+        show.attendees.set(user.ticket, user);
+        return user;
+    } 
+    return null;
+}
+
 const getShow = (): Show => show;
 const getShowMainRoom = (): string => show.rooms.length == 0 ? null : show.rooms[0].roomName;
 
@@ -185,6 +204,7 @@ const Provider = {
     removeClientBySocketId, 
     loadUsers,
     findUser,
+    logInOutUser,
     createRoom,
     updateRoom,
     deleteRoom,

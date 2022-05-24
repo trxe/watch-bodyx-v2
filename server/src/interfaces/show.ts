@@ -2,6 +2,7 @@ import axios from "axios";
 import mongoose from "mongoose";
 import { RoomModel } from "../schemas/roomSchema";
 import { ShowModel } from "../schemas/showSchema";
+import { UserModel } from "../schemas/userSchema";
 import Logger from "../utils/logger";
 import { Room } from "./room";
 import { User } from "./users";
@@ -106,7 +107,7 @@ export class Show {
 
     public findAttendee(ticket: string, email: string): User {
         // if no attendees list, this event is invalid. temp generate attendee
-        if (!this.attendees) return this.generateAttendee(ticket, email);
+        if (!this.attendees) return this.generateTempAttendee(ticket, email);
         if (!this.attendees.has(ticket)) return null;
         const user: User = this.attendees.get(ticket);
         if (user.email != email) return null;
@@ -141,6 +142,7 @@ export class Show {
         const attendeeMap = new Map<string, User>();
         if (!this.eventId) return;
         if (this.eventId.length == 0) return;
+        await UserModel.deleteMany({isAdmin : false});
         await axios.get(`https://www.eventbriteapi.com/v3/events/${this.eventId}/attendees`, 
             {headers: {
                 'Authorization': `Bearer ${process.env.EVENTBRITE_API_KEY}`,
@@ -148,15 +150,39 @@ export class Show {
             }}
         ).then((res) => {
             Logger.info(`Attendees from new eventid ${this.eventId}.`);
-            res.data.attendees.forEach(attendee => { 
-                attendeeMap.set(attendee.order_id, {
-                    name: attendee.profile.name,
-                    email: attendee.profile.email,
-                    ticket: attendee.order_id,
-                    firstName: attendee.profile.first_name,
-                    isAdmin: false
+            const eventId = this.eventId;
+            res.data.attendees
+                .forEach(attendee => { 
+                    if (attendee.cancelled) {
+                        console.log('Skip Attendee', attendee.profile.name, attendee.order_id);
+                        return;
+                    }
+                    console.log('Creating Attendee', attendee.profile.name, attendee.order_id);
+                    UserModel.findOne({ticket: attendee.order_id}, 
+                    (err, result) => {
+                        if (!result && !attendeeMap.has(attendee.order_id)) {
+                            const newAtt = new UserModel({
+                                name: attendee.profile.name,
+                                email: attendee.profile.email,
+                                ticket: attendee.order_id,
+                                firstName: attendee.profile.first_name,
+                                isAdmin: false,
+                                isPresent: false,
+                                hasAttended: false,
+                                eventId,
+                            });
+                            attendeeMap.set(attendee.order_id, newAtt);
+                            newAtt.save((err) => {
+                                if (!err) return;
+                                Logger.error(`WOTT ${err}, ${newAtt.name}`);
+                            });
+                        } else if (!attendeeMap.has(attendee.order_id)) {
+                            attendeeMap.set(attendee.order_id, result);
+                        } else {
+                            console.log('why so many', res.data.attendees.length);
+                        }
+                    });
                 });
-            });
             return attendeeMap;
         }).catch((err) => {
             Logger.error(err.message);
@@ -165,7 +191,7 @@ export class Show {
         return attendeeMap;
     }
 
-    generateAttendee(ticket, email): User {
-        return { ticket, email, name: ticket, firstName: ticket, isAdmin: false }
+    generateTempAttendee(ticket, email): User {
+        return { ticket, email, name: ticket, firstName: ticket, isAdmin: false, isPresent: true, hasAttended: false}
     }
 }

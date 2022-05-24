@@ -4,6 +4,7 @@ import EVENTS from '../config/events';
 import { usePoll } from '../context/poll.context';
 import { useSockets } from '../context/socket.context';
 import styles from '../styles/Viewer.module.css'
+import dashboard from '../styles/Dashboard.module.css'
 import ChatContainer from './Chat';
 import { PollViewContainer } from './Poll';
 import UserMenu from './UserMenu';
@@ -57,11 +58,10 @@ const ViewerContainer = ({isAdmin}) => {
         </div>
     }
 
-    return <div className={styles.viewerWrapper}>
+    return <div className={dashboard.row}>
         <div className={styles.playerWrapper}>
             <div className={styles.greeter}>
-                <UserMenu/>
-                <span>Welcome, Detective {user.name}!</span>
+                Welcome, Detective {user.firstName}!
             </div>
             {roomIndex >= show.rooms.length &&
                 <div className={styles.mediaPlayer}>
@@ -70,6 +70,7 @@ const ViewerContainer = ({isAdmin}) => {
             }
             {roomIndex < show.rooms.length &&
                 <div className={styles.mediaPlayer}>
+                    <div className={styles.overlay}></div>
                     <iframe width="100%" height="100%" 
                         src={show.rooms[roomIndex].url}
                         title="YouTube video player" 

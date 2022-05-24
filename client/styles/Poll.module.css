@@ -108,3 +108,8 @@
   align-items: center;
   justify-content: space-between;
 }
+
+.pollFooter button:disabled {
+  background-color: var(--bgColor);
+  color: gray;
+}

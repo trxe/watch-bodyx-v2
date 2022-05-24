@@ -11,6 +11,76 @@
   padding: 0.5em;
 }
 
+.toggleView {
+  color: var(--primaryFont);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: none;
+  font-size: larger;
+  cursor: pointer;
+}
+
+@-webkit-keyframes swing {
+    15% {
+        -webkit-transform: translateY(5px);
+        transform: translateY(5px);
+    }
+    30% {
+        -webkit-transform: translateY(-5px);
+        transform: translateY(-5px);
+    }
+    50% {
+        -webkit-transform: translateY(3px);
+        transform: translateY(3px);
+    }
+    65% {
+        -webkit-transform: translateY(-3px);
+        transform: translateY(-3px);
+    }
+    80% {
+        -webkit-transform: translateY(2px);
+        transform: translateY(2px);
+    }
+    100% {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+@keyframes swing {
+    15% {
+        -webkit-transform: translateY(5px);
+        transform: translateY(5px);
+    }
+    30% {
+        -webkit-transform: translateY(-5px);
+        transform: translateY(-5px);
+    }
+    50% {
+        -webkit-transform: translateY(3px);
+        transform: translateY(3px);
+    }
+    65% {
+        -webkit-transform: translateY(-3px);
+        transform: translateY(-3px);
+    }
+    80% {
+        -webkit-transform: translateY(2px);
+        transform: translateY(2px);
+    }
+    100% {
+        -webkit-transform: translateY(0);
+        transform: translateY(0);
+    }
+}
+.toggleView:hover
+{
+    -webkit-animation: swing 1s ease;
+    animation: swing 1s ease;
+    -webkit-animation-iteration-count: 1;
+    animation-iteration-count: 1;
+}
+
 .header {
   background-color: var(--primaryColor);
   color: var(--primaryFont);
@@ -61,7 +131,7 @@
 
 .ticket {
   display: flex;
-  width: 25%;
+  width: 30%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -69,7 +139,15 @@
 
 .name {
   display: flex;
-  width: 65%;
+  width: 40%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email {
+  display: flex;
+  width: 55%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -79,6 +157,14 @@
   width: 40%;
   display: flex;
   align-items: center;
+}
+
+.present {
+  background-color: var(--success);
+}
+
+.absent {
+  background-color: var(--error);
 }
 
 .search input {

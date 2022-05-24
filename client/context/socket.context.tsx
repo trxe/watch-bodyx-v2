@@ -9,6 +9,14 @@ import { createNotif, INotif } from '../containers/Snackbar';
 import { Client, User } from '../containers/Clients';
 import { useChatRooms } from './chats.context';
 
+const emptyShow = {
+    name: '',
+    eventId: '', 
+    isOpen: false,
+    rooms: [],
+    attendees: new Map<string, User>(),
+}
+
 interface ISocketContext {
     socket: Socket
     channel: string
@@ -34,8 +42,12 @@ interface ISocketContext {
     clientsList?: Array<Client>
     notif?: INotif
     setNotif: Function
+    selectedClient?: Client
+    setSelectedClient: Function
     disconnectedInfo: string
     loginRequest: Function
+    viewersTotal: number
+    viewersPresent: number
 }
 
 let socket;
@@ -53,8 +65,11 @@ const SocketContext = createContext<ISocketContext>({
     setUser: () => false, 
     setNotif: () => false,
     setShow: () => false,
+    setSelectedClient: () => false,
     disconnectedInfo: '',
     loginRequest: () => false,
+    viewersPresent: 0,
+    viewersTotal: 0
 })
 
 /* Every Context object comes with a Provider React component 
@@ -64,13 +79,20 @@ const SocketsProvider = (props: any) => {
     const [user, setUser] =  useState(null);
     const [channel, setChannel] = useState(null);
     const [roomName, setRoomName] = useState(null);
-    const [show, setShow] = useState({});
+    const [show, setShow] = useState(emptyShow);
     const [notif, setNotif] =  useState(null);
+    const [viewersTotal, setViewersTotal] = useState(0);
+    const [viewersPresent, setViewersPresent] = useState(0);
     const [disconnectedInfo, setDisconnectedInfo] = useState('');
+    const [selectedClient, setSelectedClient] = useState(null);
     const {setChatRooms} = useChatRooms();
 
     const [clientsMap, setClientsMap] = useState(new Map<string, Client>());
     const [clientsList, setClientsList] = useState(new Array<Client>());
+
+    const selectClient = (ticket: string) => {
+        setSelectedClient(clientsMap.get(ticket));
+    }
 
     const loginInfo = (request) => {
         socket.emit(EVENTS.CLIENT.LOGIN, request, 
@@ -146,6 +168,9 @@ const SocketsProvider = (props: any) => {
             const currShow = {...newShow, attendees: null};
             if (newShow.attendees != null) {
                 currShow.attendees = new Map(Object.entries(newShow.attendees));
+                const attendeesList = Object.values(newShow.attendees).filter((a: User) => !a.isAdmin);
+                setViewersTotal(attendeesList.length);
+                setViewersPresent(attendeesList.filter((a: User) => a.isPresent).length);
             }
             setShow(currShow);
             setChatRooms(newShow.rooms);
@@ -158,21 +183,29 @@ const SocketsProvider = (props: any) => {
             newClientList.forEach(client => {
                 clientsMap.set(client.user.ticket, client);
             });
-            setClientsList(Array.from(clientsMap.values()));
+            setClientsList(newClientList);
+            setViewersPresent(newClientList.filter((a: Client) => a.user.isAdmin).length);
             if (callback != null) callback(socket.id);
         });
 
         socket.off(EVENTS.SERVER.ADD_CLIENT).on(EVENTS.SERVER.ADD_CLIENT, (client) => {
             clientsMap.set(client.user.ticket, client);
-            // console.log("clientsmap curr", clientsMap);
+            console.log("clientsmap curr", client.user);
+            show.attendees.set(client.user.ticket, client.user);
             setClientsMap(clientsMap);
-            setClientsList(Array.from(clientsMap.values()));
+            const newClientList = Array.from(clientsMap.values());
+            setClientsList(newClientList);
+            setViewersPresent(newClientList.filter((a: Client) => !a.user.isAdmin).length);
         })
 
         socket.off(EVENTS.SERVER.DISCONNECTED_CLIENT).on(EVENTS.SERVER.DISCONNECTED_CLIENT, ({ticket, socketId}) => {
+            const client = clientsMap.get(ticket);
             clientsMap.delete(ticket);
+            show.attendees.set(client.user.ticket, {...client.user, isPresent: false});
             setClientsMap(clientsMap);
-            setClientsList(Array.from(clientsMap.values()));
+            const newClientList = Array.from(clientsMap.values());
+            setClientsList(newClientList);
+            setViewersPresent(newClientList.filter((a: Client) => !a.user.isAdmin).length);
         })
 
         // Rooms info
@@ -242,7 +275,11 @@ const SocketsProvider = (props: any) => {
             notif, 
             setNotif, 
             disconnectedInfo,
+            selectedClient,
+            setSelectedClient: selectClient,
             loginRequest,
+            viewersPresent,
+            viewersTotal
         }} 
         {...props} 
     />

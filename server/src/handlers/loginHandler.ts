@@ -21,7 +21,7 @@ const LOGIN_EVENTS = {
 export const registerLoginHandlers = (io, socket) => {
     const recvLogin = ({ticket, email}, callback) => {
         let channelName = CHANNELS.WAITING_ROOM;
-        Provider.findUser({ticket, email})
+        Provider.logInOutUser({ticket, email}, true)
             .then(user => {
                 if (!user) {
                     callback(LOGIN_EVENTS.ACKS.INVALID_LOGIN.getJSON());
@@ -100,6 +100,10 @@ export const registerLoginHandlers = (io, socket) => {
 
     const logout = () => {
         const ticket = Provider.removeClientBySocketId(socket.id);
+        Provider.logInOutUser({ticket}, false)
+            .then(user => {
+                if (!user) return;
+            });
         if (ticket != null) {
             sendClientDisconnectedToAdmin(io, ticket, socket.id);
             Logger.info(`Socket ${socket.id} with ticket ${ticket} disconnected`);

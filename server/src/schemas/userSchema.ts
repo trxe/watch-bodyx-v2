@@ -16,10 +16,22 @@ export const UserSchema = new mongoose.Schema({
     ticket: {
         type: String,
         required: true,
+        unique: true,
     },
     isAdmin: {
         type: Boolean,
         required: true,
+    },
+    isPresent: {
+        type: Boolean,
+        required: true,
+    },
+    hasAttended: {
+        type: Boolean,
+        required: true,
+    },
+    eventId: {
+        type: String,
     },
 });
 

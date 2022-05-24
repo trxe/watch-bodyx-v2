@@ -171,7 +171,6 @@ const ChatRoomProvider = (props: any) => {
         if (!chatRooms.has(roomName)) {
             chatRooms.set(roomName, new ChatRoom(
                 !show.rooms ? null : show.rooms.find(room => room.roomName === roomName), roomName));
-            console.log('did i create a new room');
         }
         setChatRoomName(roomName);
         updateMessageList(roomName);

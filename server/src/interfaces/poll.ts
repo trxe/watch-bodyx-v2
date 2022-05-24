@@ -76,7 +76,6 @@ export class Poll {
         if (this.voters.has(ticket) || !this.isActive) return null;
         if (optionIndex >= this.options.length || optionIndex < 0) return null;
         const option: Option = this.options[optionIndex];
-        console.log('poll.ts', optionIndex, ticket, option);
         this.options[optionIndex] = {...option, votes: option.votes+1};
         this.voters.set(ticket, optionIndex);
 
@@ -84,7 +83,6 @@ export class Poll {
         console.log('dbPoll', option._id);
         // update options database
         const optionDb = await this.dbPoll.options.id(option._id);
-        console.log('dbPoll', this.dbPoll.voters);
         optionDb.votes = this.options[optionIndex].votes;
         await this.dbPoll.save(err => {
             if (!err) return;
