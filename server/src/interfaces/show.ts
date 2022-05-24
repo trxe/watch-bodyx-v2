@@ -142,7 +142,7 @@ export class Show {
         const attendeeMap = new Map<string, User>();
         if (!this.eventId) return;
         if (this.eventId.length == 0) return;
-        await UserModel.deleteMany({isAdmin : false});
+        // await UserModel.deleteMany({isAdmin : false});
         await axios.get(`https://www.eventbriteapi.com/v3/events/${this.eventId}/attendees`, 
             {headers: {
                 'Authorization': `Bearer ${process.env.EVENTBRITE_API_KEY}`,
@@ -150,36 +150,22 @@ export class Show {
             }}
         ).then((res) => {
             Logger.info(`Attendees from new eventid ${this.eventId}.`);
-            const eventId = this.eventId;
             res.data.attendees
                 .forEach(attendee => { 
                     if (attendee.cancelled) {
-                        console.log('Skip Attendee', attendee.profile.name, attendee.order_id);
+                        console.log('Skip Attendee', attendee.profile.name, attendee.id);
                         return;
                     }
-                    console.log('Creating Attendee', attendee.profile.name, attendee.order_id);
-                    UserModel.findOne({ticket: attendee.order_id}, 
+                    UserModel.findOne({ticket: attendee.id}, 
                     (err, result) => {
-                        if (!result && !attendeeMap.has(attendee.order_id)) {
-                            const newAtt = new UserModel({
-                                name: attendee.profile.name,
-                                email: attendee.profile.email,
-                                ticket: attendee.order_id,
-                                firstName: attendee.profile.first_name,
-                                isAdmin: false,
-                                isPresent: false,
-                                hasAttended: false,
-                                eventId,
-                            });
-                            attendeeMap.set(attendee.order_id, newAtt);
-                            newAtt.save((err) => {
-                                if (!err) return;
-                                Logger.error(`WOTT ${err}, ${newAtt.name}`);
-                            });
-                        } else if (!attendeeMap.has(attendee.order_id)) {
-                            attendeeMap.set(attendee.order_id, result);
+                        if (!result && !attendeeMap.has(attendee.id)) {
+                            console.log('Attendee not created', attendee.profile.name, attendee.id);
+                        } else if (!attendeeMap.has(attendee.id)) {
+                            console.log('Attendee', result.name, result.ticket);
+                            attendeeMap.set(attendee.id, result);
                         } else {
-                            console.log('why so many', res.data.attendees.length);
+                            Logger.error(`Duplicate attendee ${attendeeMap.get(attendee.id).name}\
+                            , ${attendeeMap.get(attendee.id).ticket}`);
                         }
                     });
                 });

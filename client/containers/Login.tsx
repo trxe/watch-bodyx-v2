@@ -13,7 +13,7 @@ const LoginContainer = () => {
   const {setNotif, loginRequest, createAccount} = useSockets();
   const emailRef = useRef(null);
   const ticketRef = useRef(null);
-  const eventRef = useRef(null);
+  const eventIdRef = useRef(null);
   const [mode, setMode] = useState(MODES.LOGIN);
 
   const goToLogin = () => setMode(MODES.LOGIN);
@@ -32,11 +32,11 @@ const LoginContainer = () => {
 
   const handleCreateAcct = () => {
     const email = emailRef.current.value;
-    const event = eventRef.current.value;
-    if (!email || !event || email.length == 0 || event.length == 0) {
+    const eventId = eventIdRef.current.value;
+    if (!email || !eventId || email.length == 0 || eventId.length == 0) {
       setNotif(createNotif('error', "Missing email or event ID", "Please enter all details."));
     } else {
-      createAccount({email, event});
+      createAccount({email, eventId});
     }
 
   }
@@ -55,9 +55,9 @@ const LoginContainer = () => {
         {mode == MODES.CREATE_ACCT && <div className={styles.loginDetails}>
             <h1>Create account</h1>
             <input placeholder='Email' ref={emailRef}/>
-            <input placeholder='Event ID' ref={eventRef}/>
+            <input placeholder='Event ID' ref={eventIdRef}/>
             <div className={styles.buttons}>
-                <button className={styles.loginButton}>REQUEST</button>
+                <button className={styles.loginButton} onClick={handleCreateAcct}>REQUEST</button>
                 <button className={styles.otherButton} onClick={goToLogin}>Already have an account?</button>
             </div>
         </div>}

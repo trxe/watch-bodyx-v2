@@ -18,6 +18,9 @@ export const UserSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    passwordHash: {
+        type: String,
+    },
     isAdmin: {
         type: Boolean,
         required: true,
