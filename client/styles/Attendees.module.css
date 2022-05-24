@@ -167,6 +167,11 @@
   background-color: var(--error);
 }
 
+.uncreated {
+  background-color: var(--disabled);
+}
+
+
 .search input {
   width: 100%;
   height: 28px;

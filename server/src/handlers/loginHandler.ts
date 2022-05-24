@@ -39,7 +39,7 @@ export const registerLoginHandlers = (io, socket) => {
             })
             .catch((err) => {
                 Logger.error(err);
-                callback(LOGIN_EVENTS.ACKS.UNKNOWN_ERROR.getJSON());
+                callback(new Ack('error', err).getJSON());
             })
     }
 

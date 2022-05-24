@@ -47,6 +47,7 @@ interface ISocketContext {
     disconnectedInfo: string
     loginRequest: Function
     createAccount: Function
+    changePassword: Function
     viewersTotal: number
     viewersPresent: number
 }
@@ -70,6 +71,7 @@ const SocketContext = createContext<ISocketContext>({
     disconnectedInfo: '',
     loginRequest: () => false,
     createAccount: () => false,
+    changePassword: () => false,
     viewersPresent: 0,
     viewersTotal: 0
 })
@@ -122,6 +124,18 @@ const SocketsProvider = (props: any) => {
             });
     };
 
+    const changePassword = (request) => {
+        axios.post(SOCKET_URL + 'change-password', request)
+            .then(({data}) => {
+                console.log(data);
+                if (data.messageType != null) setNotif(data);
+                if (data.messageType === 'success') {
+                    setUser(null);
+                    setChannel(CHANNELS.LOGIN_ROOM);
+                }
+            });
+    }
+
     const loginRequest = (request) => {
         axios.post(SOCKET_URL + "auth", request)
             .then(({data}) => {
@@ -129,17 +143,20 @@ const SocketsProvider = (props: any) => {
                 if (data.messageType === 'error') {
                     setNotif(data);
                     return;
-                } 
+                } else if (data.messageType === 'warning') {
+                    setNotif(createNotif('warning', 'Set a new password.', 'Log into your account again afterwards.'));
+                    setUser(JSON.parse(data.message));
+                    setChannel(CHANNELS.CHANGE_PASSWORD);
+                    return;
+                }
 
                 socket = io(SOCKET_URL);
                 if (data.messageType === 'info') {
+                    const tempUserWithOldSocket = JSON.parse(data.message);
                     setNotif(createNotif('warning', 
                         'You are logged in on multiple instances',
                         'Other instances will be disconnected.'));
-                    const socketIdDisconnect = data.message;
-                    socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, {
-                        oldSocketId: socketIdDisconnect, ...request
-                    }, (res) => {
+                    socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, tempUserWithOldSocket, (res) => {
                         console.log("socket", socket.id);
                         if (res.messageType === 'warning' || res.messageType === 'error') {
                             setNotif(res); 
@@ -153,8 +170,9 @@ const SocketsProvider = (props: any) => {
                             socket.emit(event, client, (ack) => console.log(ack));
                         }
                     });
-                } else {
-                    loginInfo(request);
+                } else if (data.messageType === 'success') {
+                    const tempUser = JSON.parse(data.message);
+                    loginInfo(tempUser);
                 }
 
             })
@@ -289,6 +307,7 @@ const SocketsProvider = (props: any) => {
             setSelectedClient: selectClient,
             loginRequest,
             createAccount,
+            changePassword,
             viewersPresent,
             viewersTotal
         }} 

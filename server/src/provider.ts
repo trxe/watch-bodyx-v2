@@ -132,12 +132,10 @@ async function findUser(query): Promise<User> {
     if (userDoc != null) {
         const user = {...userDoc._doc};
         delete user['__v']
+        delete user['_id'];
+        delete user['passwordHash']
         return user;
     } 
-    const newAttendee = show.findAttendee(query.ticket, query.email);
-    if (newAttendee != null) {
-        return newAttendee;
-    }
     return null;
 }
 
@@ -153,8 +151,11 @@ async function logInOutUser(query, isPresent: boolean): Promise<User> {
         userDoc.isPresent = isPresent;
         await userDoc.save((err) => {if (err) Logger.error(err);});
         const user = {...userDoc._doc, isPresent};
-        delete user['__v']
-        show.attendees.set(user.ticket, user);
+        delete user['__v'];
+        delete user['_id'];
+        delete user['passwordHash'];
+        if (show && show.attendees) show.attendees.set(user.ticket, user);
+        else throw 'Server still loading, please try again in a minute.';
         return user;
     } 
     return null;

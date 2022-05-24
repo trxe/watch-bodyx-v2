@@ -107,7 +107,7 @@ export class Show {
 
     public findAttendee(ticket: string, email: string): User {
         // if no attendees list, this event is invalid. temp generate attendee
-        if (!this.attendees) return this.generateTempAttendee(ticket, email);
+        if (!this.attendees) return null;
         if (!this.attendees.has(ticket)) return null;
         const user: User = this.attendees.get(ticket);
         if (user.email != email) return null;
@@ -142,6 +142,18 @@ export class Show {
         const attendeeMap = new Map<string, User>();
         if (!this.eventId) return;
         if (this.eventId.length == 0) return;
+        await UserModel.find({eventId: this.eventId})
+        .then((users) => {
+            if (!users && users.length == 0) return;
+            users.map(u => {
+                const user = {...u._doc, isPresent: false};
+                delete user['__v'];
+                delete user['_id'];
+                delete user['passwordHash'];
+                console.log('Attendee', user.name, user.ticket);
+                attendeeMap.set(user.ticket, user)
+            })
+        }).catch(err => {if (err) Logger.error(err)});
         // await UserModel.deleteMany({isAdmin : false});
         await axios.get(`https://www.eventbriteapi.com/v3/events/${this.eventId}/attendees`, 
             {headers: {
@@ -156,16 +168,14 @@ export class Show {
                         console.log('Skip Attendee', attendee.profile.name, attendee.id);
                         return;
                     }
-                    UserModel.findOne({ticket: attendee.id}, 
+                    UserModel.findOne({email: attendee.profile.email}, 
                     (err, result) => {
                         if (!result && !attendeeMap.has(attendee.id)) {
-                            console.log('Attendee not created', attendee.profile.name, attendee.id);
-                        } else if (!attendeeMap.has(attendee.id)) {
-                            console.log('Attendee', result.name, result.ticket);
-                            attendeeMap.set(attendee.id, result);
-                        } else {
-                            Logger.error(`Duplicate attendee ${attendeeMap.get(attendee.id).name}\
-                            , ${attendeeMap.get(attendee.id).ticket}`);
+                            const {email, name, first_name} = attendee.profile;
+                            console.log('Creating temporary attendee', email, name, first_name);
+                            attendeeMap.set(attendee.id, this.generateTempAttendee(email, first_name, name));
+                        } else if (result && !attendeeMap.has(attendee.id)) {
+                            Logger.warn(`Attendee ${attendee.profile.email} has already created a different account (ticket: ${result.ticket}).`);
                         }
                     });
                 });
@@ -177,7 +187,7 @@ export class Show {
         return attendeeMap;
     }
 
-    generateTempAttendee(ticket, email): User {
-        return { ticket, email, name: ticket, firstName: ticket, isAdmin: false, isPresent: true, hasAttended: false}
+    generateTempAttendee(email, name, firstName): User {
+        return { email, name, firstName, ticket: '', isAdmin: false, isPresent: false, hasAttended: false };
     }
 }

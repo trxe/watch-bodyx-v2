@@ -12,7 +12,7 @@ const MODES = {
 const LoginContainer = () => {
   const {setNotif, loginRequest, createAccount} = useSockets();
   const emailRef = useRef(null);
-  const ticketRef = useRef(null);
+  const passwordRef = useRef(null);
   const eventIdRef = useRef(null);
   const [mode, setMode] = useState(MODES.LOGIN);
 
@@ -22,11 +22,11 @@ const LoginContainer = () => {
 
   const handleSetTicket = () => {
     const email = emailRef.current.value;
-    const ticket = ticketRef.current.value;
-    if (!email || !ticket || email.length == 0 || ticket.length == 0) {
-      setNotif(createNotif('error', "Missing email or ticket number", "Please enter all details."));
+    const password = passwordRef.current.value;
+    if (!email || !password || email.length == 0 || password.length == 0) {
+      setNotif(createNotif('error', "Missing email or password", "Please enter all details."));
     } else {
-      loginRequest({email, ticket});
+      loginRequest({email, password});
     }
   }
 
@@ -38,14 +38,13 @@ const LoginContainer = () => {
     } else {
       createAccount({email, eventId});
     }
-
   }
 
     return <div className={styles.loginWrapper}>
         {mode == MODES.LOGIN && <div className={styles.loginDetails}>
             <h1>BODYX</h1>
             <input placeholder='Email' ref={emailRef}/>
-            <input placeholder='Password' ref={ticketRef} type='password'/>
+            <input placeholder='Password' ref={passwordRef} type='password'/>
             <div className={styles.buttons}>
                 <button className={styles.loginButton} onClick={handleSetTicket}>LOGIN</button>
                 <button className={styles.otherButton} onClick={goToCreateAcct}>Just purchased a ticket?</button>

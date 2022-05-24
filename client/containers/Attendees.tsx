@@ -6,7 +6,7 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { classList } from "../utils/utils";
 import { RiArrowDownSFill, RiArrowDownSLine, RiUserFill, RiUserStarFill } from "react-icons/ri";
 import DropdownMenu from "../utils/dropdown";
-import { FC, Ref, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { User } from "./Clients";
 
 interface IAttendee {
@@ -17,12 +17,12 @@ interface IAttendee {
 
 const Attendee:FC<IAttendee> = ({user, refObj, refDiv}) => {
     useEffect(() => {
-        console.log('help', refObj, refDiv);
         if (refObj && refObj.current) console.log('ref');
         refObj?.current?.scrollIntoView({ behavior: "smooth" });
     }, [refObj, refDiv])
 
-    return <div className={classList(styles.attendee, styles.row, user.isPresent ? styles.present : styles.absent)}>
+    return <div className={classList(styles.attendee, styles.row, 
+            user.isPresent ? styles.present : (user.ticket === '' ? styles.uncreated : styles.absent))}>
         <div className={styles.icon}>{user.isPresent ? <HiStatusOnline/> : <HiStatusOffline/>}</div>
         <div className={styles.ticket}>{user.ticket}</div>
         <div className={styles.name}>{user.name}</div>
@@ -44,7 +44,8 @@ const AttendeesContainer = (props) => {
     }, [selectedClient])
 
     const containsKeyword = (user: User) => {
-        return (user.name.indexOf(filterKeyword) >= 0 
+        return (user.name.toLowerCase().indexOf(filterKeyword) >= 0 
+            || user.email.toLowerCase().indexOf(filterKeyword) >= 0 
             || user.ticket.indexOf(filterKeyword) >= 0)
             && isAdminFilter === user.isAdmin;
     }
@@ -88,7 +89,7 @@ const AttendeesContainer = (props) => {
                 Array.from(show.attendees.values())
                     .filter(containsKeyword)
                     .map(attendee => 
-                        <Attendee key={attendee.ticket} 
+                        <Attendee key={attendee.email} 
                             user={attendee}
                             refObj={selectedClient != null && selectedClient.user.ticket === attendee.ticket ? focusUserRef : null}
                             refDiv={selectedClient != null && selectedClient.user.ticket === attendee.ticket ? refDiv : null}
