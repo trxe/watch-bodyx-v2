@@ -148,7 +148,7 @@ const PollProvider = (props: any) => {
                 setActiveStatus(isActive);
                 if (isResults != null) poll.isResults = isResults;
                 setIsResults(isResults);
-                if (isResults) location.hash = '#poll';
+                if (isActive || isResults) location.hash = '#poll';
                 console.log('poll', poll);
                 setPoll(poll);
             });
