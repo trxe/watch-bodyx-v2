@@ -12,6 +12,7 @@ import WaitingRoomContainer from '../containers/WaitingRoom'
 import DisconnectedContainer from '../containers/DisconnectedPage'
 import LoginContainer from '../containers/Login'
 import ChangePasswordContainer from '../containers/ChangePassword'
+import NonAttendeesContainer from '../containers/NonAttendees'
 
 export default function Home() {
   const {channel, user, notif, setNotif, loginRequest} = useSockets();
@@ -44,6 +45,7 @@ export default function Home() {
       {channel === CHANNELS.MAIN_ROOM && <ViewerContainer isAdmin={user.isAdmin}/>}
       {channel === CHANNELS.DISCONNECTED && <DisconnectedContainer />}
       {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
+      {channel === CHANNELS.NON_ATTENDEES_ROOM && <NonAttendeesContainer />}
       {notif != null &&
         <Snackbar timer={4000} 
           messageType={notif.messageType}

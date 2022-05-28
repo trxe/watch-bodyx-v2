@@ -128,6 +128,18 @@ async function loadUsers() {
             isAdmin: true
         });
     }
+    const users = await UserModel.find({});
+    users.forEach(user => {
+        user.isPresent = false;
+        user.save();
+    });
+}
+
+async function checkUsers() {
+    const users = await UserModel.find({});
+    users.forEach(user => {
+        console.log('Checking user', user);
+    });
 }
 
 /**
@@ -162,8 +174,11 @@ async function logInOutUser(query, isPresent: boolean): Promise<User> {
         delete user['__v'];
         delete user['_id'];
         delete user['passwordHash'];
-        if (show && show.attendees) show.attendees.set(user.ticket, user);
-        else if (!show) throw 'Server still loading, please try again in a minute.';
+        if (show && show.attendees) {
+            if (show.attendees.has(user.ticket)) {
+                show.attendees.set(user.ticket, user);
+            }
+        } else if (!show) throw 'Server still loading, please try again in a minute.';
         return user;
     } 
     return null;
@@ -212,6 +227,7 @@ const Provider = {
     getClientByTicket, 
     removeClientBySocketId, 
     loadUsers,
+    checkUsers,
     findUser,
     logInOutUser,
     createRoom,

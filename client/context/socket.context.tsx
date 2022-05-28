@@ -74,7 +74,7 @@ const SocketContext = createContext<ISocketContext>({
     changePassword: () => false,
     viewersPresent: 0,
     viewersTotal: 0
-})
+});
 
 /* Every Context object comes with a Provider React component 
  * that allows consuming components to subscribe to context changes.
@@ -219,7 +219,7 @@ const SocketsProvider = (props: any) => {
         socket.off(EVENTS.SERVER.ADD_CLIENT).on(EVENTS.SERVER.ADD_CLIENT, (client) => {
             clientsMap.set(client.user.ticket, client);
             // console.log("clientsmap curr", client.user);
-            show.attendees.set(client.user.ticket, client.user);
+            if (show.attendees.has(client.user.ticket)) show.attendees.set(client.user.ticket, client.user);
             setClientsMap(clientsMap);
             const newClientList = Array.from(clientsMap.values());
             setClientsList(newClientList);
@@ -229,7 +229,7 @@ const SocketsProvider = (props: any) => {
         socket.off(EVENTS.SERVER.DISCONNECTED_CLIENT).on(EVENTS.SERVER.DISCONNECTED_CLIENT, ({ticket, socketId}) => {
             const client = clientsMap.get(ticket);
             clientsMap.delete(ticket);
-            show.attendees.set(client.user.ticket, {...client.user, isPresent: false});
+            if (show.attendees.has(client.user.ticket)) show.attendees.set(client.user.ticket, {...client.user, isPresent: false});
             setClientsMap(clientsMap);
             const newClientList = Array.from(clientsMap.values());
             setClientsList(newClientList);

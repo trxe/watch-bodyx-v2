@@ -80,7 +80,8 @@ export class Show {
         return !room ? defaultRoom : room.roomName;
     }
 
-    public async saveShow(name, eventId): Promise<void> {
+    public async saveShow(name, eventId): Promise<string> {
+        const oldEventId = this.eventId;
         this.name = name;
         if (this.eventId == eventId) return;
         this.eventId = eventId;
@@ -95,6 +96,7 @@ export class Show {
             this.attendees = null;
             throw 'Invalid Event ID';
         }
+        return oldEventId;
     }
 
     public getJSON(): {name: string, eventId: string, isOpen: boolean, rooms: Array<Room>, attendees: Object} {
@@ -152,7 +154,7 @@ export class Show {
             if (err) Logger.error(err);
             if (!users && users.length == 0) return;
             users.map(u => {
-                const user = {...u._doc, isPresent: false};
+                const user = {...u._doc};
                 delete user['__v'];
                 delete user['_id'];
                 delete user['passwordHash'];

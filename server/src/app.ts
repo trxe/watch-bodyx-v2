@@ -59,6 +59,7 @@ httpServer.listen(port, host, () => {
     Logger.info(`Listening at ${JSON.stringify(httpServer.address())}`);
     mongoInit();
     Provider.loadUsers();
+    Provider.checkUsers();
     Provider.init();
     emailInit();
     io.on("connect", onConnection);

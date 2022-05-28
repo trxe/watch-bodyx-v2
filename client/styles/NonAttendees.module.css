@@ -1,0 +1,5 @@
+@import "Themes.module.css";
+
+.nonAttendees {
+    color: var(--primaryFont);
+}

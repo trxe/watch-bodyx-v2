@@ -167,8 +167,12 @@ export const registerShowHandlers = (io: Server, socket) => {
         name = !name ? '' : name.trim();
         eventId = !eventId ? '' : eventId.trim();
         Provider.setShowInfo(name, eventId, 
-            () => { 
+            (oldEventId) => { 
                 sendShow(socket); 
+                if (oldEventId != eventId) {
+                    clientForceJoinChannel(io, eventId, CHANNELS.WAITING_ROOM);
+                    // Note: Previous event attendees are not automatically kicked.
+                }
                 sendShowToRoom(io, CHANNELS.MAIN_ROOM);
                 sendShowToRoom(io, CHANNELS.SM_ROOM);
                 callback(SHOW_EVENTS.ACKS.UPDATE_SUCCESS.getJSON());
