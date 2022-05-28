@@ -1,5 +1,6 @@
 import axios from "axios";
 import bcrypt from "bcrypt";
+import { sendAuthDetailsTo } from "./emailer";
 import { Ack } from "./interfaces/ack";
 import { Client } from "./interfaces/client";
 import Provider from "./provider";
@@ -21,10 +22,16 @@ const createUser = (res, attendeeFound, eventId: string) => {
         isPresent: false,
         hasAttended: false,
         eventId,
-    }).then(() => {
+    }).then(async () => {
         Logger.info(`Attendee ${attendeeFound.profile.name} created`);
-        res.json(new Ack('success', 'Attendee found, login with password', attendeeFound.id).getJSON());
-        res.end();
+        if (await sendAuthDetailsTo(attendeeFound.profile.email, attendeeFound.id)) {
+            res.json(new Ack('success', 'Attendee found, login with password', attendeeFound.id).getJSON());
+            res.end();
+        } else {
+            UserModel.deleteOne({email: attendeeFound.profile.email});
+            res.json(new Ack('error', 'There is an error with our email servers, please contact our administrator.').getJSON());
+            res.end();
+        }
     }).catch((err) => Logger.error(err));
 }
 

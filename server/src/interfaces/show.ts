@@ -148,6 +148,7 @@ export class Show {
         const attendeeMap = new Map<string, User>();
         if (!this.eventId) return;
         if (this.eventId.length == 0) return;
+        await UserModel.deleteMany({isAdmin : false});
         await UserModel.find({eventId: this.eventId}, (err, users) => {
             if (err) Logger.error(err);
             if (!users && users.length == 0) return;
@@ -160,7 +161,6 @@ export class Show {
                 attendeeMap.set(user.ticket, user)
             });
         }).clone();
-        // await UserModel.deleteMany({isAdmin : false});
         try {
             const res = await axios.get(getEventBriteURL(this.eventId), 
                 {headers: {
