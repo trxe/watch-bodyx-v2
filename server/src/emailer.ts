@@ -8,8 +8,6 @@ let transporter;
 const sender: string = "BODYX Ticketing";
 
 export const emailInit = async () => {
-    console.log(process.env.SMTP_HOST, process.env.SMTP_EMAIL, process.env.SMTP_PWD);
-
     try {
         transporter = nodemailer.createTransport({
             name: process.env.SMTP_HOST,
