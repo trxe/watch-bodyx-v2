@@ -17,13 +17,21 @@ let chatManager: ChatManager;
 let poll: Poll;
 
 const init = async () => {
-    show = new Show('Sample Show', '302699441177', false);
-    await show.loadShow();
+    try {
+        show = new Show('Sample Show', '302699441177', false);
+        await show.loadShow();
+    } catch (err) {
+        Logger.error(err)
+    }
     clients = new Map<string, Client>();
     socketTicket = new Map<string, string>();
     chatManager = new ChatManager(show);
-    poll = new Poll();
-    await poll.loadPoll();
+    try {
+        poll = new Poll();
+        await poll.loadPoll();
+    } catch (err) {
+        Logger.error(err)
+    }
 };
 
 /**
@@ -155,7 +163,7 @@ async function logInOutUser(query, isPresent: boolean): Promise<User> {
         delete user['_id'];
         delete user['passwordHash'];
         if (show && show.attendees) show.attendees.set(user.ticket, user);
-        else throw 'Server still loading, please try again in a minute.';
+        else if (!show) throw 'Server still loading, please try again in a minute.';
         return user;
     } 
     return null;

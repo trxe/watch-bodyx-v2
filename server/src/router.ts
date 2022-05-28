@@ -2,16 +2,14 @@ import axios from "axios";
 import bcrypt from "bcrypt";
 import { Ack } from "./interfaces/ack";
 import { Client } from "./interfaces/client";
-import { User } from "./interfaces/users";
 import Provider from "./provider";
 import { UserModel } from "./schemas/userSchema";
 import Logger from "./utils/logger";
+import { getEventBriteURL } from "./utils/utils";
 
 const INVALID_LOGIN = new Ack('error', 'User not found', 'Invalid email/ticket.')
 const UNKNOWN_ERROR = new Ack('error', 'Unknown error', 'Unknown error from server')
 const SALT_ROUNDS = 10;
-
-const getEventBriteURL = (eventId: string): string => `https://www.eventbriteapi.com/v3/events/${eventId}/attendees`;
 
 const createUser = (res, attendeeFound, eventId: string) => {
     UserModel.create({

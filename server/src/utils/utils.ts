@@ -1,0 +1,1 @@
+export const getEventBriteURL = (eventId: string): string => `https://www.eventbriteapi.com/v3/events/${eventId}/attendees`;

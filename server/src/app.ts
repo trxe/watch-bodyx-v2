@@ -55,9 +55,13 @@ const onConnection = (socket) => {
 }
 
 httpServer.listen(port, host, () => {
-    Logger.info(`Listening at ${JSON.stringify(httpServer.address())}`);
-    mongoInit();
-    Provider.loadUsers();
-    Provider.init();
+    try {
+        Logger.info(`Listening at ${JSON.stringify(httpServer.address())}`);
+        mongoInit();
+        Provider.loadUsers();
+        Provider.init();
+    } catch (err) {
+        Logger.error(err);
+    }
     io.on("connect", onConnection);
 });

@@ -57,7 +57,7 @@ export const registerPollHandlers = (io: Server, socket) => {
 
     const checkVote = ({ticket}, callback) => {
         const poll: Poll = Provider.getPoll();
-        console.log('pollHandler.ts', poll.voters)
+        // console.log('pollHandler.ts', poll.voters)
         if (!poll.voters || !poll.voters.has(ticket)) {
             callback(new Ack('warning', 'Vote not available'));
             return;

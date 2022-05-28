@@ -207,7 +207,7 @@ const SocketsProvider = (props: any) => {
 
         // Admin control of clients
         socket.off(EVENTS.SERVER.CURRENT_CLIENTS).on(EVENTS.SERVER.CURRENT_CLIENTS, (newClientList, callback) => {
-            console.log("received list", newClientList);
+            // console.log("received list", newClientList);
             newClientList.forEach(client => {
                 clientsMap.set(client.user.ticket, client);
             });
@@ -218,7 +218,7 @@ const SocketsProvider = (props: any) => {
 
         socket.off(EVENTS.SERVER.ADD_CLIENT).on(EVENTS.SERVER.ADD_CLIENT, (client) => {
             clientsMap.set(client.user.ticket, client);
-            console.log("clientsmap curr", client.user);
+            // console.log("clientsmap curr", client.user);
             show.attendees.set(client.user.ticket, client.user);
             setClientsMap(clientsMap);
             const newClientList = Array.from(clientsMap.values());
