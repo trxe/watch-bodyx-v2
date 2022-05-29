@@ -16,6 +16,8 @@ let socketTicket: Map<string, string>;
 let chatManager: ChatManager;
 let poll: Poll;
 
+const SETUP_IN_PROGRESS = 'Server is still starting, please try again in a minute';
+
 const init = async () => {
     try {
         show = new Show('Sample Show', '302699441177', false);
@@ -40,6 +42,7 @@ const init = async () => {
  * @returns ticket of removed client.
  */
 const removeClientBySocketId = (clientSocketId: string): string => {
+    if (!socketTicket) throw SETUP_IN_PROGRESS;
     const ticket = socketTicket.get(clientSocketId);
     clients.delete(ticket);
     socketTicket.delete(clientSocketId);
@@ -52,15 +55,18 @@ const removeClientBySocketId = (clientSocketId: string): string => {
  * @param client 
  */
 const setClient = (clientSocketId:string, ticket: string, client: Client): void => {
+    if (!socketTicket) throw SETUP_IN_PROGRESS;
     clients.set(ticket, client);
     socketTicket.set(clientSocketId, ticket);
 }
 
 const getClientByTicket = (ticket: string): Client => {
+    if (!clients) return null;
     return clients.has(ticket) ? clients.get(ticket) : null;
 }
 
 const getClientBySocket = (socketId: string): Client => {
+    if (!socketTicket) throw SETUP_IN_PROGRESS;
     return socketTicket.has(socketId) ? 
         getClientByTicket(socketTicket.get(socketId)) : null;
 }
@@ -77,6 +83,7 @@ const getClientListJSON = (): Array<Object> => {
  * @param onFailure 
  */
 const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) => {
+    if (!clients) throw SETUP_IN_PROGRESS;
     const clientToSet = getClientBySocket(socketId);
     if (!clientToSet) {
         onFailure();
@@ -101,6 +108,7 @@ const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) =
  * @param onFailure 
  */
 const setClientChannel = (socketId: string, channelName: string, onSuccess, onFailure) => {
+    if (!clients) throw SETUP_IN_PROGRESS;
     const clientToSet = getClientBySocket(socketId);
     if (!clientToSet) {
         onFailure();
@@ -138,7 +146,8 @@ async function loadUsers() {
 async function checkUsers() {
     const users = await UserModel.find({});
     users.forEach(user => {
-        console.log('Checking user', user);
+        console.log(`[${user.isAdmin ? 'ADMIN' : 'VIEWER'}] ${user.name}: (email: ${user.email})
+        (${user.isAdmin ? '' : `event: ${user.eventId}, ` }ticket: ${user.ticket})\n`);
     });
 }
 
