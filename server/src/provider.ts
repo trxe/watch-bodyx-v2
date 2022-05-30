@@ -129,10 +129,12 @@ async function loadUsers() {
     const size = await UserModel.count();
     if (size == 0) {
         await UserModel.create({
-            name: 'admin',
+            name: 'Root Admin',
             email: 'admin',
             ticket: 'bodyx',
-            firstName: 'admin',
+            firstName: 'Admin',
+            isPresent: false,
+            hasAttended: false,
             isAdmin: true
         });
     }
