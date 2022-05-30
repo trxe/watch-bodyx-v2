@@ -192,7 +192,7 @@ export class Show {
                     });
                 });
         } catch (err) {
-            throw 'Invalid Event ID (EventBrite cannot find this event).'
+            throw `Invalid Event ID (${this.eventId}) (EventBrite cannot find this event).`
         }
         return attendeeMap;
     }
