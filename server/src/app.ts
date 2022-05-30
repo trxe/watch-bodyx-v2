@@ -13,6 +13,7 @@ import { registerLoginHandlers } from './handlers/loginHandler';
 import { registerShowHandlers } from './handlers/showHandler';
 import { registerChatHandlers } from './handlers/chatHandler';
 import { registerPollHandlers } from './handlers/pollHandler';
+import { emailInit } from './emailer';
 
 dotenv.config();
 
@@ -58,6 +59,8 @@ httpServer.listen(port, host, () => {
     Logger.info(`Listening at ${JSON.stringify(httpServer.address())}`);
     mongoInit();
     Provider.loadUsers();
+    Provider.checkUsers();
     Provider.init();
+    emailInit();
     io.on("connect", onConnection);
 });

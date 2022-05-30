@@ -16,14 +16,24 @@ let socketTicket: Map<string, string>;
 let chatManager: ChatManager;
 let poll: Poll;
 
+const SETUP_IN_PROGRESS = 'Server is still starting, please try again in a minute';
+
 const init = async () => {
-    show = new Show('Sample Show', '302699441177', false);
-    await show.loadShow();
+    try {
+        show = new Show('Sample Show', '302699441177', false);
+        await show.loadShow();
+    } catch (err) {
+        Logger.error(err)
+    }
     clients = new Map<string, Client>();
     socketTicket = new Map<string, string>();
     chatManager = new ChatManager(show);
-    poll = new Poll();
-    await poll.loadPoll();
+    try {
+        poll = new Poll();
+        await poll.loadPoll();
+    } catch (err) {
+        Logger.error(err)
+    }
 };
 
 /**
@@ -32,6 +42,7 @@ const init = async () => {
  * @returns ticket of removed client.
  */
 const removeClientBySocketId = (clientSocketId: string): string => {
+    if (!socketTicket) throw SETUP_IN_PROGRESS;
     const ticket = socketTicket.get(clientSocketId);
     clients.delete(ticket);
     socketTicket.delete(clientSocketId);
@@ -44,15 +55,18 @@ const removeClientBySocketId = (clientSocketId: string): string => {
  * @param client 
  */
 const setClient = (clientSocketId:string, ticket: string, client: Client): void => {
+    if (!socketTicket) throw SETUP_IN_PROGRESS;
     clients.set(ticket, client);
     socketTicket.set(clientSocketId, ticket);
 }
 
 const getClientByTicket = (ticket: string): Client => {
+    if (!clients) return null;
     return clients.has(ticket) ? clients.get(ticket) : null;
 }
 
 const getClientBySocket = (socketId: string): Client => {
+    if (!socketTicket) throw SETUP_IN_PROGRESS;
     return socketTicket.has(socketId) ? 
         getClientByTicket(socketTicket.get(socketId)) : null;
 }
@@ -69,6 +83,7 @@ const getClientListJSON = (): Array<Object> => {
  * @param onFailure 
  */
 const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) => {
+    if (!clients) throw SETUP_IN_PROGRESS;
     const clientToSet = getClientBySocket(socketId);
     if (!clientToSet) {
         onFailure();
@@ -93,6 +108,7 @@ const setClientRoom = (socketId: string, roomId: string, onSuccess, onFailure) =
  * @param onFailure 
  */
 const setClientChannel = (socketId: string, channelName: string, onSuccess, onFailure) => {
+    if (!clients) throw SETUP_IN_PROGRESS;
     const clientToSet = getClientBySocket(socketId);
     if (!clientToSet) {
         onFailure();
@@ -113,13 +129,28 @@ async function loadUsers() {
     const size = await UserModel.count();
     if (size == 0) {
         await UserModel.create({
-            name: 'admin',
+            name: 'Root Admin',
             email: 'admin',
             ticket: 'bodyx',
-            firstName: 'admin',
+            firstName: 'Admin',
+            isPresent: false,
+            hasAttended: false,
             isAdmin: true
         });
     }
+    const users = await UserModel.find({});
+    users.forEach(user => {
+        user.isPresent = false;
+        user.save();
+    });
+}
+
+async function checkUsers() {
+    const users = await UserModel.find({});
+    users.forEach(user => {
+        console.log(`[${user.isAdmin ? 'ADMIN' : 'VIEWER'}] ${user.name}: (email: ${user.email})
+        (${user.isAdmin ? '' : `event: ${user.eventId}, ` }ticket: ${user.ticket})\n`);
+    });
 }
 
 /**
@@ -132,12 +163,10 @@ async function findUser(query): Promise<User> {
     if (userDoc != null) {
         const user = {...userDoc._doc};
         delete user['__v']
+        delete user['_id'];
+        delete user['passwordHash']
         return user;
     } 
-    const newAttendee = show.findAttendee(query.ticket, query.email);
-    if (newAttendee != null) {
-        return newAttendee;
-    }
     return null;
 }
 
@@ -153,8 +182,14 @@ async function logInOutUser(query, isPresent: boolean): Promise<User> {
         userDoc.isPresent = isPresent;
         await userDoc.save((err) => {if (err) Logger.error(err);});
         const user = {...userDoc._doc, isPresent};
-        delete user['__v']
-        show.attendees.set(user.ticket, user);
+        delete user['__v'];
+        delete user['_id'];
+        delete user['passwordHash'];
+        if (show && show.attendees) {
+            if (show.attendees.has(user.ticket)) {
+                show.attendees.set(user.ticket, user);
+            }
+        } else if (!show) throw 'Server still loading, please try again in a minute.';
         return user;
     } 
     return null;
@@ -203,6 +238,7 @@ const Provider = {
     getClientByTicket, 
     removeClientBySocketId, 
     loadUsers,
+    checkUsers,
     findUser,
     logInOutUser,
     createRoom,

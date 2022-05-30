@@ -46,6 +46,8 @@ interface ISocketContext {
     setSelectedClient: Function
     disconnectedInfo: string
     loginRequest: Function
+    createAccount: Function
+    changePassword: Function
     viewersTotal: number
     viewersPresent: number
 }
@@ -68,9 +70,11 @@ const SocketContext = createContext<ISocketContext>({
     setSelectedClient: () => false,
     disconnectedInfo: '',
     loginRequest: () => false,
+    createAccount: () => false,
+    changePassword: () => false,
     viewersPresent: 0,
     viewersTotal: 0
-})
+});
 
 /* Every Context object comes with a Provider React component 
  * that allows consuming components to subscribe to context changes.
@@ -110,6 +114,26 @@ const SocketsProvider = (props: any) => {
                     socket.emit(event, client, (ack) => console.log(ack));
                 }
             });
+    };
+
+    const createAccount = (request) => {
+        axios.post(SOCKET_URL + 'create-account', request)
+            .then(({data}) => {
+                console.log(data);
+                if (data.messageType != null) setNotif(data);
+            });
+    };
+
+    const changePassword = (request) => {
+        axios.post(SOCKET_URL + 'change-password', request)
+            .then(({data}) => {
+                console.log(data);
+                if (data.messageType != null) setNotif(data);
+                if (data.messageType === 'success') {
+                    setUser(null);
+                    setChannel(CHANNELS.LOGIN_ROOM);
+                }
+            });
     }
 
     const loginRequest = (request) => {
@@ -119,17 +143,20 @@ const SocketsProvider = (props: any) => {
                 if (data.messageType === 'error') {
                     setNotif(data);
                     return;
-                } 
+                } else if (data.messageType === 'warning') {
+                    setNotif(createNotif('warning', 'Set a new password.', 'Log into your account again afterwards.'));
+                    setUser(JSON.parse(data.message));
+                    setChannel(CHANNELS.CHANGE_PASSWORD);
+                    return;
+                }
 
                 socket = io(SOCKET_URL);
                 if (data.messageType === 'info') {
+                    const tempUserWithOldSocket = JSON.parse(data.message);
                     setNotif(createNotif('warning', 
                         'You are logged in on multiple instances',
                         'Other instances will be disconnected.'));
-                    const socketIdDisconnect = data.message;
-                    socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, {
-                        oldSocketId: socketIdDisconnect, ...request
-                    }, (res) => {
+                    socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, tempUserWithOldSocket, (res) => {
                         console.log("socket", socket.id);
                         if (res.messageType === 'warning' || res.messageType === 'error') {
                             setNotif(res); 
@@ -143,8 +170,9 @@ const SocketsProvider = (props: any) => {
                             socket.emit(event, client, (ack) => console.log(ack));
                         }
                     });
-                } else {
-                    loginInfo(request);
+                } else if (data.messageType === 'success') {
+                    const tempUser = JSON.parse(data.message);
+                    loginInfo(tempUser);
                 }
 
             })
@@ -179,7 +207,7 @@ const SocketsProvider = (props: any) => {
 
         // Admin control of clients
         socket.off(EVENTS.SERVER.CURRENT_CLIENTS).on(EVENTS.SERVER.CURRENT_CLIENTS, (newClientList, callback) => {
-            console.log("received list", newClientList);
+            // console.log("received list", newClientList);
             newClientList.forEach(client => {
                 clientsMap.set(client.user.ticket, client);
             });
@@ -190,8 +218,8 @@ const SocketsProvider = (props: any) => {
 
         socket.off(EVENTS.SERVER.ADD_CLIENT).on(EVENTS.SERVER.ADD_CLIENT, (client) => {
             clientsMap.set(client.user.ticket, client);
-            console.log("clientsmap curr", client.user);
-            show.attendees.set(client.user.ticket, client.user);
+            // console.log("clientsmap curr", client.user);
+            if (show.attendees.has(client.user.ticket)) show.attendees.set(client.user.ticket, client.user);
             setClientsMap(clientsMap);
             const newClientList = Array.from(clientsMap.values());
             setClientsList(newClientList);
@@ -201,7 +229,7 @@ const SocketsProvider = (props: any) => {
         socket.off(EVENTS.SERVER.DISCONNECTED_CLIENT).on(EVENTS.SERVER.DISCONNECTED_CLIENT, ({ticket, socketId}) => {
             const client = clientsMap.get(ticket);
             clientsMap.delete(ticket);
-            show.attendees.set(client.user.ticket, {...client.user, isPresent: false});
+            if (show.attendees.has(client.user.ticket)) show.attendees.set(client.user.ticket, {...client.user, isPresent: false});
             setClientsMap(clientsMap);
             const newClientList = Array.from(clientsMap.values());
             setClientsList(newClientList);
@@ -278,6 +306,8 @@ const SocketsProvider = (props: any) => {
             selectedClient,
             setSelectedClient: selectClient,
             loginRequest,
+            createAccount,
+            changePassword,
             viewersPresent,
             viewersTotal
         }} 

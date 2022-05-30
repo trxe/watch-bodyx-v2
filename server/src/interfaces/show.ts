@@ -4,6 +4,7 @@ import { RoomModel } from "../schemas/roomSchema";
 import { ShowModel } from "../schemas/showSchema";
 import { UserModel } from "../schemas/userSchema";
 import Logger from "../utils/logger";
+import { getEventBriteURL } from "../utils/utils";
 import { Room } from "./room";
 import { User } from "./users";
 
@@ -79,7 +80,8 @@ export class Show {
         return !room ? defaultRoom : room.roomName;
     }
 
-    public async saveShow(name, eventId): Promise<void> {
+    public async saveShow(name, eventId): Promise<string> {
+        const oldEventId = this.eventId;
         this.name = name;
         if (this.eventId == eventId) return;
         this.eventId = eventId;
@@ -87,12 +89,14 @@ export class Show {
         this.dbShow.name = name;
         this.dbShow.eventId = eventId;
         await this.dbShow.save();
-        await this.getAttendees()
-            .then(attendees => this.attendees = attendees)
-            .catch(err => { 
-                this.attendees = null;
-                throw err;
-            });
+        try {
+            this.attendees = await this.getAttendees();
+        } catch (err) { 
+            Logger.error(err);
+            this.attendees = null;
+            throw 'Invalid Event ID';
+        }
+        return oldEventId;
     }
 
     public getJSON(): {name: string, eventId: string, isOpen: boolean, rooms: Array<Room>, attendees: Object} {
@@ -101,13 +105,13 @@ export class Show {
             eventId: this.eventId,
             isOpen: this.isOpen,
             rooms: this.rooms,
-            attendees: !this.attendees ? null : Object.fromEntries(this.attendees),
+            attendees: !this.attendees ? new Map<string, User>() : Object.fromEntries(this.attendees),
         };
     }
 
     public findAttendee(ticket: string, email: string): User {
         // if no attendees list, this event is invalid. temp generate attendee
-        if (!this.attendees) return this.generateTempAttendee(ticket, email);
+        if (!this.attendees) return null;
         if (!this.attendees.has(ticket)) return null;
         const user: User = this.attendees.get(ticket);
         if (user.email != email) return null;
@@ -129,9 +133,13 @@ export class Show {
         this.isOpen = false;
         this.eventId = this.dbShow.eventId.trim();
         this.rooms = this.dbShow.rooms;
-        this.getAttendees()
-            .then(attendees => this.attendees = attendees)
-            .catch(err => { Logger.error(err) });
+        try {
+            this.attendees = await this.getAttendees();
+        } catch (err) { 
+            Logger.error(err);
+            this.attendees = null;
+            throw 'Invalid Event ID';
+        }
     }
 
     public setShowOpen(isShowOpen: boolean) {
@@ -142,56 +150,54 @@ export class Show {
         const attendeeMap = new Map<string, User>();
         if (!this.eventId) return;
         if (this.eventId.length == 0) return;
-        await UserModel.deleteMany({isAdmin : false});
-        await axios.get(`https://www.eventbriteapi.com/v3/events/${this.eventId}/attendees`, 
-            {headers: {
-                'Authorization': `Bearer ${process.env.EVENTBRITE_API_KEY}`,
-                'Content-Type': 'application/json',
-            }}
-        ).then((res) => {
+        await UserModel.find({eventId: this.eventId}, (err, users) => {
+            if (err) Logger.error(err);
+            if (!users && users.length == 0) return;
+            users.map(u => {
+                const user = {...u._doc};
+                delete user['__v'];
+                delete user['_id'];
+                delete user['passwordHash'];
+                console.log('Attendee', user.name, user.ticket);
+                attendeeMap.set(user.ticket, user)
+            });
+        }).clone();
+        try {
+            const res = await axios.get(getEventBriteURL(this.eventId), 
+                {headers: {
+                    'Authorization': `Bearer ${process.env.EVENTBRITE_API_KEY}`,
+                    'Content-Type': 'application/json',
+                }}
+            );
             Logger.info(`Attendees from new eventid ${this.eventId}.`);
-            const eventId = this.eventId;
+            const emailsUsed: Map<string, string> = new Map<string, string>(); // hashmap for emails and corresponding ticket id.
             res.data.attendees
                 .forEach(attendee => { 
                     if (attendee.cancelled) {
-                        console.log('Skip Attendee', attendee.profile.name, attendee.order_id);
+                        console.log('Skip Attendee', attendee.profile.name, attendee.id);
                         return;
                     }
-                    console.log('Creating Attendee', attendee.profile.name, attendee.order_id);
-                    UserModel.findOne({ticket: attendee.order_id}, 
+                    UserModel.findOne({email: attendee.profile.email}, 
                     (err, result) => {
-                        if (!result && !attendeeMap.has(attendee.order_id)) {
-                            const newAtt = new UserModel({
-                                name: attendee.profile.name,
-                                email: attendee.profile.email,
-                                ticket: attendee.order_id,
-                                firstName: attendee.profile.first_name,
-                                isAdmin: false,
-                                isPresent: false,
-                                hasAttended: false,
-                                eventId,
-                            });
-                            attendeeMap.set(attendee.order_id, newAtt);
-                            newAtt.save((err) => {
-                                if (!err) return;
-                                Logger.error(`WOTT ${err}, ${newAtt.name}`);
-                            });
-                        } else if (!attendeeMap.has(attendee.order_id)) {
-                            attendeeMap.set(attendee.order_id, result);
-                        } else {
-                            console.log('why so many', res.data.attendees.length);
+                        const {email, name, first_name} = attendee.profile;
+                        if (!result && !emailsUsed.has(email)) {
+                            console.log('Creating temporary attendee', email, name, first_name);
+                            attendeeMap.set(attendee.id, this.generateTempAttendee(email, first_name, name));
+                            emailsUsed.set(email, attendee.id);
+                        } else if (result && !emailsUsed.has(email)) {
+                            emailsUsed.set(email, attendee.id);
+                        } else if (emailsUsed.has(email)) {
+                            Logger.warn(`Duplicate attendee ${email} has already created a different account (ticket: ${emailsUsed.get(email)}).`);
                         }
                     });
                 });
-            return attendeeMap;
-        }).catch((err) => {
-            Logger.error(err.message);
-            throw `eventId ${this.eventId} not found`;
-        })
+        } catch (err) {
+            throw `Invalid Event ID (${this.eventId}) (EventBrite cannot find this event).`
+        }
         return attendeeMap;
     }
 
-    generateTempAttendee(ticket, email): User {
-        return { ticket, email, name: ticket, firstName: ticket, isAdmin: false, isPresent: true, hasAttended: false}
+    generateTempAttendee(email, name, firstName): User {
+        return { email, name, firstName, ticket: '', isAdmin: false, isPresent: false, hasAttended: false };
     }
 }

@@ -8,6 +8,7 @@ export const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
+        unique: true,
     },
     firstName: {
         type: String,
@@ -17,6 +18,9 @@ export const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+    },
+    passwordHash: {
+        type: String,
     },
     isAdmin: {
         type: Boolean,

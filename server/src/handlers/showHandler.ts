@@ -91,6 +91,7 @@ export const sendClientDisconnectedToAdmin = (io, ticket: string, socketId: stri
  * @param roomName 
  */
 export const sendShowToRoom = (io: Server, roomName: string) => {
+    // console.log('showHandler.ts', Provider.getShow().getJSON());
     io.to(roomName).emit(SHOW_EVENTS.CURRENT_SHOW, Provider.getShow().getJSON());
 }
 
@@ -166,14 +167,18 @@ export const registerShowHandlers = (io: Server, socket) => {
         name = !name ? '' : name.trim();
         eventId = !eventId ? '' : eventId.trim();
         Provider.setShowInfo(name, eventId, 
-            () => { 
+            (oldEventId) => { 
                 sendShow(socket); 
+                if (oldEventId != eventId) {
+                    clientForceJoinChannel(io, eventId, CHANNELS.WAITING_ROOM);
+                    // Note: Previous event attendees are not automatically kicked.
+                }
                 sendShowToRoom(io, CHANNELS.MAIN_ROOM);
                 sendShowToRoom(io, CHANNELS.SM_ROOM);
                 callback(SHOW_EVENTS.ACKS.UPDATE_SUCCESS.getJSON());
             },
             (error) => { 
-                console.log('showHandler.ts', error)
+                console.log('showHandler.ts', error);
                 sendShow(socket); 
                 callback(SHOW_EVENTS.ACKS.INVALID_EVENT_ID.getJSON());
             }
