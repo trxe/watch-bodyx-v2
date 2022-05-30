@@ -66,10 +66,11 @@ const DateTimeContainer = (props) => {
 
 const EventInfoContainer = (props) => {
     const {show, viewersPresent, viewersTotal} = useSockets();
-    if (!show || show.attendees.size == 0) return null;
 
-    return <div {...props}>
-        <div style={{fontSize: "larger", fontWeight: "900"}}>{viewersPresent} of {viewersTotal}</div>
+    return <div {...props} style={{opacity: !show || show.attendees.size == 0 ? "0%" : "100%"}}>
+        <div style={{fontSize: "larger", fontWeight: "900"}}>
+            {viewersPresent} of {viewersTotal}
+        </div>
         <div>attendees present</div>
     </div>
 }
