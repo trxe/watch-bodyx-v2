@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { BiRefresh } from "react-icons/bi"
 import EVENTS from "../config/events";
-import styles_old from "../styles/Dashboard_old.module.css"
 import styles from "../styles/Dashboard.module.css"
 import { useSockets } from "../context/socket.context";
 import RoomsContainer from "./Rooms";
-import UserMenu from "./UserMenu";
 import UsersContainer from "./Clients";
 import AttendeesContainer from "./Attendees";
 import { CHANNELS } from "../config/channels";
@@ -23,8 +21,14 @@ import { usePoll } from "../context/poll.context";
 
 const NavbarContainer = ({mode, setMode}) => {
     return <div className={styles.navbar}>
-        {mode !== MODES.THEATRE && <button onClick={() => setMode(MODES.THEATRE)} className={styles.locationButton}><MdOutlineTheaters /></button>}
-        {mode !== MODES.QNA && <button onClick={() => setMode(MODES.QNA)} className={styles.locationButton}><MdLiveHelp /></button>}
+        {mode !== MODES.THEATRE && 
+            <button onClick={() => setMode(MODES.THEATRE)} className={styles.locationButton}>
+                <MdOutlineTheaters /><span className={styles.badge} style={{opacity: "100%"}}>1</span>
+            </button>}
+        {mode !== MODES.QNA && 
+            <button onClick={() => setMode(MODES.QNA)} className={styles.locationButton}>
+                <MdLiveHelp /><span className={styles.badge} style={{opacity: "100%"}}>1</span>
+            </button>}
         {mode !== MODES.DASHBOARD && <button onClick={() => setMode(MODES.DASHBOARD)} className={styles.locationButton}><MdSpaceDashboard /></button>}
         <button className={styles.otherButton}><AiOutlineMenu /></button>
     </div>;
@@ -213,7 +217,6 @@ const ShowInfoContainer = (props) => {
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
     // and EventInfo, including Time, Duration, Title
-    const [isEditMode, setEditMode] = useState(false);
     const [mode, setMode] = useState(MODES.DASHBOARD);
 
     if (mode == MODES.THEATRE) {
@@ -224,7 +227,7 @@ const DashboardContainer = () => {
     }
     
     if (mode == MODES.QNA) {
-        return <div className={styles_old.dashboardWrapper}>
+        return <div className={styles.dashboard}>
             <NavbarContainer mode={mode} setMode={setMode}/>
             <QNAContainer />
         </div>;
@@ -233,8 +236,10 @@ const DashboardContainer = () => {
     if (mode === MODES.DASHBOARD) {
         return <div className={styles.dashboard}>
             <NavbarContainer mode={mode} setMode={setMode}/>
-            <DateTimeContainer className={classList(styles.container, styles.row, styles.clock)} />
-            <EventInfoContainer className={styles.eventInfo} />
+            <div className={classList(styles.container, styles.row)}>
+                <DateTimeContainer className={styles.clock} />
+                <EventInfoContainer className={styles.eventInfo} />
+            </div>
             <div className={styles.row}>
                 <ShowInfoContainer className={classList(styles.container, styles.showInfo)}/>
                 <PollSettingsContainer className={classList(styles.container, styles.poll)}/>
@@ -247,25 +252,7 @@ const DashboardContainer = () => {
         </div>;
     }
 
-    return <div className={styles_old.dashboardWrapper}>
-        <UserMenu/>
-        <button onClick={() => setMode(MODES.THEATRE)}>{MODES.THEATRE}</button>
-        <button onClick={() => setMode(MODES.QNA)}>{MODES.QNA}</button>
-        <h1>Show Settings</h1>
-        <button onClick={() => setEditMode(!isEditMode)}>
-            {isEditMode ? 'CANCEL' : 'EDIT'}
-        </button>
-        <div className={styles_old.bottom}>
-            <div className={styles_old.attendeesWrapper}>
-                <AttendeesContainer/>
-                <UsersContainer/>
-            </div>
-            <div className={styles_old.roomsWrapper}>
-                <RoomsContainer />
-                <PollSettingsContainer/>
-            </div>
-        </div>
-    </div>;
+    return null;
 }
 
 export default DashboardContainer;

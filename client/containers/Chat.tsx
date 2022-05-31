@@ -111,7 +111,7 @@ const MessageContainer = ({index, message}) => {
     </div>;
 }
 
-const ChatContainer = ({chatName, isPrivate, label}) => {
+const ChatContainer = ({style, chatName, isPrivate, label}) => {
     const {socket, user, roomName} = useSockets();
     const {messages, updateMessageList, pins, 
             isViewerChatEnabled, 
@@ -164,7 +164,7 @@ const ChatContainer = ({chatName, isPrivate, label}) => {
         </div>;
     }
 
-    return <div className={styles.chatWrapper}>
+    return <div style={style} className={styles.chatWrapper}>
         {pins.length > 0 && <div className={styles.pinList}>
             <div className={styles.pinHeader}>Pins</div>
             {pins.map(pin => <PinContainer key={pin.msgIndex} {...pin} />)}

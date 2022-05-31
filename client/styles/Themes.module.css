@@ -1,5 +1,6 @@
 .default {
     --bgColor: rgb(33, 54, 93);
+    --bgLight: rgba(207, 225, 232, 0.3);
     --primaryColor: rgb(61, 93, 152);
     --primaryTint: rgb(74, 138, 255);
     --secondaryColor: rgb(246, 178, 68);
@@ -9,6 +10,7 @@
     --secondaryFont: black;
     --success: rgb(62, 197, 118);
     --error: rgb(210, 80, 80);
+    --notif: rgb(250, 50, 50);
     --warning: rgb(234, 113, 0);
     --disabled: rgb(99, 99, 99);
     --shadow: rgba(0, 0, 0, 0.8);

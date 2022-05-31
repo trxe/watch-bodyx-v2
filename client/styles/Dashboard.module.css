@@ -26,6 +26,7 @@
 }
 
 .locationButton {
+  position: relative;
   background-color: var(--secondaryColor);
   border: none;
   color: var(--secondaryFont);
@@ -34,6 +35,18 @@
 
 .locationButton:hover {
   background-color: var(--secondaryTint);
+}
+
+.badge {
+  position: absolute;
+  font-size: small;
+  bottom: -0.2em;
+  right: -0.2em;
+  border-radius: 10px;
+  background-color: var(--notif);
+  color: var(--primaryFont);
+  padding: 0.5em;
+  transition: opacity 0.5s ease-in;
 }
 
 .otherButton {
@@ -95,18 +108,23 @@
 @media only screen and (max-width: 880px) {
   .dashboard {
     width: 100%;
-    height: 100%;
+    height: 100vh;
+    overflow-y: auto;
     margin: auto;
     background-color: var(--bgColor);
     color: var(--primaryFont);
   }
 
-  .row {
-    display: block;
+  .time, .date {
+    width: 60%;
+  }
+
+  .eventInfo {
+    width: 30%;
   }
 
   .container {
-      min-width: 90%;
+      min-width: 95%;
   }
 }
 
