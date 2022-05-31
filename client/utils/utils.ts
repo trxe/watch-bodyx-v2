@@ -26,3 +26,9 @@ export const months = [
     'November',
     'December',
 ];
+
+export const timeFormat = (datetimeISO: string): string => {
+    const date = new Date(datetimeISO);
+    const time = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    return time;
+}

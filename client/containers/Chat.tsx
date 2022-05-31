@@ -3,7 +3,7 @@ import EVENTS from "../config/events";
 import { Message, useChatRooms } from "../context/chats.context";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Chat.module.css";
-import { classList } from "../utils/utils";
+import { classList, timeFormat } from "../utils/utils";
 
 interface ChatContainerProps {
     chatName: string
@@ -114,6 +114,7 @@ const MessageContainer = ({index, message}) => {
         <div id={`message-${index}`} className={classList(styles.textBox, isSelf ? styles.textBoxSelf : styles.textBoxOther)}>
             {!isSelf && <p>{isSelf ? '': message.userName}</p>}
             {message.contents}
+            <div className={styles.timestamp}>{timeFormat(message.timestamp)}</div>
         </div>
     </div>;
 }

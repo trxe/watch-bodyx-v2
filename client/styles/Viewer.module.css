@@ -24,6 +24,7 @@
 }
 
 .roomButtons button {
+  position: relative;
   background-color: var(--primaryColor);
   color: var(--primaryFont);
   border: none;
@@ -50,6 +51,18 @@
   background-color: var(--secondaryColor) !important;
   color: var(--secondaryFont) !important;
   cursor: default;
+}
+
+.badge {
+  position: absolute;
+  font-size: 10px;
+  top: -0.5em;
+  right: -1em;
+  border-radius: 10px;
+  background-color: var(--notif);
+  color: var(--primaryFont);
+  padding: 0.5em;
+  transition: opacity 0.5s ease-in;
 }
 
 .mediaPlayer {

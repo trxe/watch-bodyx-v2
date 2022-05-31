@@ -185,14 +185,16 @@ const ChatRoomProvider = (props: any) => {
         setChatRoomName(roomName);
         updateMessageList(roomName);
         const isQnA = clientsList.find(c => c.socketId === roomName)
-        if (isQnA && focus === MODES.QNA && unreadCounts[roomName]) 
-            unreadCounts[MODES.QNA] -= unreadCounts[roomName];
-        else if (!isQnA && focus === MODES.THEATRE && unreadCounts[roomName])
-            unreadCounts[MODES.THEATRE] -= unreadCounts[roomName];
-        delete unreadCounts[roomName];
-        setUnreadCounts({...unreadCounts});
+        const newUnreads = {...unreadCounts};
+        if (isQnA && focus === MODES.QNA && newUnreads[roomName]) 
+            newUnreads[MODES.QNA] -= newUnreads[roomName];
+        else if (!isQnA && focus === MODES.THEATRE && newUnreads[roomName])
+            newUnreads[MODES.THEATRE] -= newUnreads[roomName];
+        delete newUnreads[roomName];
+        setUnreadCounts(newUnreads);
         // TODO: check how tuple works here
         updatePinList(roomName);
+        console.log('cleared', newUnreads);
     }
 
     const updateMessageList = (roomName?: string) => {
@@ -261,6 +263,7 @@ const ChatRoomProvider = (props: any) => {
                     }
                     setUnreadCounts(newUnreads);
                 }
+                console.log('unreads', newUnreads);
             });
         
         socket.off(EVENTS.SERVER.PINNED_MESSAGE)
