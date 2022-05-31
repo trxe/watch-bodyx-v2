@@ -54,6 +54,11 @@
   transform: scale(1.01);
 }
 
+.isSelected {
+  background-color: var(--secondaryColor) !important;
+  color: var(--secondaryFont) !important;
+}
+
 .badge {
   position: absolute;
   font-size: small;

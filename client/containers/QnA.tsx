@@ -12,13 +12,12 @@ const QNAContainer = () => {
     const {socket, clientsList} = useSockets();
     const [chosenClient, setChosenClient] 
         = useState(clientsList.find((client: Client) => socket != null && client.socketId !== socket.id));
-    const {selectChatRoomName} = useChatRooms();
+    const {unreadCounts, selectChatRoomName} = useChatRooms();
     const [isChatOpen, setChatOpen] = useState(false);
     const filterNameRef = useRef(null);
     const [filterKeyword, setFilterKeyword] = useState('');
 
     useEffect(() => {
-        console.log("private chats", clientsList);
         if (chosenClient != null) selectChatRoomName(chosenClient.socketId);
     }, [clientsList]);
 
@@ -44,9 +43,13 @@ const QNAContainer = () => {
             <input ref={filterNameRef} onChange={() => setFilterKeyword(filterNameRef.current.value)} placeholder='Search'/>
             <ul>
                 {clientsList.filter(filterName).map(client => 
-                    <li onClick={() => selectClient(client)}>
+                    <li onClick={() => selectClient(client)} key={client.socketId}
+                        className={chosenClient.socketId === client.socketId ? styles.isSelected : null}>
                         {client.user.name}
-                        <span className={styles.badge} style={{opacity: "100%"}}>1</span>
+                        {unreadCounts[client.socketId] &&
+                        <span className={styles.badge}>
+                            {unreadCounts[client.socketId]}
+                        </span>}
                     </li>
                 )}
             </ul>

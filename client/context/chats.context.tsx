@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { measureMemory } from "vm";
 import { CHANNELS } from "../config/channels";
 import EVENTS from "../config/events";
-import { IRoom } from "../containers/Rooms"
+import { MODES } from "../config/modes";
+import RoomsContainer, { IRoom } from "../containers/Rooms"
 import { useSockets } from "./socket.context";
 
 // A timestamped chat message
@@ -96,6 +98,7 @@ interface IChatRoomContext {
     chatWithAdmins?: ChatRoom // SM_ROOM
     currentChatRoom?: ChatRoom
     chatRoomName: string
+    unreadCounts: Object,
     isViewerChatEnabled: boolean
     selectChatRoomName: Function
     setChatRooms: Function
@@ -105,6 +108,8 @@ interface IChatRoomContext {
     updateMessageList: Function
     pins: Array<any>
     updatePinList: Function
+    focus: string
+    setFocus: Function
 }
 
 const ChatRoomContext = createContext<IChatRoomContext>({
@@ -112,6 +117,7 @@ const ChatRoomContext = createContext<IChatRoomContext>({
     chatWithAdmins: null,
     currentChatRoom: null,
     chatRoomName: 'test',
+    unreadCounts: {},
     isViewerChatEnabled: false,
     selectChatRoomName: () => false,
     setChatRooms: () => false,
@@ -121,17 +127,21 @@ const ChatRoomContext = createContext<IChatRoomContext>({
     updateMessageList: () => false,
     pins: [],
     updatePinList: () => false,
+    focus: MODES.DASHBOARD,
+    setFocus: () => false,
 });
 
 
 const ChatRoomProvider = (props: any) => {
-    const {socket, user, show} = useSockets();
+    const {socket, user, show, clientsList} = useSockets();
     const [chatRoomName, setChatRoomName] = useState(CHANNELS.SM_ROOM);
     const [chatWithAdmins, setChatWithAdmins] = useState(null);
     const [chatRooms] = useState(new Map<string, ChatRoom>()); // identifier, room
     const [isViewerChatEnabled, setViewerChatEnabled] = useState(false);
     const [messages, setMessages] = useState([]);
     const [pins, setPins] = useState([]);
+    const [unreadCounts, setUnreadCounts] = useState({[MODES.QNA]: 0, [MODES.THEATRE]: 0});
+    const [focus, setFocus] = useState(MODES.DASHBOARD);
 
     const [isFirstLoad, setFirstLoad] = useState(true);
 
@@ -174,6 +184,13 @@ const ChatRoomProvider = (props: any) => {
         }
         setChatRoomName(roomName);
         updateMessageList(roomName);
+        const isQnA = clientsList.find(c => c.socketId === roomName)
+        if (isQnA && focus === MODES.QNA && unreadCounts[roomName]) 
+            unreadCounts[MODES.QNA] -= unreadCounts[roomName];
+        else if (!isQnA && focus === MODES.THEATRE && unreadCounts[roomName])
+            unreadCounts[MODES.THEATRE] -= unreadCounts[roomName];
+        delete unreadCounts[roomName];
+        setUnreadCounts({...unreadCounts});
         // TODO: check how tuple works here
         updatePinList(roomName);
     }
@@ -229,9 +246,20 @@ const ChatRoomProvider = (props: any) => {
                 }
                 chatRooms.get(message.sendTo).addMessage(message, msgIndex);
                 // if this chat is the current chat room
-                if (message.sendTo === chatRoomName) {
-                    const currChatRoom = chatRooms.get(chatRoomName);
+                const newUnreads = {...unreadCounts};
+                const isQnA = clientsList.find(c => c.socketId === message.sendTo);
+                if (isQnA) newUnreads[MODES.QNA] += 1;
+                else newUnreads[MODES.THEATRE] += 1;
+                if (message.sendTo === chatRoomName  && (isQnA && focus === MODES.QNA || !isQnA && focus === MODES.THEATRE)) {
                     updateMessageList();
+                    setUnreadCounts(newUnreads);
+                } else if (chatRooms.has(message.sendTo)) {
+                    if (unreadCounts[message.sendTo]) {
+                        newUnreads[message.sendTo] += 1;
+                    } else {
+                        newUnreads[message.sendTo] = 1;
+                    }
+                    setUnreadCounts(newUnreads);
                 }
             });
         
@@ -271,6 +299,7 @@ const ChatRoomProvider = (props: any) => {
             chatWithAdmins,
             chatRoomName,
             currentChatRoom: chatRooms.get(chatRoomName),
+            unreadCounts,
             isViewerChatEnabled,
             selectChatRoomName,
             setChatRooms,
@@ -278,7 +307,9 @@ const ChatRoomProvider = (props: any) => {
             messages,
             updateMessageList,
             pins,
-            updatePinList
+            updatePinList,
+            focus,
+            setFocus
         }} 
         {...props}
     />;

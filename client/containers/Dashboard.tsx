@@ -20,14 +20,15 @@ import { NOTIF } from "../config/notifications";
 import { usePoll } from "../context/poll.context";
 
 const NavbarContainer = ({mode, setMode}) => {
+    const {unreadCounts} = useChatRooms();
     return <div className={styles.navbar}>
         {mode !== MODES.THEATRE && 
             <button onClick={() => setMode(MODES.THEATRE)} className={styles.locationButton}>
-                <MdOutlineTheaters /><span className={styles.badge} style={{opacity: "100%"}}>1</span>
+                <MdOutlineTheaters />{unreadCounts[MODES.THEATRE] > 0 && <span className={styles.badge}>{unreadCounts[MODES.THEATRE]}</span>}
             </button>}
         {mode !== MODES.QNA && 
             <button onClick={() => setMode(MODES.QNA)} className={styles.locationButton}>
-                <MdLiveHelp /><span className={styles.badge} style={{opacity: "100%"}}>1</span>
+                <MdLiveHelp />{unreadCounts[MODES.QNA] > 0 && <span className={styles.badge}>{unreadCounts[MODES.QNA]}</span>}
             </button>}
         {mode !== MODES.DASHBOARD && <button onClick={() => setMode(MODES.DASHBOARD)} className={styles.locationButton}><MdSpaceDashboard /></button>}
         <button className={styles.otherButton}><AiOutlineMenu /></button>
@@ -217,25 +218,25 @@ const ShowInfoContainer = (props) => {
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
     // and EventInfo, including Time, Duration, Title
-    const [mode, setMode] = useState(MODES.DASHBOARD);
+    const {focus, setFocus} = useChatRooms();
 
-    if (mode == MODES.THEATRE) {
+    if (focus == MODES.THEATRE) {
         return <div className={styles.dashboard}>
-            <NavbarContainer mode={mode} setMode={setMode}/>
+            <NavbarContainer mode={focus} setMode={setFocus}/>
             <ViewerContainer isAdmin={true} />
         </div>;
     }
     
-    if (mode == MODES.QNA) {
+    if (focus == MODES.QNA) {
         return <div className={styles.dashboard}>
-            <NavbarContainer mode={mode} setMode={setMode}/>
+            <NavbarContainer mode={focus} setMode={setFocus}/>
             <QNAContainer />
         </div>;
     }
 
-    if (mode === MODES.DASHBOARD) {
+    if (focus === MODES.DASHBOARD) {
         return <div className={styles.dashboard}>
-            <NavbarContainer mode={mode} setMode={setMode}/>
+            <NavbarContainer mode={focus} setMode={setFocus}/>
             <div className={classList(styles.container, styles.row)}>
                 <DateTimeContainer className={styles.clock} />
                 <EventInfoContainer className={styles.eventInfo} />
