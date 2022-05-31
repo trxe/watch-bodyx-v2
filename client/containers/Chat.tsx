@@ -1,9 +1,16 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { FC, useEffect, useLayoutEffect, useRef, useState } from "react";
 import EVENTS from "../config/events";
 import { Message, useChatRooms } from "../context/chats.context";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Chat.module.css";
 import { classList } from "../utils/utils";
+
+interface ChatContainerProps {
+    chatName: string
+    isPrivate: boolean
+    label: string
+    style?
+}
 
 const ChatContextMenu = ({_id, message, msgIndex}) => {
     const [contextData, setContextData] = useState({visible: false, posX: 0, posY: 0});
@@ -111,7 +118,7 @@ const MessageContainer = ({index, message}) => {
     </div>;
 }
 
-const ChatContainer = ({style, chatName, isPrivate, label}) => {
+const ChatContainer:FC<ChatContainerProps> = ({style, chatName, isPrivate, label}) => {
     const {socket, user, roomName} = useSockets();
     const {messages, updateMessageList, pins, 
             isViewerChatEnabled, 

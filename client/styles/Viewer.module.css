@@ -121,3 +121,14 @@
       background-color: var(--primaryColor);
   }
 }
+
+@media only screen and (min-width: 880px) and (max-width: 1300px) {
+  .playerWrapper {
+    width: 60%;
+  }
+
+  .chatWrapper {
+    margin-left: 1em;
+    width: 30%;
+  }
+}
