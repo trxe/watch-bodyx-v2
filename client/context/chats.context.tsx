@@ -170,8 +170,6 @@ interface IChatRoomContext {
     updateMessageList: Function
     pins: Array<any>
     updatePinList: Function
-    focus: string
-    setFocus: Function
     unreadCounts: Object,
     clearUnreadRoom: Function
 }
@@ -190,8 +188,6 @@ const ChatRoomContext = createContext<IChatRoomContext>({
     updateMessageList: () => false,
     pins: [],
     updatePinList: () => false,
-    focus: MODES.DASHBOARD,
-    setFocus: () => false,
     unreadCounts: {},
     clearUnreadRoom: () => false,
 });
@@ -208,20 +204,12 @@ const ChatRoomProvider = (props: any) => {
 
     const [unreadCountManager, updateUnreadCountManager] = useState(new UnreadCountManager());
     const [unreadCounts, setUnreadCounts] = useState(unreadCountManager.getObject());
-    const [focus, setFocus] = useState(MODES.DASHBOARD);
 
     const [isFirstLoad, setFirstLoad] = useState(true);
 
     const requestPinLists = () => {
         socket.emit(EVENTS.CLIENT.GET_INFO, {request: 'all_pins'});
     }
-
-    useEffect(() => {
-        // For non-admins to be put into the correct room for updates.
-        if (!user || user.isAdmin) return;
-        if (channel === CHANNELS.WAITING_ROOM) setFocus(MODES.QNA);
-        else if (channel === CHANNELS.MAIN_ROOM) setFocus(MODES.THEATRE);
-    }, [channel]);
 
     useEffect(() => {
         if (!isFirstLoad || !show || !socket) return;
@@ -334,7 +322,7 @@ const ChatRoomProvider = (props: any) => {
                 if (message.sendTo === chatRoomName) {
                     updateMessageList();
                 }
-                console.log('unreads', unreadCountManager.getObject(), message.sendTo, focus);
+                console.log('unreads', unreadCountManager.getObject(), message.sendTo);
             });
         
         socket.off(EVENTS.SERVER.PINNED_MESSAGE)
@@ -381,8 +369,6 @@ const ChatRoomProvider = (props: any) => {
             updateMessageList,
             pins,
             updatePinList,
-            focus,
-            setFocus,
             unreadCounts,
             clearUnreadRoom,
         }} 

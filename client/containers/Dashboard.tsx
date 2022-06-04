@@ -218,25 +218,25 @@ const ShowInfoContainer = (props) => {
 const DashboardContainer = () => {
     // this will encapsulate the Rooms, Messages, Poll, 
     // and EventInfo, including Time, Duration, Title
-    const {focus, setFocus} = useChatRooms();
+    const [mode, setMode] = useState(MODES.DASHBOARD);
 
-    if (focus == MODES.THEATRE) {
+    if (mode == MODES.THEATRE) {
         return <div className={styles.dashboard}>
-            <NavbarContainer mode={focus} setMode={setFocus}/>
+            <NavbarContainer mode={mode} setMode={setMode}/>
             <ViewerContainer isAdmin={true} />
         </div>;
     }
     
-    if (focus == MODES.QNA) {
+    if (mode == MODES.QNA) {
         return <div className={styles.dashboard}>
-            <NavbarContainer mode={focus} setMode={setFocus}/>
+            <NavbarContainer mode={mode} setMode={setMode}/>
             <QNAContainer />
         </div>;
     }
 
-    if (focus === MODES.DASHBOARD) {
+    if (mode === MODES.DASHBOARD) {
         return <div className={styles.dashboard}>
-            <NavbarContainer mode={focus} setMode={setFocus}/>
+            <NavbarContainer mode={mode} setMode={setMode}/>
             <div className={classList(styles.container, styles.row)}>
                 <DateTimeContainer className={styles.clock} />
                 <EventInfoContainer className={styles.eventInfo} />
