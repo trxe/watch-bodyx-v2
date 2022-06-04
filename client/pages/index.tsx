@@ -13,9 +13,10 @@ import DisconnectedContainer from '../containers/DisconnectedPage'
 import LoginContainer from '../containers/Login'
 import ChangePasswordContainer from '../containers/ChangePassword'
 import NonAttendeesContainer from '../containers/NonAttendees'
+import { ModalTemplate } from '../utils/modal'
 
 export default function Home() {
-  const {channel, user, notif, setNotif, loginRequest} = useSockets();
+  const {channel, user, notif, setNotif, modal, loginRequest} = useSockets();
   const emailRef = useRef(null);
   const ticketRef = useRef(null);
 
@@ -51,6 +52,14 @@ export default function Home() {
           messageType={notif.messageType}
           title={notif.title}
           message={notif.message}
+        />
+      }
+      {modal != null && 
+        <ModalTemplate 
+          id={modal.id}
+          title={modal.title} 
+          description={modal.description} 
+          buttons={modal.buttons}
         />
       }
     </div>

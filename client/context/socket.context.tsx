@@ -8,6 +8,7 @@ import { IRoom } from '../containers/Rooms';
 import { createNotif, INotif } from '../containers/Snackbar';
 import { Client, User } from '../containers/Clients';
 import { useChatRooms } from './chats.context';
+import { ModalInfo } from '../utils/modal';
 
 const emptyShow = {
     name: '',
@@ -50,6 +51,8 @@ interface ISocketContext {
     changePassword: Function
     viewersTotal: number
     viewersPresent: number
+    modal: ModalInfo
+    setModal: Function
 }
 
 let socket;
@@ -73,7 +76,9 @@ const SocketContext = createContext<ISocketContext>({
     createAccount: () => false,
     changePassword: () => false,
     viewersPresent: 0,
-    viewersTotal: 0
+    viewersTotal: 0,
+    modal: null,
+    setModal: () => false,
 });
 
 /* Every Context object comes with a Provider React component 
@@ -85,6 +90,7 @@ const SocketsProvider = (props: any) => {
     const [roomName, setRoomName] = useState(null);
     const [show, setShow] = useState(emptyShow);
     const [notif, setNotif] =  useState(null);
+    const [modal, setModal] = useState(null);
     const [viewersTotal, setViewersTotal] = useState(0);
     const [viewersPresent, setViewersPresent] = useState(0);
     const [disconnectedInfo, setDisconnectedInfo] = useState('');
@@ -150,7 +156,7 @@ const SocketsProvider = (props: any) => {
                     return;
                 }
 
-                socket = io(SOCKET_URL);
+                socket = io(SOCKET_URL, {reconnection: false});
                 if (data.messageType === 'info') {
                     const tempUserWithOldSocket = JSON.parse(data.message);
                     setNotif(createNotif('warning', 
@@ -181,6 +187,15 @@ const SocketsProvider = (props: any) => {
                 setNotif(err);
             })
     }
+
+    const disconnectedModalInfo: ModalInfo = {
+        id: 'disconnected',
+        title: 'Disconnected from server',
+        description: 'Either the server has unexpectedly crashed, or you have lost connection.',
+        buttons: [
+            {label: 'Reconnect', action: () => socket.connect()}
+        ]
+    };
 
     if (socket != null) {
         socket.on(EVENTS.SERVER.CLIENT_INFO, ({channelName, user}) => {
@@ -263,20 +278,13 @@ const SocketsProvider = (props: any) => {
             socket.disconnect();
         });
 
-        /*
         socket.on(EVENTS.connect, () => {
             // if alr have user, just replace my oldSocketId
-            const client = {user, socketId: socket.id, channelName: channel, roomName}
-            socket.emit(EVENTS.CLIENT.RECONNECT, {client, ticket: user.ticket}, (res) => {
-                if (res && res.messageType === 'info') {
-                    const data = JSON.parse(res.message);
-                    console.log(data);
-                    setChannel(data.channelName);
-                    setRoomName(data.roomName);
-                }
-            });
-        })
-        */
+            if (modal == disconnectedModalInfo) {
+                location.hash = '';
+                setModal(null);
+            }
+        });
 
         socket.off(EVENTS.disconnect)
             .on(EVENTS.disconnect, (reason) => {
@@ -284,6 +292,9 @@ const SocketsProvider = (props: any) => {
                 if (reason.indexOf('disconnect') >= 0) {
                     setDisconnectedInfo('A network issue occurred, or you are logged in elsewhere.');
                     setChannel(CHANNELS.DISCONNECTED);
+                } else {
+                    setModal(disconnectedModalInfo);
+                    location.hash = `#${disconnectedModalInfo.id}`;
                 }
             });
     }
@@ -301,7 +312,9 @@ const SocketsProvider = (props: any) => {
             setRoomName,
             clientsList,
             notif, 
-            setNotif, 
+            setNotif,
+            modal,
+            setModal,
             disconnectedInfo,
             selectedClient,
             setSelectedClient: selectClient,
@@ -311,7 +324,8 @@ const SocketsProvider = (props: any) => {
             viewersPresent,
             viewersTotal
         }} 
-        {...props} 
+        {
+            ...props} 
     />
 }
 
