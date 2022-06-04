@@ -121,7 +121,7 @@ const MessageContainer = ({index, message}) => {
 
 const ChatContainer:FC<ChatContainerProps> = ({style, chatName, isPrivate, label}) => {
     const {socket, user, roomName} = useSockets();
-    const {messages, updateMessageList, pins, 
+    const {messages, updateMessageList, pins, clearUnreadRoom,
             isViewerChatEnabled, 
             selectChatRoomName, 
             currentChatRoom} = useChatRooms();
@@ -133,7 +133,11 @@ const ChatContainer:FC<ChatContainerProps> = ({style, chatName, isPrivate, label
         // temporary
         selectChatRoomName(chatName);
         scrollToBottom();
-    }, [roomName])
+    }, [roomName]);
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     // sends to a room
     const handleSendMessage = () => {
@@ -155,6 +159,7 @@ const ChatContainer:FC<ChatContainerProps> = ({style, chatName, isPrivate, label
                 const {message, msgIndex} = JSON.parse(res.message);
                 currentChatRoom.addMessage(message, msgIndex);
                 updateMessageList();
+                clearUnreadRoom();
                 scrollToBottom();
             }
         });

@@ -7,7 +7,6 @@ import styles from '../styles/Viewer.module.css'
 import dashboard from '../styles/Dashboard.module.css'
 import ChatContainer from './Chat';
 import { PollViewContainer } from './Poll';
-import UserMenu from './UserMenu';
 import { useChatRooms } from '../context/chats.context';
 
 const ViewerContainer = ({isAdmin}) => {

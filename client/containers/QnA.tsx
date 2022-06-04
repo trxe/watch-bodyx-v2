@@ -44,7 +44,7 @@ const QNAContainer = () => {
             <ul>
                 {clientsList.filter(filterName).map(client => 
                     <li onClick={() => selectClient(client)} key={client.socketId}
-                        className={chosenClient.socketId === client.socketId ? styles.isSelected : null}>
+                        className={chosenClient && chosenClient.socketId === client.socketId ? styles.isSelected : null}>
                         {client.user.name}
                         {unreadCounts[client.socketId] &&
                         <span className={styles.badge}>
