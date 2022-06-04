@@ -24,6 +24,7 @@
 }
 
 .roomButtons button {
+  position: relative;
   background-color: var(--primaryColor);
   color: var(--primaryFont);
   border: none;
@@ -50,6 +51,18 @@
   background-color: var(--secondaryColor) !important;
   color: var(--secondaryFont) !important;
   cursor: default;
+}
+
+.badge {
+  position: absolute;
+  font-size: 10px;
+  top: -0.5em;
+  right: -1em;
+  border-radius: 10px;
+  background-color: var(--notif);
+  color: var(--primaryFont);
+  padding: 0.5em;
+  transition: opacity 0.5s ease-in;
 }
 
 .mediaPlayer {
@@ -119,5 +132,16 @@
       margin: 1em 0 0 0;
       text-align: center;
       background-color: var(--primaryColor);
+  }
+}
+
+@media only screen and (min-width: 880px) and (max-width: 1300px) {
+  .playerWrapper {
+    width: 60%;
+  }
+
+  .chatWrapper {
+    margin-left: 1em;
+    width: 30%;
   }
 }

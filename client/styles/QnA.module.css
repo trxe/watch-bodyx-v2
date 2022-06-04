@@ -1,24 +1,125 @@
-.dashboardWrapper {
-  width: 80%;
-  height: 100vh;
-  display: block;
-  margin: auto;
-  padding: 1rem;
-  background-color: rgba(256, 256, 256, 0.7);
-}
+@import "Themes.module.css";
 
 .qnaWrapper {
+  background-color: var(--bgColor);
+  height: 100%;
+  width: 90%;
   display: flex;
-  flex-direction: row;
-  padding: 1em;
-  align-items: center;
-  justify-content: center;
+  flex-flow: row nowrap;
+  transition: all 0.5s ease-in;
 }
 
 .clientsSelect {
-  color: red;
-  margin-right: 2em;
-  height: 80vh;
+  margin: 1em 2em 1em 1em;
+  height: 95%;
   width: 30%;
-  background-color: gray;
+  border-radius: 10px;
+  background-color: var(--bgColor);
+}
+
+.clientsSelect ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.clientsSelect input {
+  padding: 0.5em;
+  margin: 0 0.5em 0 0.5em;
+  width: 95%;
+  border-radius: 5px;
+  background-color: var(--field);
+  border: 3px solid var(--primaryFont);
+}
+
+.clientsSelect ul li {
+  position: relative;
+  background-color: var(--primaryColor);
+  color: var(--primaryFont);
+  padding: 0.5em;
+  margin: 0.5em;
+  width: 95%;
+  border-radius: 5px;
+  box-shadow: 2px 2px 10px var(--shadow);
+  cursor: pointer;
+  transition: all 0.5s ease-in;
+}
+
+.clientsSelect  ul li::after {
+  background-color: var(--notif);
+
+}
+
+.clientsSelect ul li:hover {
+  background-color: var(--primaryTint);
+  transform: scale(1.01);
+}
+
+.isSelected {
+  background-color: var(--secondaryColor) !important;
+  color: var(--secondaryFont) !important;
+}
+
+.badge {
+  position: absolute;
+  font-size: small;
+  top: -0.1em;
+  right: -0.1em;
+  border-radius: 10px;
+  background-color: var(--notif);
+  color: var(--primaryFont);
+  padding: 0.5em;
+  transition: opacity 0.5s ease-in;
+}
+
+.chatArea {
+  position: relative;
+  width: 60%;
+  border-radius: 10px;
+  background-color: var(--bgLight);
+  margin: 1em 2em 2em 1em;
+}
+
+.backButton {
+  position: absolute;
+  top: 0.5em;
+  left: 0.5em;
+  color: var(--primaryFont);
+  background-color: var(--primaryColor);
+  border: 3px solid var(--bgColor);
+  border-radius: 10px;
+  padding: 0.3em;
+  opacity: 0;
+  width: 0;
+  pointer-events: none;
+}
+
+@media screen and (max-width: 1200px) {
+  .clientsSelect {
+    width: 25%;
+    border: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .chatArea {
+    width: 0%;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .clientsSelect {
+    width: 80%;
+    border: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .backButton {
+    opacity: 100%;
+    width: fit-content;
+    pointer-events: auto;
+  }
 }

@@ -7,11 +7,12 @@ import styles from '../styles/Viewer.module.css'
 import dashboard from '../styles/Dashboard.module.css'
 import ChatContainer from './Chat';
 import { PollViewContainer } from './Poll';
-import UserMenu from './UserMenu';
+import { useChatRooms } from '../context/chats.context';
 
 const ViewerContainer = ({isAdmin}) => {
     const {activeStatus, isResults} = usePoll();
     const {socket, user, show, roomName, setRoomName} = useSockets();
+    const {unreadCounts} = useChatRooms();
     const [roomIndex, setRoomIndex] = useState(-1)
 
     // At startup to enter room
@@ -79,10 +80,13 @@ const ViewerContainer = ({isAdmin}) => {
                 </div>
             }
             <div className={styles.roomButtons}>
-                {show.rooms && show.rooms.map && show.rooms.map(({name, isLocked}, index) => 
+                {show.rooms && show.rooms.map && show.rooms.map(({name, isLocked, roomName}, index) => 
                     <button className={index === roomIndex ? styles.currentRoomButton: null} 
                         onClick={()=> handleSwitchRooms(index)} 
-                        disabled={(isLocked || index == roomIndex) && index != 0} key={name}>{name}</button>)}
+                        disabled={(isLocked || index == roomIndex) && index != 0} key={name}>
+                        {name}
+                        {unreadCounts[roomName] && <span className={styles.badge}>{unreadCounts[roomName]}</span>}
+                    </button>)}
             </div>
         </div>
         <div className={styles.chatWrapper}>

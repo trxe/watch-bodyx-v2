@@ -39,10 +39,6 @@ const AttendeesContainer = (props) => {
     const focusUserRef = useRef(null);
     const filterRef = useRef(null);
 
-    useEffect(() => {
-        console.log(selectedClient);
-    }, [selectedClient])
-
     const containsKeyword = (user: User) => {
         return (user.name.toLowerCase().indexOf(filterKeyword) >= 0 
             || user.email.toLowerCase().indexOf(filterKeyword) >= 0 

@@ -1,9 +1,16 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { FC, useEffect, useLayoutEffect, useRef, useState } from "react";
 import EVENTS from "../config/events";
 import { Message, useChatRooms } from "../context/chats.context";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Chat.module.css";
-import { classList } from "../utils/utils";
+import { classList, timeFormat } from "../utils/utils";
+
+interface ChatContainerProps {
+    chatName: string
+    isPrivate: boolean
+    label: string
+    style?
+}
 
 const ChatContextMenu = ({_id, message, msgIndex}) => {
     const [contextData, setContextData] = useState({visible: false, posX: 0, posY: 0});
@@ -107,13 +114,14 @@ const MessageContainer = ({index, message}) => {
         <div id={`message-${index}`} className={classList(styles.textBox, isSelf ? styles.textBoxSelf : styles.textBoxOther)}>
             {!isSelf && <p>{isSelf ? '': message.userName}</p>}
             {message.contents}
+            <div className={styles.timestamp}>{timeFormat(message.timestamp)}</div>
         </div>
     </div>;
 }
 
-const ChatContainer = ({chatName, isPrivate, label}) => {
+const ChatContainer:FC<ChatContainerProps> = ({style, chatName, isPrivate, label}) => {
     const {socket, user, roomName} = useSockets();
-    const {messages, updateMessageList, pins, 
+    const {messages, updateMessageList, pins, clearUnreadRoom,
             isViewerChatEnabled, 
             selectChatRoomName, 
             currentChatRoom} = useChatRooms();
@@ -125,7 +133,11 @@ const ChatContainer = ({chatName, isPrivate, label}) => {
         // temporary
         selectChatRoomName(chatName);
         scrollToBottom();
-    }, [roomName])
+    }, [roomName]);
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     // sends to a room
     const handleSendMessage = () => {
@@ -147,6 +159,7 @@ const ChatContainer = ({chatName, isPrivate, label}) => {
                 const {message, msgIndex} = JSON.parse(res.message);
                 currentChatRoom.addMessage(message, msgIndex);
                 updateMessageList();
+                clearUnreadRoom();
                 scrollToBottom();
             }
         });
@@ -164,7 +177,7 @@ const ChatContainer = ({chatName, isPrivate, label}) => {
         </div>;
     }
 
-    return <div className={styles.chatWrapper}>
+    return <div style={style} className={styles.chatWrapper}>
         {pins.length > 0 && <div className={styles.pinList}>
             <div className={styles.pinHeader}>Pins</div>
             {pins.map(pin => <PinContainer key={pin.msgIndex} {...pin} />)}

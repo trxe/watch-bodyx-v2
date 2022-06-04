@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { CHANNELS } from "../config/channels";
 import EVENTS from "../config/events";
+import { MODES } from "../config/modes";
 import { IRoom } from "../containers/Rooms"
 import { useSockets } from "./socket.context";
 
@@ -91,6 +92,70 @@ export class ChatRoom {
     }
 }
 
+export class UnreadCountManager {
+    qnaRooms: Map<string, number>;
+    qnaTotal: number
+    theatreRooms: Map<string, number>;
+    theatreTotal: number
+
+    constructor() {
+        this.qnaRooms = new Map<string, number>();
+        this.theatreRooms = new Map<string, number>();
+        this.qnaTotal = 0;
+        this.theatreTotal = 0;
+    }
+
+    public addRoom(roomName: string, mode: string, count?: number) {
+        if (mode === MODES.QNA) {
+            this.qnaRooms.set(roomName, !count ? 0 : count);
+            if (count) this.qnaTotal += count;
+        } else if (mode === MODES.THEATRE) {
+            this.theatreRooms.set(roomName, !count ? 0 : count);
+            if (count) this.theatreTotal += count;
+        }
+    }
+
+    public getRoomMode(roomName: string): string {
+        if (this.qnaRooms.has(roomName)) return MODES.QNA;
+        if (this.theatreRooms.has(roomName)) return MODES.THEATRE;
+        return null;
+    }
+
+    public hasRoom(roomName: string): boolean {
+        return this.getRoomMode(roomName) != null;
+    }
+
+    public incrementRoomUnread(roomName: string) {
+        if (this.qnaRooms.has(roomName)) {
+            this.qnaTotal += 1;
+            this.qnaRooms.set(roomName,this.qnaRooms.get(roomName) + 1);
+        } else if (this.theatreRooms.has(roomName)) {
+            this.theatreTotal += 1;
+            this.theatreRooms.set(roomName,this.theatreRooms.get(roomName) + 1);
+        }
+    }
+
+    public clearRoomUnreads(roomName: string) {
+        const mode = this.getRoomMode(roomName);
+        if (mode === MODES.QNA) {
+            this.qnaTotal -= this.qnaRooms.get(roomName);
+            this.qnaRooms.delete(roomName);
+        } else  if (mode === MODES.THEATRE) {
+            this.theatreTotal -= this.theatreRooms.get(roomName);
+            this.theatreRooms.delete(roomName);
+        }
+    }
+
+    public getObject(): { [key: string]: number; } {
+        return {
+            ...Object.fromEntries(this.qnaRooms), 
+            ...Object.fromEntries(this.theatreRooms), 
+            [MODES.QNA]: this.qnaTotal,
+            [MODES.THEATRE]: this.theatreTotal
+        };
+    }
+}
+
 interface IChatRoomContext {
     chatRooms?: Map<string, ChatRoom> // key = chatRoom name, value = chatRoom
     chatWithAdmins?: ChatRoom // SM_ROOM
@@ -105,6 +170,8 @@ interface IChatRoomContext {
     updateMessageList: Function
     pins: Array<any>
     updatePinList: Function
+    unreadCounts: Object,
+    clearUnreadRoom: Function
 }
 
 const ChatRoomContext = createContext<IChatRoomContext>({
@@ -121,17 +188,22 @@ const ChatRoomContext = createContext<IChatRoomContext>({
     updateMessageList: () => false,
     pins: [],
     updatePinList: () => false,
+    unreadCounts: {},
+    clearUnreadRoom: () => false,
 });
 
 
 const ChatRoomProvider = (props: any) => {
-    const {socket, user, show} = useSockets();
+    const {socket, channel, user, show, clientsList} = useSockets();
     const [chatRoomName, setChatRoomName] = useState(CHANNELS.SM_ROOM);
     const [chatWithAdmins, setChatWithAdmins] = useState(null);
     const [chatRooms] = useState(new Map<string, ChatRoom>()); // identifier, room
     const [isViewerChatEnabled, setViewerChatEnabled] = useState(false);
     const [messages, setMessages] = useState([]);
     const [pins, setPins] = useState([]);
+
+    const [unreadCountManager, updateUnreadCountManager] = useState(new UnreadCountManager());
+    const [unreadCounts, setUnreadCounts] = useState(unreadCountManager.getObject());
 
     const [isFirstLoad, setFirstLoad] = useState(true);
 
@@ -157,7 +229,6 @@ const ChatRoomProvider = (props: any) => {
             setChatWithAdmins(waitingRoomChat)
             chatRooms.set(socket.id, waitingRoomChat);
         }
-        console.log('rooms passed in', rooms);
         if (rooms == null || rooms.length == 0) return chatRooms;
         rooms.forEach(room => {
             if (!chatRooms.has(room.roomName)) {
@@ -167,6 +238,17 @@ const ChatRoomProvider = (props: any) => {
         return chatRooms;
     }
 
+    const clearUnreadRoom = (roomName: string) => {
+        const name = !roomName ? chatRoomName : roomName;
+        if (!unreadCounts[name]) {
+            return;
+        }
+        unreadCountManager.clearRoomUnreads(name);
+        updateUnreadCountManager(unreadCountManager);
+        const newUnreads = unreadCountManager.getObject();
+        setUnreadCounts(newUnreads);
+    }
+
     const selectChatRoomName = (roomName: string) => {
         if (!chatRooms.has(roomName)) {
             chatRooms.set(roomName, new ChatRoom(
@@ -174,8 +256,8 @@ const ChatRoomProvider = (props: any) => {
         }
         setChatRoomName(roomName);
         updateMessageList(roomName);
-        // TODO: check how tuple works here
         updatePinList(roomName);
+        clearUnreadRoom(roomName);
     }
 
     const updateMessageList = (roomName?: string) => {
@@ -220,19 +302,27 @@ const ChatRoomProvider = (props: any) => {
         socket.off(EVENTS.SERVER.DELIVER_MESSAGE)
             .on(EVENTS.SERVER.DELIVER_MESSAGE, ({message, msgIndex}) => {
                 // handled by emit's ack
+                const isTheatre = show && show.rooms && show.rooms.find(room => room.roomName === message.sendTo);
                 console.log('recv', message, 'with index', msgIndex);
                 if (message.fromSocketId === socket.id) 
                     return;
                 if (!chatRooms.has(message.sendTo))  {
                     chatRooms.set(message.sendTo, 
-                        new ChatRoom(show.rooms.find(room => room.roomName === message.sendTo), CHANNELS.MAIN_ROOM));
+                        new ChatRoom(isTheatre, CHANNELS.MAIN_ROOM));
                 }
                 chatRooms.get(message.sendTo).addMessage(message, msgIndex);
-                // if this chat is the current chat room
+                if (!unreadCountManager.hasRoom(message.sendTo)) {
+                    unreadCountManager.addRoom(message.sendTo, isTheatre ? MODES.THEATRE : MODES.QNA);
+                }
+                unreadCountManager.incrementRoomUnread(message.sendTo);
+                const newUnreads = unreadCountManager.getObject();
+                setUnreadCounts(newUnreads);
+                updateUnreadCountManager(unreadCountManager);
+                // if this chat is the current displayed chat room, update the message displayed immediately.
                 if (message.sendTo === chatRoomName) {
-                    const currChatRoom = chatRooms.get(chatRoomName);
                     updateMessageList();
                 }
+                console.log('unreads', unreadCountManager.getObject(), message.sendTo);
             });
         
         socket.off(EVENTS.SERVER.PINNED_MESSAGE)
@@ -278,7 +368,9 @@ const ChatRoomProvider = (props: any) => {
             messages,
             updateMessageList,
             pins,
-            updatePinList
+            updatePinList,
+            unreadCounts,
+            clearUnreadRoom,
         }} 
         {...props}
     />;
