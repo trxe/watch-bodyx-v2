@@ -1,7 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
 import axios from 'axios'
-import { SOCKET_URL } from '../config/default';
 import EVENTS from '../config/events';
 import { CHANNELS } from '../config/channels';
 import { IRoom } from '../containers/Rooms';
@@ -123,7 +122,7 @@ const SocketsProvider = (props: any) => {
     };
 
     const createAccount = (request) => {
-        axios.post(SOCKET_URL + 'create-account', request)
+        axios.post(process.env.NEXT_PUBLIC_URL + 'create-account', request)
             .then(({data}) => {
                 console.log(data);
                 if (data.messageType != null) setNotif(data);
@@ -131,7 +130,7 @@ const SocketsProvider = (props: any) => {
     };
 
     const changePassword = (request) => {
-        axios.post(SOCKET_URL + 'change-password', request)
+        axios.post(process.env.NEXT_PUBLIC_URL + 'change-password', request)
             .then(({data}) => {
                 console.log(data);
                 if (data.messageType != null) setNotif(data);
@@ -143,7 +142,7 @@ const SocketsProvider = (props: any) => {
     }
 
     const loginRequest = (request) => {
-        axios.post(SOCKET_URL + "auth", request)
+        axios.post(process.env.NEXT_PUBLIC_URL + "auth", request)
             .then(({data}) => {
                 console.log(data);
                 if (data.messageType === 'error') {
@@ -156,7 +155,7 @@ const SocketsProvider = (props: any) => {
                     return;
                 }
 
-                socket = io(SOCKET_URL, {reconnection: false});
+                socket = io(process.env.NEXT_PUBLIC_URL, {reconnection: false});
                 if (data.messageType === 'info') {
                     const tempUserWithOldSocket = JSON.parse(data.message);
                     setNotif(createNotif('warning', 
