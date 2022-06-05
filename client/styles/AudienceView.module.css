@@ -1,0 +1,66 @@
+.navbar {
+  position: absolute;
+  z-index: 100;
+  top: 0px;
+  right: 2em;
+}
+
+.navbar button {
+  font-size: 32px;
+  border-radius: 0px 0px 5px 5px;
+  padding: 5px 10px 0 10px;
+  margin-left: 0.3em;
+}
+
+.locationButton {
+  position: relative;
+  background-color: var(--secondaryColor);
+  border: none;
+  color: var(--secondaryFont);
+  transition: background-color 0.5s;
+}
+
+.locationButton:hover {
+  background-color: var(--secondaryTint);
+}
+
+.badge {
+  position: absolute;
+  font-size: small;
+  bottom: -0.2em;
+  right: -0.2em;
+  border-radius: 10px;
+  background-color: var(--notif);
+  color: var(--primaryFont);
+  padding: 0.5em;
+  transition: opacity 0.5s ease-in;
+}
+
+.otherButton {
+  background: transparent;
+  border: none;
+  color: var(--primaryFont);
+  transition: background-color 0.5s;
+}
+
+.otherButton:hover {
+  background-color: var(--primaryColor);
+}
+
+@media only screen and (max-width: 880px) {
+  .navbar {
+    position: absolute;
+    display: flex;
+    flex-flow: column-reverse;
+    z-index: 100;
+    top: 0px;
+    right: 0em;
+  }
+
+  .navbar button {
+    font-size: 32px;
+    border-radius: 5px 0px 0px 5px;
+    padding: 5px 10px 0 10px;
+    margin: 0.25em 0 0 0;
+  }
+}
