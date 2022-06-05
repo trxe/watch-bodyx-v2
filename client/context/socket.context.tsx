@@ -1,7 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
 import axios from 'axios'
-import { SOCKET_URL } from '../config/default';
 import EVENTS from '../config/events';
 import { CHANNELS } from '../config/channels';
 import { IRoom } from '../containers/Rooms';
@@ -107,7 +106,7 @@ const SocketsProvider = (props: any) => {
     const loginInfo = (request) => {
         socket.emit(EVENTS.CLIENT.LOGIN, request, 
             (res) => { 
-                console.log("socket", socket.id);
+                // console.log("socket", socket.id);
                 if (res.messageType === 'warning' || res.messageType === 'error') {
                     setNotif(res); 
                 } else if (res.messageType === 'info') {
@@ -123,17 +122,17 @@ const SocketsProvider = (props: any) => {
     };
 
     const createAccount = (request) => {
-        axios.post(SOCKET_URL + 'create-account', request)
+        axios.post(process.env.NEXT_PUBLIC_URL + 'create-account', request)
             .then(({data}) => {
-                console.log(data);
+                // console.log(data);
                 if (data.messageType != null) setNotif(data);
             });
     };
 
     const changePassword = (request) => {
-        axios.post(SOCKET_URL + 'change-password', request)
+        axios.post(process.env.NEXT_PUBLIC_URL + 'change-password', request)
             .then(({data}) => {
-                console.log(data);
+                // console.log(data);
                 if (data.messageType != null) setNotif(data);
                 if (data.messageType === 'success') {
                     setUser(null);
@@ -143,9 +142,9 @@ const SocketsProvider = (props: any) => {
     }
 
     const loginRequest = (request) => {
-        axios.post(SOCKET_URL + "auth", request)
+        axios.post(process.env.NEXT_PUBLIC_URL + "auth", request)
             .then(({data}) => {
-                console.log(data);
+                // console.log(data);
                 if (data.messageType === 'error') {
                     setNotif(data);
                     return;
@@ -156,14 +155,14 @@ const SocketsProvider = (props: any) => {
                     return;
                 }
 
-                socket = io(SOCKET_URL, {reconnection: false});
+                socket = io(process.env.NEXT_PUBLIC_URL, {reconnection: false});
                 if (data.messageType === 'info') {
                     const tempUserWithOldSocket = JSON.parse(data.message);
                     setNotif(createNotif('warning', 
                         'You are logged in on multiple instances',
                         'Other instances will be disconnected.'));
                     socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, tempUserWithOldSocket, (res) => {
-                        console.log("socket", socket.id);
+                        // console.log("socket", socket.id);
                         if (res.messageType === 'warning' || res.messageType === 'error') {
                             setNotif(res); 
                         } else if (res.messageType === 'info') {
@@ -272,7 +271,7 @@ const SocketsProvider = (props: any) => {
         });
 
         socket.on(EVENTS.SERVER.FORCE_DISCONNECT, ({msg}) => {
-            console.log(msg);
+            // console.log(msg);
             setDisconnectedInfo(msg);
             setChannel(CHANNELS.DISCONNECTED);
             socket.disconnect();

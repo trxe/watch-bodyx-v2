@@ -14,6 +14,7 @@ import LoginContainer from '../containers/Login'
 import ChangePasswordContainer from '../containers/ChangePassword'
 import NonAttendeesContainer from '../containers/NonAttendees'
 import { ModalTemplate } from '../utils/modal'
+import AudienceViewContainer from '../containers/AudienceView'
 
 export default function Home() {
   const {channel, user, notif, setNotif, modal, loginRequest} = useSockets();
@@ -43,7 +44,7 @@ export default function Home() {
       {!user && <LoginContainer/>}
       {channel === CHANNELS.SM_ROOM && <DashboardContainer/>}
       {channel === CHANNELS.WAITING_ROOM && <WaitingRoomContainer/>}
-      {channel === CHANNELS.MAIN_ROOM && <ViewerContainer isAdmin={user.isAdmin}/>}
+      {channel === CHANNELS.MAIN_ROOM && <AudienceViewContainer />}
       {channel === CHANNELS.DISCONNECTED && <DisconnectedContainer />}
       {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
       {channel === CHANNELS.NON_ATTENDEES_ROOM && <NonAttendeesContainer />}

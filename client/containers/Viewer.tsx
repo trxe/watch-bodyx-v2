@@ -9,11 +9,11 @@ import ChatContainer from './Chat';
 import { PollViewContainer } from './Poll';
 import { useChatRooms } from '../context/chats.context';
 
-const ViewerContainer = ({isAdmin}) => {
+const ViewerContainer = () => {
     const {activeStatus, isResults} = usePoll();
     const {socket, user, show, roomName, setRoomName} = useSockets();
     const {unreadCounts} = useChatRooms();
-    const [roomIndex, setRoomIndex] = useState(-1)
+    const [roomIndex, setRoomIndex] = useState(0)
 
     // At startup to enter room
     useEffect(() => {
@@ -29,7 +29,7 @@ const ViewerContainer = ({isAdmin}) => {
         if (!show.rooms || show.rooms.length == 0 || index < 0) {
             setRoomIndex(-1);
             // console.log("current room", -1, show.rooms)
-        } else if (isAdmin) {
+        } else if (user && user.isAdmin) {
             setRoomIndex(index);
             setRoomName(show.rooms[index].roomName);
             // console.log("current room", index, show.rooms);
@@ -38,9 +38,7 @@ const ViewerContainer = ({isAdmin}) => {
             // console.log("current room", viewerIndex, show.rooms);
             socket.emit(EVENTS.CLIENT.JOIN_ROOM, show.rooms[viewerIndex]._id, 
                 (response) => {
-                    console.log(response);
                     setRoomIndex(viewerIndex);
-                    console.log("Viewer.tsx", show.rooms[viewerIndex].roomName);
                     setRoomName(show.rooms[viewerIndex].roomName);
                 });
         }
@@ -57,6 +55,7 @@ const ViewerContainer = ({isAdmin}) => {
         return <div className={styles.viewerWrapper}>
             <h1>Rooms Not Available</h1>
         </div>
+    } else {
     }
 
     return <div className={dashboard.row}>
