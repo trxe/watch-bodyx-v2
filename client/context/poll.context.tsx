@@ -34,10 +34,10 @@ class Poll {
     }
 
     public setVoters(voterArray) {
-        console.log('setting voters', voterArray);
+        // console.log('setting voters', voterArray);
         this.voters = new Map<string, number>();
         voterArray.forEach(voter => {
-            console.log("this voter", voter)
+            // console.log("this voter", voter)
             this.voters.set(voter.ticket, voter.optionIndex);
         });
     }
@@ -149,7 +149,7 @@ const PollProvider = (props: any) => {
                 if (isResults != null) poll.isResults = isResults;
                 setIsResults(isResults);
                 if (isActive || isResults) location.hash = '#poll';
-                console.log('poll', poll);
+                // console.log('poll', poll);
                 setPoll(poll);
             });
 

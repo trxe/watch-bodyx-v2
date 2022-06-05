@@ -106,7 +106,7 @@ const SocketsProvider = (props: any) => {
     const loginInfo = (request) => {
         socket.emit(EVENTS.CLIENT.LOGIN, request, 
             (res) => { 
-                console.log("socket", socket.id);
+                // console.log("socket", socket.id);
                 if (res.messageType === 'warning' || res.messageType === 'error') {
                     setNotif(res); 
                 } else if (res.messageType === 'info') {
@@ -124,7 +124,7 @@ const SocketsProvider = (props: any) => {
     const createAccount = (request) => {
         axios.post(process.env.NEXT_PUBLIC_URL + 'create-account', request)
             .then(({data}) => {
-                console.log(data);
+                // console.log(data);
                 if (data.messageType != null) setNotif(data);
             });
     };
@@ -132,7 +132,7 @@ const SocketsProvider = (props: any) => {
     const changePassword = (request) => {
         axios.post(process.env.NEXT_PUBLIC_URL + 'change-password', request)
             .then(({data}) => {
-                console.log(data);
+                // console.log(data);
                 if (data.messageType != null) setNotif(data);
                 if (data.messageType === 'success') {
                     setUser(null);
@@ -144,7 +144,7 @@ const SocketsProvider = (props: any) => {
     const loginRequest = (request) => {
         axios.post(process.env.NEXT_PUBLIC_URL + "auth", request)
             .then(({data}) => {
-                console.log(data);
+                // console.log(data);
                 if (data.messageType === 'error') {
                     setNotif(data);
                     return;
@@ -162,7 +162,7 @@ const SocketsProvider = (props: any) => {
                         'You are logged in on multiple instances',
                         'Other instances will be disconnected.'));
                     socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, tempUserWithOldSocket, (res) => {
-                        console.log("socket", socket.id);
+                        // console.log("socket", socket.id);
                         if (res.messageType === 'warning' || res.messageType === 'error') {
                             setNotif(res); 
                         } else if (res.messageType === 'info') {
@@ -271,7 +271,7 @@ const SocketsProvider = (props: any) => {
         });
 
         socket.on(EVENTS.SERVER.FORCE_DISCONNECT, ({msg}) => {
-            console.log(msg);
+            // console.log(msg);
             setDisconnectedInfo(msg);
             setChannel(CHANNELS.DISCONNECTED);
             socket.disconnect();
