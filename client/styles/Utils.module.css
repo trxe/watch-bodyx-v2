@@ -161,7 +161,7 @@ input:disabled + .toggleSlider:before {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
+  z-index: 200;
   opacity: 0;
   -webkit-transition: opacity 400ms ease-in;
   -moz-transition: opacity 400ms ease-in;
@@ -172,6 +172,13 @@ input:disabled + .toggleSlider:before {
 .modalWrapper:target {
   opacity: 1;
   pointer-events: auto;
+}
+
+.modalButtons {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-end;
+  justify-items: flex-end;
 }
 
 .modal {

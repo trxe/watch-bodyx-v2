@@ -19,10 +19,12 @@ const informVote = (io: Server, votes: number, ticket: string, optionIndex: numb
 }
 
 const informPoll = (io: Server, recepient: string, poll: Poll) => {
+    if (!poll) return;
     io.to(recepient).emit(POLL_EVENTS.SEND_POLL, poll.getJSON());
 }
 
 const sendPollToSocket = (socket, poll: Poll) => {
+    if (!poll) return;
     socket.emit(POLL_EVENTS.SEND_POLL, poll.getJSON());
 }
 

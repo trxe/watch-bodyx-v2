@@ -213,7 +213,7 @@ const ChatRoomProvider = (props: any) => {
 
     useEffect(() => {
         if (!isFirstLoad || !show || !socket) return;
-        console.log('first chatroom load');
+        // console.log('first chatroom load');
         const hasRooms = setChatRooms(show.rooms) != null;
         if (hasRooms) {
             requestPinLists();
@@ -303,7 +303,7 @@ const ChatRoomProvider = (props: any) => {
             .on(EVENTS.SERVER.DELIVER_MESSAGE, ({message, msgIndex}) => {
                 // handled by emit's ack
                 const isTheatre = show && show.rooms && show.rooms.find(room => room.roomName === message.sendTo);
-                console.log('recv', message, 'with index', msgIndex);
+                // console.log('recv', message, 'with index', msgIndex);
                 if (message.fromSocketId === socket.id) 
                     return;
                 if (!chatRooms.has(message.sendTo))  {
@@ -322,7 +322,7 @@ const ChatRoomProvider = (props: any) => {
                 if (message.sendTo === chatRoomName) {
                     updateMessageList();
                 }
-                console.log('unreads', unreadCountManager.getObject(), message.sendTo);
+                // console.log('unreads', unreadCountManager.getObject(), message.sendTo);
             });
         
         socket.off(EVENTS.SERVER.PINNED_MESSAGE)

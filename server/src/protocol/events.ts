@@ -1,6 +1,7 @@
 export const CLIENT_EVENTS = {
     connect: 'connect',
     disconnect: 'disconnect',
+    reconnect: 'reconnect',
     LOGIN: 'LOGIN',
     REPLACE_CLIENT: 'REPLACE_CLIENT',
     RECONNECT: 'RECONNECT',
