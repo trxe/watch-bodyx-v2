@@ -49,6 +49,7 @@ const io = new Server(httpServer, {
 /* Registering handlers on socket.io startup */
 const onConnection = (socket) => {
     Logger.info(`Socket ${socket.id} connected`);
+    socket.emit("RECONNECTION", {});
     registerLoginHandlers(io, socket);
     registerShowHandlers(io, socket);
     registerChatHandlers(io, socket);

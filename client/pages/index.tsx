@@ -1,15 +1,13 @@
 import Head from 'next/head'
 import themes from '../styles/Themes.module.css'
-import styles from '../styles/Home.module.css'
 import { useSockets } from '../context/socket.context'
 
 import { useRef, useEffect } from 'react'
 import DashboardContainer from '../containers/Dashboard'
-import ViewerContainer from '../containers/Viewer'
 import Snackbar, { createNotif } from '../containers/Snackbar'
 import { CHANNELS } from '../config/channels'
 import WaitingRoomContainer from '../containers/WaitingRoom'
-import DisconnectedContainer from '../containers/DisconnectedPage'
+import DisconnectedContainer, { DisconnectedModal } from '../containers/DisconnectedPage'
 import LoginContainer from '../containers/Login'
 import ChangePasswordContainer from '../containers/ChangePassword'
 import NonAttendeesContainer from '../containers/NonAttendees'
@@ -17,7 +15,7 @@ import { ModalTemplate } from '../utils/modal'
 import AudienceViewContainer from '../containers/AudienceView'
 
 export default function Home() {
-  const {channel, user, notif, setNotif, modal, loginRequest} = useSockets();
+  const {channel, user, notif, setNotif, connectionState, loginRequest} = useSockets();
   const emailRef = useRef(null);
   const ticketRef = useRef(null);
 
@@ -55,14 +53,8 @@ export default function Home() {
           message={notif.message}
         />
       }
-      {modal != null && 
-        <ModalTemplate 
-          id={modal.id}
-          title={modal.title} 
-          description={modal.description} 
-          buttons={modal.buttons}
-        />
-      }
+      {(connectionState === "disconnected" || connectionState === "reconnecting") 
+        && <DisconnectedModal />}
     </div>
   )
 }

@@ -9,6 +9,7 @@ import { informSocketChatStatus } from "./chatHandler"
 
 const LOGIN_EVENTS = {
     CLIENT_INFO: "CLIENT_INFO",
+    RECONNECTION: "RECONNECTION",
     ACKS: {
         INVALID_LOGIN: new Ack('error', 'User not found', 'Invalid email/ticket.'),
         MULTIPLE_LOGIN: new Ack('warning', 'You are logged in on multiple instances', 
@@ -82,13 +83,6 @@ export const registerLoginHandlers = (io, socket) => {
             })
     }
 
-    const reconnect = ({client, ticket}, callback) => {
-        console.log("set client", client);
-        Provider.setClient(socket.id, client, ticket);
-        // send client to admins
-        callback(new Ack('success', 'Connection re-established', JSON.stringify(client)).getJSON());
-    }
-
     const adminInfo = (client, callback) => {
         sendShow(socket);
         informSocketChatStatus(socket, Provider.getChatManager().isAudienceChatEnabled); sendClients(socket);
@@ -119,7 +113,6 @@ export const registerLoginHandlers = (io, socket) => {
 
     socket.on(CLIENT_EVENTS.LOGIN, recvLogin);
     socket.on(CLIENT_EVENTS.REPLACE_CLIENT, replaceClient);
-    socket.on(CLIENT_EVENTS.RECONNECT, reconnect);
     socket.on(CLIENT_EVENTS.REQUEST_ADMIN_INFO, adminInfo);
     socket.on(CLIENT_EVENTS.REQUEST_VIEWER_INFO, viewerInfo);
     socket.on(CLIENT_EVENTS.LOGOUT, logout);

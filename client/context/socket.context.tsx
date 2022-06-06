@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
 import axios from 'axios'
 import EVENTS from '../config/events';
@@ -44,14 +44,13 @@ interface ISocketContext {
     setNotif: Function
     selectedClient?: Client
     setSelectedClient: Function
-    disconnectedInfo: string
+    connectionState: 'connected' | 'reconnecting' | 'disconnected' | ''
+    setConnectionState: Function,
     loginRequest: Function
     createAccount: Function
     changePassword: Function
     viewersTotal: number
     viewersPresent: number
-    modal: ModalInfo
-    setModal: Function
 }
 
 let socket;
@@ -70,14 +69,13 @@ const SocketContext = createContext<ISocketContext>({
     setNotif: () => false,
     setShow: () => false,
     setSelectedClient: () => false,
-    disconnectedInfo: '',
+    connectionState: '',
+    setConnectionState: () => false,
     loginRequest: () => false,
     createAccount: () => false,
     changePassword: () => false,
     viewersPresent: 0,
     viewersTotal: 0,
-    modal: null,
-    setModal: () => false,
 });
 
 /* Every Context object comes with a Provider React component 
@@ -89,10 +87,9 @@ const SocketsProvider = (props: any) => {
     const [roomName, setRoomName] = useState(null);
     const [show, setShow] = useState(emptyShow);
     const [notif, setNotif] =  useState(null);
-    const [modal, setModal] = useState(null);
     const [viewersTotal, setViewersTotal] = useState(0);
     const [viewersPresent, setViewersPresent] = useState(0);
-    const [disconnectedInfo, setDisconnectedInfo] = useState('');
+    const [connectionState, setConnectionState] = useState('');
     const [selectedClient, setSelectedClient] = useState(null);
     const {setChatRooms} = useChatRooms();
 
@@ -155,6 +152,7 @@ const SocketsProvider = (props: any) => {
                     return;
                 }
 
+                setConnectionState('connected');
                 socket = io(process.env.NEXT_PUBLIC_URL, {reconnection: false});
                 if (data.messageType === 'info') {
                     const tempUserWithOldSocket = JSON.parse(data.message);
@@ -186,15 +184,6 @@ const SocketsProvider = (props: any) => {
                 setNotif(err);
             })
     }
-
-    const disconnectedModalInfo: ModalInfo = {
-        id: 'disconnected',
-        title: 'Disconnected from server',
-        description: 'Either the server has unexpectedly crashed, or you have lost connection.',
-        buttons: [
-            {label: 'Reconnect', action: () => socket.connect()}
-        ]
-    };
 
     if (socket != null) {
         socket.on(EVENTS.SERVER.CLIENT_INFO, ({channelName, user}) => {
@@ -272,28 +261,32 @@ const SocketsProvider = (props: any) => {
 
         socket.on(EVENTS.SERVER.FORCE_DISCONNECT, ({msg}) => {
             // console.log(msg);
-            setDisconnectedInfo(msg);
+            setConnectionState('disconnected');
             setChannel(CHANNELS.DISCONNECTED);
             socket.disconnect();
         });
 
-        socket.on(EVENTS.connect, () => {
+        socket.off(EVENTS.SERVER.RECONNECTION)
+            .once(EVENTS.SERVER.RECONNECTION, () => {
             // if alr have user, just replace my oldSocketId
-            if (modal == disconnectedModalInfo) {
-                location.hash = '';
-                setModal(null);
-            }
+            loginInfo({ticket: user.ticket, email: user.email});
+            setConnectionState('connected');
+            location.hash = '';
         });
+
+        socket.on(EVENTS.reconnect_error, () => {
+            setConnectionState('disconnected');
+            location.hash = '#disconnected';
+        })
 
         socket.off(EVENTS.disconnect)
             .on(EVENTS.disconnect, (reason) => {
                 console.log(reason);
+                setConnectionState('disconnected')
                 if (reason.indexOf('disconnect') >= 0) {
-                    setDisconnectedInfo('A network issue occurred, or you are logged in elsewhere.');
                     setChannel(CHANNELS.DISCONNECTED);
                 } else {
-                    setModal(disconnectedModalInfo);
-                    location.hash = `#${disconnectedModalInfo.id}`;
+                    location.hash = '#disconnected';
                 }
             });
     }
@@ -312,9 +305,8 @@ const SocketsProvider = (props: any) => {
             clientsList,
             notif, 
             setNotif,
-            modal,
-            setModal,
-            disconnectedInfo,
+            connectionState,
+            setConnectionState,
             selectedClient,
             setSelectedClient: selectClient,
             loginRequest,

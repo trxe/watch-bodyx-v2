@@ -1,9 +1,9 @@
 const EVENTS = {
     connect: 'connect',
     disconnect: 'disconnect',
+    reconnect_error: 'reconnect_error',
     CLIENT: {
         LOGIN: 'LOGIN',
-        RECONNECT: 'RECONNECT',
         REPLACE_CLIENT: 'REPLACE_CLIENT',
         REQUEST_ADMIN_INFO: 'REQUEST_ADMIN_INFO',
         REQUEST_VIEWER_INFO: 'REQUEST_VIEWER_INFO',
@@ -33,6 +33,7 @@ const EVENTS = {
     SERVER: {
         INVALID_LOGIN: 'INVALID_LOGIN',
         CLIENT_INFO: 'CLIENT_INFO',
+        RECONNECTION: "RECONNECTION",
         CURRENT_SHOW: 'CURRENT_SHOW',
         CURRENT_ROOMS: 'CURRENT_ROOMS',
         CURRENT_CLIENTS: 'CURRENT_CLIENTS',
