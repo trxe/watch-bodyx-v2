@@ -10,9 +10,11 @@ import { PollViewContainer } from './Poll';
 import { useChatRooms } from '../context/chats.context';
 import ReactPlayer from 'react-player/lazy';
 import { BiFullscreen, BiVolumeFull, BiVolumeLow, BiVolumeMute } from 'react-icons/bi';
+import { FullScreen, useFullScreenHandle } from 'react-full-screen';
 
 const MediaPlayerContainer = ({url}) => {
     const [volume, setVolume] = useState(1.0);
+    const handle = useFullScreenHandle();
 
     const getVolumeLabel = () => {
         if (volume <= 0.0) return <BiVolumeMute/>;
@@ -25,26 +27,34 @@ const MediaPlayerContainer = ({url}) => {
         else setVolume(0.0);
     }
 
-    return <div className={styles.mediaPlayerWrapper}>
-        <div className={styles.overlay}>
-            <div className={styles.controls}>
-                <button onClick={toggleMute}>{getVolumeLabel()}</button>
-                <input type="range" min={0.0} max={1.0} value={volume} step={0.02}
-                    onChange={event => setVolume(event.target.valueAsNumber)}/>
+    const toggleFullScreen = () => {
+        if (handle.active) handle.exit();
+        else handle.enter();
+    };
+
+    return <FullScreen handle={handle}>
+        <div className={styles.mediaPlayerWrapper} style={handle.active ? {width: "100%", height: "100%"} : null}>
+            <div className={styles.overlay}>
+                <div className={styles.controls}>
+                    <button onClick={toggleFullScreen}><BiFullscreen /></button>
+                    <button onClick={toggleMute}>{getVolumeLabel()}</button>
+                    <input type="range" min={0.0} max={1.0} value={volume} step={0.02}
+                        onChange={event => setVolume(event.target.valueAsNumber)}/>
+                </div>
             </div>
+            <ReactPlayer className={styles.reactPlayer} 
+                width="100%" 
+                height="100%" 
+                playing={true} 
+                volume={volume}
+                controls={false}
+                loop={false}
+                config={{
+                    youtube: {playerVars: {disablekb: 1}}
+                }}
+                url={url} />
         </div>
-        <ReactPlayer className={styles.reactPlayer} 
-            width="100%" 
-            height="100%" 
-            playing={true} 
-            volume={volume}
-            controls={false}
-            loop={false}
-            config={{
-                youtube: {playerVars: {disablekb: 1}}
-            }}
-            url={url} />
-    </div>;
+    </FullScreen>
 }
 
 const ViewerContainer = () => {
@@ -106,7 +116,7 @@ const ViewerContainer = () => {
                 </div>
             }
             {roomIndex < show.rooms.length &&
-                <MediaPlayerContainer url={show.rooms[roomIndex].url} />
+                <MediaPlayerContainer url={show.rooms[roomIndex].url}/>
             }
             <div className={styles.roomButtons}>
                 {show.rooms && show.rooms.map && show.rooms.map(({name, isLocked, roomName}, index) => 
