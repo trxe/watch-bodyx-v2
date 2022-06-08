@@ -52,3 +52,33 @@ button {
     margin-right: 1rem;
     cursor: pointer;
 }
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Track Styles */
+/***** Chrome, Safari, Opera, and Edge Chromium *****/
+input[type="range"]::-webkit-slider-runnable-track {
+  background: var(--primaryFont);
+  height: 0.2rem;
+}
+
+/******** Firefox ********/
+input[type="range"]::-moz-range-track {
+  background: var(--primaryFont);
+  height: 0.2rem;
+}
+
+/***** Thumb Styles *****/
+/***** Firefox *****/
+input[type="range"]::-moz-range-thumb {
+    border: 2px solid var(--primaryFont); /*Removes extra border that FF applies*/
+    border-radius: 0.8em; /*Removes default border-radius that FF applies*/
+    background-color: var(--primaryTint);
+    height: 0.8rem;
+    width: 0.8rem;
+}

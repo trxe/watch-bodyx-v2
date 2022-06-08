@@ -8,6 +8,44 @@ import dashboard from '../styles/Dashboard.module.css'
 import ChatContainer from './Chat';
 import { PollViewContainer } from './Poll';
 import { useChatRooms } from '../context/chats.context';
+import ReactPlayer from 'react-player/lazy';
+import { BiFullscreen, BiVolumeFull, BiVolumeLow, BiVolumeMute } from 'react-icons/bi';
+
+const MediaPlayerContainer = ({url}) => {
+    const [volume, setVolume] = useState(1.0);
+
+    const getVolumeLabel = () => {
+        if (volume <= 0.0) return <BiVolumeMute/>;
+        if (volume <= 0.5) return <BiVolumeLow/>;
+        return <BiVolumeFull/>;
+    }
+
+    const toggleMute = () => {
+        if (volume == 0.0) setVolume(1.0);
+        else setVolume(0.0);
+    }
+
+    return <div className={styles.mediaPlayerWrapper}>
+        <div className={styles.overlay}>
+            <div className={styles.controls}>
+                <button onClick={toggleMute}>{getVolumeLabel()}</button>
+                <input type="range" min={0.0} max={1.0} value={volume} step={0.02}
+                    onChange={event => setVolume(event.target.valueAsNumber)}/>
+            </div>
+        </div>
+        <ReactPlayer className={styles.reactPlayer} 
+            width="100%" 
+            height="100%" 
+            playing={true} 
+            volume={volume}
+            controls={false}
+            loop={false}
+            config={{
+                youtube: {playerVars: {disablekb: 1}}
+            }}
+            url={url} />
+    </div>;
+}
 
 const ViewerContainer = () => {
     const {activeStatus, isResults} = usePoll();
@@ -55,7 +93,6 @@ const ViewerContainer = () => {
         return <div className={styles.viewerWrapper}>
             <h1>Rooms Not Available</h1>
         </div>
-    } else {
     }
 
     return <div className={dashboard.row}>
@@ -69,14 +106,7 @@ const ViewerContainer = () => {
                 </div>
             }
             {roomIndex < show.rooms.length &&
-                <div className={styles.mediaPlayer}>
-                    <div className={styles.overlay}></div>
-                    <iframe width="100%" height="100%" 
-                        src={show.rooms[roomIndex].url}
-                        title="YouTube video player" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowFullScreen></iframe>
-                </div>
+                <MediaPlayerContainer url={show.rooms[roomIndex].url} />
             }
             <div className={styles.roomButtons}>
                 {show.rooms && show.rooms.map && show.rooms.map(({name, isLocked, roomName}, index) => 
