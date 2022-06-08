@@ -18,13 +18,14 @@ import ToggleButton from "../utils/toggleButton";
 import { useChatRooms } from "../context/chats.context";
 import { NOTIF } from "../config/notifications";
 import { usePoll } from "../context/poll.context";
+import { ImFilm } from "react-icons/im";
 
 const NavbarContainer = ({mode, setMode}) => {
     const {unreadCounts} = useChatRooms();
     return <div className={styles.navbar}>
         {mode !== MODES.THEATRE && 
             <button onClick={() => setMode(MODES.THEATRE)} className={styles.locationButton}>
-                <MdOutlineTheaters />{unreadCounts[MODES.THEATRE] > 0 && <span className={styles.badge}>{unreadCounts[MODES.THEATRE]}</span>}
+                <ImFilm />{unreadCounts[MODES.THEATRE] > 0 && <span className={styles.badge}>{unreadCounts[MODES.THEATRE]}</span>}
             </button>}
         {mode !== MODES.QNA && 
             <button onClick={() => setMode(MODES.QNA)} className={styles.locationButton}>

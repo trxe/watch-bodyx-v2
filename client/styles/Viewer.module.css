@@ -65,7 +65,7 @@
   transition: opacity 0.5s ease-in;
 }
 
-.mediaPlayer {
+.mediaPlayerWrapper {
   height: 80vh;
   position: relative;
 }
@@ -79,8 +79,34 @@
   background-color: transparent;
 }
 
-.mediaPlayer iframe {
+.overlay .controls {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+.controls button {
+  color: var(--primaryFont);
+  background-color: transparent;
   border: none;
+  font-size: larger;
+  padding: 0.2em;
+}
+
+.controls input {
+  max-width: 100px;
+  padding: 0.2em;
+}
+
+.mediaPlayerWrapper iframe {
+  border: none;
+}
+
+.reactPlayer {
+  pointer-events: none;
 }
 
 .chatWrapper {
@@ -114,7 +140,8 @@
 
 @media only screen and (max-width: 880px) {
   .greeter {
-    width: 60%;
+    width: 70%;
+    font-size: medium;
   }
 
   .playerWrapper {
@@ -122,8 +149,8 @@
       height: fit-content;
   }
 
-  .mediaPlayer{
-      height: 40vh;
+  .mediaPlayerWrapper{
+      height: 28vh;
   }
 
   .chatWrapper {

@@ -269,6 +269,7 @@ const SocketsProvider = (props: any) => {
         socket.off(EVENTS.SERVER.RECONNECTION)
             .once(EVENTS.SERVER.RECONNECTION, () => {
             // if alr have user, just replace my oldSocketId
+            if (!user) return;
             loginInfo({ticket: user.ticket, email: user.email});
             setConnectionState('connected');
             location.hash = '';
