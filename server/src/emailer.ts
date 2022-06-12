@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import Logger from './utils/logger';
 import * as dotenv from 'dotenv';
+import { P } from 'pino';
 
 dotenv.config();
 
@@ -51,6 +52,29 @@ export const sendAuthDetailsTo = async (receiver: string, password: string): Pro
                 <p>Log into <a href="watch.bodyx.live">watch.bodyx.live</a> with the following credentials. You will be prompted to change your password.</p>
                 <p><b>Username</b>: ${receiver}</p>
                 <p><b>Password</b>: ${password}</p>
+            `, // html body
+        });
+        Logger.info(`[${info.response}] Message sent: ${info.messageId}`);
+    } catch (err) {
+        Logger.error(`Error sending mail`);
+        return false;
+    }
+}
+
+export const sendVerificationCode = async (receiver: string, code: string): Promise<boolean> => {
+    if (!transporter) {
+        Logger.error('Email server is not setup');
+        return false;
+    }
+    try {
+        let info = await transporter.sendMail({
+            from: `"${sender}" ${transporter.options.auth.user}`, // sender address
+            to: receiver, // list of receivers
+            subject: "Verification Code", // Subject line
+            text: `Your verification code is ${code}`, // plain text body
+            html: `
+                <h1>Your BODYX Verification Code</h1>
+                <p>Your verification code is ${code}</p>
             `, // html body
         });
         Logger.info(`[${info.response}] Message sent: ${info.messageId}`);
