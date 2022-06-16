@@ -6,7 +6,7 @@ import { Client } from "./interfaces/client";
 import Provider from "./provider";
 import { UserModel } from "./schemas/userSchema";
 import Logger from "./utils/logger";
-import { getEventAttendeesURL, getOrderAttendeesURL } from "./utils/utils";
+import { getOrderAttendeesURL } from "./utils/utils";
 
 const INVALID_LOGIN = new Ack('error', 'User not found', 'Invalid email/ticket.')
 const UNKNOWN_ERROR = new Ack('error', 'Unknown error', 'Unknown error from server')
@@ -21,7 +21,7 @@ const createUser = (res, attendeeFound, eventId: string) => {
         isAdmin: false,
         isPresent: false,
         hasAttended: false,
-        eventId,
+        eventIds: [eventId],
     }).then(async () => {
         Logger.info(`Attendee ${attendeeFound.profile.name} created`);
         if (await sendAuthDetailsTo(attendeeFound.profile.email, attendeeFound.id)) {
@@ -80,7 +80,7 @@ const registerRouting = (app) => {
 
     app.post('/create-account', (req, res) => {
         const {email, orderId} = req.body;
-        Logger.info(`Account creation request from ${email} (event: ${orderId})`);
+        Logger.info(`Account creation request from ${email} (order: ${orderId})`);
         if (!email || !orderId) {
             res.json(INVALID_LOGIN.getJSON())
             res.end();
@@ -93,15 +93,25 @@ const registerRouting = (app) => {
                 res.end();
                 return;
             }
-            axios.get(getOrderAttendeesURL(orderId),
+            axios.get(getOrderAttendeesURL(orderId.trim()),
                 {headers: {
                     'Authorization': `Bearer ${process.env.EVENTBRITE_API_KEY}`,
                     'Content-Type': 'application/json',
                 }}
             ).then((eventbrite) => {
                 const attendeesFound = eventbrite.data.attendees.filter(attendee => attendee.profile.email === email);
+                const eventId = eventbrite.data.event_id;
                 if (attendeesFound.length == 1) {
-                    createUser(res, attendeesFound, orderId);
+                    const attendee = attendeesFound[0]
+                    UserModel.findOne({email: attendee.profile.email}, (err, user) => {
+                        if (err) throw err;
+                        if (user) {
+                            user.eventIds = [...user.eventIds, eventId];
+                            user.save();
+                        } else {
+                            createUser(res, attendee, eventId);
+                        }
+                    });
                 } else if (attendeesFound.length > 1) {
                     // TODO
                 } else {
@@ -109,7 +119,7 @@ const registerRouting = (app) => {
                     res.end();
                 }
             }).catch(err => {
-                Logger.info('Order does not esixt.');
+                Logger.error(err);
                 res.json(new Ack('error', 'Order does not exist'));
             });
         });

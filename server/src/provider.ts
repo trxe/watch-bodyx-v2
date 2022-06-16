@@ -149,7 +149,7 @@ async function checkUsers() {
     const users = await UserModel.find({});
     users.forEach(user => {
         console.log(`[${user.isAdmin ? 'ADMIN' : 'VIEWER'}] ${user.name}: (email: ${user.email})
-        (${user.isAdmin ? '' : `event: ${user.eventId}, ` }ticket: ${user.ticket})\n`);
+        (${user.isAdmin ? '' : `event: ${user.eventIds}, ` }ticket: ${user.ticket})\n`);
     });
 }
 

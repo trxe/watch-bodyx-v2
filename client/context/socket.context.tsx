@@ -7,7 +7,6 @@ import { IRoom } from '../containers/Rooms';
 import { createNotif, INotif } from '../containers/Snackbar';
 import { Client, User } from '../containers/Clients';
 import { useChatRooms } from './chats.context';
-import { ModalInfo } from '../utils/modal';
 
 const emptyShow = {
     name: '',

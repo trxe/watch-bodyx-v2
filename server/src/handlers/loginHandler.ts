@@ -22,6 +22,7 @@ const LOGIN_EVENTS = {
 export const registerLoginHandlers = (io, socket) => {
     const recvLogin = ({ticket, email}, callback) => {
         let channelName = CHANNELS.WAITING_ROOM;
+        let showEventId = Provider.getShow().eventId;
         Provider.logInOutUser({ticket, email}, true)
             .then(user => {
                 if (!user) {
@@ -32,11 +33,11 @@ export const registerLoginHandlers = (io, socket) => {
                     channelName = CHANNELS.SM_ROOM;
                     // admins have to receive all messages and are thus in every room
                     Provider.getShow().rooms.forEach(room => socket.join(room.roomName));
-                } else if (user.eventId !== Provider.getShow().eventId) {
+                } else if (!user.eventIds.find(id => id === showEventId)) {
                     channelName = CHANNELS.NON_ATTENDEES_ROOM;
                     // attendees of other events join their respective rooms 
                     // by eventId to be called in when their event commences.
-                    socket.join(user.eventId);
+                    socket.join(showEventId);
                 }
                 const client = {user, socketId: socket.id, channelName}
                 Provider.setClient(socket.id, ticket, client);

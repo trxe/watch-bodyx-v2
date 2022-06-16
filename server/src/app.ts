@@ -56,11 +56,11 @@ const onConnection = (socket) => {
     registerPollHandlers(io, socket);
 }
 
-httpServer.listen(port, host, () => {
+httpServer.listen(port, host, async () => {
     Logger.info(`Listening at ${JSON.stringify(httpServer.address())}`);
-    mongoInit();
-    Provider.loadUsers();
-    Provider.checkUsers();
+    mongoInit()
+        .then(Provider.loadUsers)
+        .then(Provider.checkUsers);
     Provider.init();
     emailInit();
     io.on("connect", onConnection);

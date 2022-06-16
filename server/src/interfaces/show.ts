@@ -150,7 +150,7 @@ export class Show {
         const attendeeMap = new Map<string, User>();
         if (!this.eventId) return;
         if (this.eventId.length == 0) return;
-        await UserModel.find({eventId: this.eventId}, (err, users) => {
+        await UserModel.find({"events.eventId": this.eventId}, (err, users) => {
             if (err) Logger.error(err);
             if (!users && users.length == 0) return;
             users.map(u => {
@@ -198,6 +198,6 @@ export class Show {
     }
 
     generateTempAttendee(email, name, firstName): User {
-        return { email, name, firstName, ticket: '', isAdmin: false, isPresent: false, hasAttended: false };
+        return { email, name, firstName, ticket: '', isAdmin: false, isPresent: false, hasAttended: false , eventIds: [this.eventId]};
     }
 }

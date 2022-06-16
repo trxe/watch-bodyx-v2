@@ -34,8 +34,10 @@ export const UserSchema = new mongoose.Schema({
         type: Boolean,
         required: true,
     },
-    eventId: {
-        type: String,
+    eventIds: {
+        type: [String],
+        required: true,
+        default: [],
     },
 });
 

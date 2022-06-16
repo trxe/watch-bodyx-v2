@@ -17,7 +17,7 @@ export interface User {
     isAdmin: boolean
     isPresent: boolean,
     hasAttended: boolean,
-    eventId?: string,
+    eventIds?: Array<string>,
 }
 
 export interface Client {
