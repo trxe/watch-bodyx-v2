@@ -2,44 +2,32 @@ import Head from 'next/head'
 import themes from '../styles/Themes.module.css'
 import { useSockets } from '../context/socket.context'
 
-import { useRef, useEffect } from 'react'
+import { useEffect } from 'react'
 import DashboardContainer from '../containers/Dashboard'
-import Snackbar, { createNotif } from '../containers/Snackbar'
+import Snackbar from '../containers/Snackbar'
 import { CHANNELS } from '../config/channels'
 import WaitingRoomContainer from '../containers/WaitingRoom'
 import DisconnectedContainer, { DisconnectedModal } from '../containers/DisconnectedPage'
-import LoginContainer from '../containers/Login'
 import ChangePasswordContainer from '../containers/ChangePassword'
 import NonAttendeesContainer from '../containers/NonAttendees'
-import { ModalTemplate } from '../utils/modal'
 import AudienceViewContainer from '../containers/AudienceView'
+import { useRouter } from 'next/router'
 
 export default function Home() {
-  const {channel, user, notif, setNotif, connectionState, loginRequest} = useSockets();
-  const emailRef = useRef(null);
-  const ticketRef = useRef(null);
+  const {channel, user, notif, connectionState} = useSockets();
+  const router = useRouter();
 
   useEffect(() => {
     // resetting any hash fragments from poll
-    location.hash = '';
+    history.pushState('', document.title, window.location.pathname);
+    if (!user) router.push('/login');
   }, [])
-
-  const handleSetTicket = () => {
-    const email = emailRef.current.value;
-    const ticket = ticketRef.current.value;
-    if (!email || !ticket || email.length == 0 || ticket.length == 0) {
-      setNotif(createNotif('error', "Missing email or ticket number", "Please enter all details."));
-    } else {
-      loginRequest({email, ticket});
-    }
-  }
 
   return (
     <div className={themes.default}>
       <Head>
         <title>BODYX</title>
       </Head>
-      {!user && <LoginContainer/>}
       {channel === CHANNELS.SM_ROOM && <DashboardContainer/>}
       {channel === CHANNELS.WAITING_ROOM && <WaitingRoomContainer/>}
       {channel === CHANNELS.MAIN_ROOM && <AudienceViewContainer />}

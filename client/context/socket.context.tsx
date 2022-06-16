@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
 import axios from 'axios'
 import EVENTS from '../config/events';
@@ -7,6 +7,7 @@ import { IRoom } from '../containers/Rooms';
 import { createNotif, INotif } from '../containers/Snackbar';
 import { Client, User } from '../containers/Clients';
 import { useChatRooms } from './chats.context';
+import { useRouter } from 'next/router';
 
 const emptyShow = {
     name: '',
@@ -91,6 +92,7 @@ const SocketsProvider = (props: any) => {
     const [connectionState, setConnectionState] = useState('');
     const [selectedClient, setSelectedClient] = useState(null);
     const {setChatRooms} = useChatRooms();
+    const router = useRouter();
 
     const [clientsMap, setClientsMap] = useState(new Map<string, Client>());
     const [clientsList, setClientsList] = useState(new Array<Client>());
@@ -102,7 +104,6 @@ const SocketsProvider = (props: any) => {
     const loginInfo = (request) => {
         socket.emit(EVENTS.CLIENT.LOGIN, request, 
             (res) => { 
-                // console.log("socket", socket.id);
                 if (res.messageType === 'warning' || res.messageType === 'error') {
                     setNotif(res); 
                 } else if (res.messageType === 'info') {
@@ -114,6 +115,8 @@ const SocketsProvider = (props: any) => {
                         : EVENTS.CLIENT.REQUEST_VIEWER_INFO;
                     socket.emit(event, client, (ack) => console.log(ack));
                 }
+                router.push('/');
+                console.log('help???')
             });
     };
 
@@ -159,7 +162,6 @@ const SocketsProvider = (props: any) => {
                         'You are logged in on multiple instances',
                         'Other instances will be disconnected.'));
                     socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, tempUserWithOldSocket, (res) => {
-                        // console.log("socket", socket.id);
                         if (res.messageType === 'warning' || res.messageType === 'error') {
                             setNotif(res); 
                         } else if (res.messageType === 'info') {
