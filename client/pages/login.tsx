@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { useRef } from "react";
-import Snackbar, { createNotif } from "../../containers/Snackbar";
-import { useSockets } from "../../context/socket.context";
-import themes from '../../styles/Themes.module.css'
-import styles from "../../styles/Login.module.css";
-import { classList } from "../../utils/utils";
-import { ROUTES } from "../../config/routes";
+import Snackbar, { createNotif } from "../containers/Snackbar";
+import { useSockets } from "../context/socket.context";
+import themes from '../styles/Themes.module.css'
+import styles from "../styles/Login.module.css";
+import { classList } from "../utils/utils";
+import { ROUTES } from "../config/routes";
 
 const Login = () => {
   const {notif, setNotif, loginRequest} = useSockets();

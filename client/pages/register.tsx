@@ -1,16 +1,14 @@
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useRef } from "react";
-import { createNotif } from "../../containers/Snackbar";
-import { useSockets } from "../../context/socket.context";
-import { classList } from "../../utils/utils";
-import styles from "../../styles/Login.module.css";
-import themes from '../../styles/Themes.module.css'
-import { ROUTES } from "../../config/routes";
+import { createNotif } from "../containers/Snackbar";
+import { useSockets } from "../context/socket.context";
+import { classList } from "../utils/utils";
+import styles from "../styles/Login.module.css";
+import themes from '../styles/Themes.module.css'
+import { ROUTES } from "../config/routes";
 
 const Register = () => {
   const {setNotif, createAccount} = useSockets();
-  const router = useRouter();
   const emailRef = useRef(null);
   const orderIdRef = useRef(null);
 
