@@ -5,7 +5,7 @@ import { useSockets } from "../../context/socket.context";
 import themes from '../../styles/Themes.module.css'
 import styles from "../../styles/Login.module.css";
 import { classList } from "../../utils/utils";
-import { LOGIN_ROUTES } from "./modes";
+import { ROUTES } from "../../config/routes";
 
 const Login = () => {
   const {notif, setNotif, loginRequest} = useSockets();
@@ -29,10 +29,10 @@ const Login = () => {
             <input placeholder='Password' ref={passwordRef} type='password'/>
             <div className={styles.buttons}>
                 <button className={styles.loginButton} onClick={handleSetTicket}>LOGIN</button>
-                <Link href={LOGIN_ROUTES.REGISTER} shallow>
+                <Link href={ROUTES.REGISTER} shallow>
                     <button className={styles.otherButton}>Just purchased a ticket?</button>
                 </Link>
-                <Link href={LOGIN_ROUTES.FORGOT_PWD} shallow>
+                <Link href={ROUTES.FORGOT_PWD} shallow>
                     <button className={styles.otherButton}>Forgot password?</button>
                 </Link>
             </div>

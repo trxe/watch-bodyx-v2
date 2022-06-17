@@ -6,7 +6,7 @@ import { classList } from "../../utils/utils";
 import styles from "../../styles/Login.module.css";
 import themes from '../../styles/Themes.module.css'
 import Link from "next/link";
-import { LOGIN_ROUTES } from "./modes";
+import { ROUTES } from "../../config/routes";
 
 
 const ForgotPassword = () => {
@@ -30,10 +30,10 @@ const ForgotPassword = () => {
             <input placeholder='Email' ref={emailRef}/>
             <div className={styles.buttons}>
                 <button className={styles.loginButton}>REQUEST</button>
-                <Link href={LOGIN_ROUTES.REGISTER} shallow>
+                <Link href={ROUTES.REGISTER} shallow>
                     <button className={styles.otherButton}>Just purchased a ticket?</button>
                 </Link>
-                <Link href={LOGIN_ROUTES.LOGIN} shallow>
+                <Link href={ROUTES.LOGIN} shallow>
                     <button className={styles.otherButton}>Back</button>
                 </Link>
             </div>

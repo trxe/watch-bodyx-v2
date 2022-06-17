@@ -3,13 +3,15 @@ import bcrypt from "bcrypt";
 import { sendAuthDetailsTo } from "./emailer";
 import { Ack } from "./interfaces/ack";
 import { Client } from "./interfaces/client";
+import { Response } from "./interfaces/response";
 import Provider from "./provider";
 import { UserModel } from "./schemas/userSchema";
 import Logger from "./utils/logger";
 import { getOrderAttendeesURL } from "./utils/utils";
 
-const INVALID_LOGIN = new Ack('error', 'User not found', 'Invalid email/ticket.')
-const UNKNOWN_ERROR = new Ack('error', 'Unknown error', 'Unknown error from server')
+const INVALID_LOGIN_RES = new Response('ack', new Ack('error', 'User not found', 'Invalid email/ticket.').getJSON());
+const UNKNOWN_ERROR_RES = new Response('ack', new Ack('error', 'Unknown error', 'Unknown error from server').getJSON());
+const ACCOUNT_EXIST_RES = new Response('ack', new Ack('warning', 'Account already exists', 'Please log in with password').getJSON())
 const SALT_ROUNDS = 10;
 
 const createUser = (res, attendeeFound, eventId: string) => {
@@ -38,7 +40,7 @@ const createUser = (res, attendeeFound, eventId: string) => {
 const authUser = (res, user, password: string) => {
     if (!user) {
         Logger.info('User not found.');
-        res.json(INVALID_LOGIN.getJSON())
+        res.json(INVALID_LOGIN_RES)
         res.end();
     } else if (!user.passwordHash && user.ticket !== password) {
         console.log(user);
@@ -75,21 +77,21 @@ const authUser = (res, user, password: string) => {
 
 const registerRouting = (app) => {
     app.get('/', (req, res) => res.send('Hello World'));
-    app.get('/create-account', (req, res) => res.send('Create Account (provide {email, eventId}), \
+    app.get('/register', (req, res) => res.send('Create Account (provide {email, eventId}), \
         if user found will create account and send password'))
 
-    app.post('/create-account', (req, res) => {
+    app.post('/register', (req, res) => {
         const {email, orderId} = req.body;
         Logger.info(`Account creation request from ${email} (order: ${orderId})`);
         if (!email || !orderId) {
-            res.json(INVALID_LOGIN.getJSON())
+            res.json(INVALID_LOGIN_RES);
             res.end();
             return;
         } 
         UserModel.findOne({email})
         .then(value => {
             if (value) {
-                res.json(new Ack('warning', 'Account already exists', 'Please log in with password').getJSON());
+                res.json();
                 res.end();
                 return;
             }
@@ -131,14 +133,14 @@ const registerRouting = (app) => {
         const {email, password} = req.body;
         Logger.info(`Login request from ${email}.`);
         if (!email || !password) {
-            res.json(INVALID_LOGIN.getJSON())
+            res.json(INVALID_LOGIN_RES)
             res.end();
             return;
         } 
         UserModel.findOne({email}, (err, user) => {
             if (err) {
                 Logger.error(err);
-                res.json(UNKNOWN_ERROR.getJSON());
+                res.json(UNKNOWN_ERROR_RES);
                 res.end();
                 return;
             }
@@ -152,7 +154,7 @@ const registerRouting = (app) => {
         const {email, password} = req.body;
         Logger.info(`Changing password for ${email}`);
         if (!email || !password) {
-            res.json(INVALID_LOGIN.getJSON())
+            res.json(UNKNOWN_ERROR_RES)
             res.end();
             return;
         } 

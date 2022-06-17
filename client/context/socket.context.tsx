@@ -8,6 +8,12 @@ import { createNotif, INotif } from '../containers/Snackbar';
 import { Client, User } from '../containers/Clients';
 import { useChatRooms } from './chats.context';
 import { useRouter } from 'next/router';
+import { ROUTES } from '../config/routes';
+
+interface Response {
+    type: 'redirect' | 'info' | 'ack'
+    body: Object
+}
 
 const emptyShow = {
     name: '',
@@ -115,8 +121,7 @@ const SocketsProvider = (props: any) => {
                         : EVENTS.CLIENT.REQUEST_VIEWER_INFO;
                     socket.emit(event, client, (ack) => console.log(ack));
                 }
-                router.push('/');
-                console.log('help???')
+                router.push(ROUTES.HOME);
             });
     };
 
@@ -129,13 +134,16 @@ const SocketsProvider = (props: any) => {
     };
 
     const changePassword = (request) => {
-        axios.post(process.env.NEXT_PUBLIC_URL + 'change-password', request)
+        axios.post(process.env.NEXT_PUBLIC_URL + 'register', request)
             .then(({data}) => {
-                // console.log(data);
-                if (data.messageType != null) setNotif(data);
-                if (data.messageType === 'success') {
-                    setUser(null);
-                    setChannel(CHANNELS.LOGIN_ROOM);
+                if (data.type === 'ack') {
+                    const ack = data.body;
+                    if (ack.messageType != null) setNotif(data);
+                    if (ack.messageType === 'success') {
+                        router.push(ROUTES.HOME);
+                        setUser(null);
+                        setChannel(CHANNELS.LOGIN_ROOM);
+                    }
                 }
             });
     }
@@ -143,7 +151,6 @@ const SocketsProvider = (props: any) => {
     const loginRequest = (request) => {
         axios.post(process.env.NEXT_PUBLIC_URL + "auth", request)
             .then(({data}) => {
-                // console.log(data);
                 if (data.messageType === 'error') {
                     setNotif(data);
                     return;

@@ -6,7 +6,7 @@ import { useSockets } from "../../context/socket.context";
 import { classList } from "../../utils/utils";
 import styles from "../../styles/Login.module.css";
 import themes from '../../styles/Themes.module.css'
-import { LOGIN_ROUTES } from "./modes";
+import { ROUTES } from "../../config/routes";
 
 const Register = () => {
   const {setNotif, createAccount} = useSockets();
@@ -30,7 +30,7 @@ const Register = () => {
             <input placeholder='Order ID' ref={orderIdRef}/>
             <div className={styles.buttons}>
                 <button className={styles.loginButton} onClick={handleCreateAcct}>REQUEST</button>
-                <Link href={LOGIN_ROUTES.LOGIN} shallow>
+                <Link href={ROUTES.LOGIN} shallow>
                     <button className={styles.otherButton}>Already have an account?</button>
                 </Link>
             </div>
