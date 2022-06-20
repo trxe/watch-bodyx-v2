@@ -1,9 +1,9 @@
 export class Response {
-    type: 'redirect' | 'info' | 'ack'
+    responseType: 'redirect' | 'ack'
     body: Object
 
-    constructor(type: 'redirect' | 'info' | 'ack', body: Object) {
-        this.type = type;
+    constructor(responseType: 'redirect' | 'ack', body: Object) {
+        this.responseType = responseType;
         this.body = body;
     }
 }

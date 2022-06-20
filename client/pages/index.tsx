@@ -20,7 +20,8 @@ export default function Home() {
   useEffect(() => {
     // resetting any hash fragments from poll
     history.pushState('', document.title, window.location.pathname);
-    if (!user) router.push('/login');
+    console.log(user, connectionState)
+    if (!user && connectionState === 'disconnected') router.push('/login');
   }, [])
 
   return (

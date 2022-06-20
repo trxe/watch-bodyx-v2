@@ -10,8 +10,11 @@ import { useChatRooms } from './chats.context';
 import { useRouter } from 'next/router';
 import { ROUTES } from '../config/routes';
 
+/**
+ * redirect: {location, data, ack?}
+ */
 interface Response {
-    type: 'redirect' | 'info' | 'ack'
+    responseType: 'redirect' | 'ack'
     body: Object
 }
 
@@ -95,7 +98,7 @@ const SocketsProvider = (props: any) => {
     const [notif, setNotif] =  useState(null);
     const [viewersTotal, setViewersTotal] = useState(0);
     const [viewersPresent, setViewersPresent] = useState(0);
-    const [connectionState, setConnectionState] = useState('');
+    const [connectionState, setConnectionState] = useState('disconnected');
     const [selectedClient, setSelectedClient] = useState(null);
     const {setChatRooms} = useChatRooms();
     const router = useRouter();
@@ -151,24 +154,23 @@ const SocketsProvider = (props: any) => {
     const loginRequest = (request) => {
         axios.post(process.env.NEXT_PUBLIC_URL + "auth", request)
             .then(({data}) => {
-                if (data.messageType === 'error') {
-                    setNotif(data);
-                    return;
-                } else if (data.messageType === 'warning') {
-                    setNotif(createNotif('warning', 'Set a new password.', 'Log into your account again afterwards.'));
-                    setUser(JSON.parse(data.message));
-                    setChannel(CHANNELS.CHANGE_PASSWORD);
-                    return;
-                }
+                const {responseType, body} = data;
+                if (responseType === 'ack') setNotif(body);
 
+                if (responseType !== 'redirect') return;
+
+                const {ack, dst, tempUser, replaceRequest} = body;
+                if (ack) setNotif(ack);
+                if (dst) router.push(dst);
+                
+                if (dst !== '/') return;
+
+                // For successfully connected
                 setConnectionState('connected');
+                // Initialize socket
                 socket = io(process.env.NEXT_PUBLIC_URL, {reconnection: false});
-                if (data.messageType === 'info') {
-                    const tempUserWithOldSocket = JSON.parse(data.message);
-                    setNotif(createNotif('warning', 
-                        'You are logged in on multiple instances',
-                        'Other instances will be disconnected.'));
-                    socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, tempUserWithOldSocket, (res) => {
+                if (replaceRequest) {
+                    socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, replaceRequest, (res) => {
                         if (res.messageType === 'warning' || res.messageType === 'error') {
                             setNotif(res); 
                         } else if (res.messageType === 'info') {
@@ -181,15 +183,12 @@ const SocketsProvider = (props: any) => {
                             socket.emit(event, client, (ack) => console.log(ack));
                         }
                     });
-                } else if (data.messageType === 'success') {
-                    const tempUser = JSON.parse(data.message);
+                } else if (tempUser) {
                     loginInfo(tempUser);
                 }
-
             })
             .catch(err => {
-                console.log("error", err);
-                setNotif(err);
+                setNotif(createNotif('error', 'Unknown Error', err));
             })
     }
 
