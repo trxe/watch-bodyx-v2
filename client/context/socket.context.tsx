@@ -15,7 +15,7 @@ import { CLIENT_ROUTES, SERVER_ROUTES } from '../config/routes';
  */
 interface Response {
     responseType: 'redirect' | 'ack'
-    body: Object
+    body: Object // ack, dst, channel, tempUser, replaceClient
 }
 
 const emptyShow = {
@@ -219,7 +219,6 @@ const SocketsProvider = (props: any) => {
             setUser(user);
             setChannel(channelName);
             localStorage.setItem('email', user.email);
-            localStorage.setItem('ticket', user.ticket);
         });
 
         // Admin show info
@@ -272,7 +271,6 @@ const SocketsProvider = (props: any) => {
         socket.off(EVENTS.SERVER.CURRENT_ROOMS)
             .on(EVENTS.SERVER.CURRENT_ROOMS, (rooms, callback) => {
             setShow({...show, rooms});
-            console.log("setting rooms", rooms);
             setChatRooms(rooms);
             if (callback != null) callback(socket.id);
         });
@@ -345,8 +343,7 @@ const SocketsProvider = (props: any) => {
             viewersPresent,
             viewersTotal
         }} 
-        {
-            ...props} 
+        {...props} 
     />
 }
 

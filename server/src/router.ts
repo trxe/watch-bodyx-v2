@@ -113,35 +113,37 @@ const registerRouting = (app) => {
         ).then((eventbrite) => {
             const attendeesFound = eventbrite.data.attendees.filter(attendee => attendee.profile.email === email);
             const eventId = eventbrite.data.event_id;
-            // No repeating emails
-            if (attendeesFound.length == 1) {
-                const attendee = attendeesFound[0]
-                UserModel.findOne({email: attendee.profile.email}, (err, user) => {
-                    if (err) throw err;
-                    if (user) {
-                        const hasEventId = user.eventIds.find(id => id === eventId) != null;
-                        if (hasEventId) {
-                            res.json(ACCOUNT_EXIST_RES);
-                            res.end();
-                        } else {
-                            user.eventIds = [...user.eventIds, eventId];
-                            user.save();
-                            res.json(TICKET_REGISTERED_RES);
-                            res.end();
-                        }
-                    } else {
-                        createUser(res, attendee, eventId);
-                        // TODO: setup verification process against a table of users against codes, actions, and timestamp
-                    }
-                });
-            // Repeating emails
-            } else if (attendeesFound.length > 1) {
-                // TODO: multiple attendees with the same email
-            // Email is not found under order
-            } else {
+            // No such email under order
+            if (attendeesFound.length == 0) {
                 res.json(INVALID_TIX_EMAIL);
                 res.end();
+                return;
             }
+            const attendee = attendeesFound[0]
+            let isAccountCreated = false;
+            UserModel.findOne({email: attendee.profile.email}, (err, user) => {
+                if (err) throw err;
+                // if account exists already
+                if (user) {
+                    isAccountCreated = true;
+                    const hasEventId = user.eventIds.find(id => id === eventId) != null;
+                    if (hasEventId) {
+                        res.json(ACCOUNT_EXIST_RES);
+                        res.end();
+                    } else {
+                        user.eventIds = [...user.eventIds, eventId];
+                        user.save();
+                        res.json(TICKET_REGISTERED_RES);
+                        res.end();
+                    }
+                // account doesn't exist yet
+                } else {
+                    createUser(res, attendee, eventId);
+                    // TODO: setup verification process against a table of users against codes, actions, and timestamp
+                }
+                // TODO: No duplicate emails
+                // TODO: Duplicate emails
+            });
         }).catch(err => {
             Logger.error(err);
             // Order is not found.
