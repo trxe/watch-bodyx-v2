@@ -121,6 +121,7 @@ const registerRouting = (app) => {
             }
             const attendee = attendeesFound[0]
             let isAccountCreated = false;
+            let isDups = false;
             UserModel.findOne({email: attendee.profile.email}, (err, user) => {
                 if (err) throw err;
                 // if account exists already
@@ -130,19 +131,30 @@ const registerRouting = (app) => {
                     if (hasEventId) {
                         res.json(ACCOUNT_EXIST_RES);
                         res.end();
+                        return;
                     } else {
                         user.eventIds = [...user.eventIds, eventId];
-                        user.save();
-                        res.json(TICKET_REGISTERED_RES);
-                        res.end();
                     }
                 // account doesn't exist yet
                 } else {
+                    // TODO: Change to not add to the database yet.
                     createUser(res, attendee, eventId);
-                    // TODO: setup verification process against a table of users against codes, actions, and timestamp
                 }
-                // TODO: No duplicate emails
-                // TODO: Duplicate emails
+                if (attendeesFound.length > 1) isDups = true;
+                if (isAccountCreated && !isDups) {
+                    user.save();
+                    res.json(TICKET_REGISTERED_RES);
+                    res.end();
+                } else if (isAccountCreated && isDups) {
+                    // TODO: 1. Add channel, 2. Redirect to CHANNEL.HANDLE_DUP
+                } else if (!isAccountCreated && !isDups) {
+                    // TODO: 1. Redirect to CHANNEL.CREATE_ACCOUNT, which should send to server/create-account
+                    // TODO: 2. attach tempUser together with the response, which should be passed to server/create-account
+                    // TODO: 3. /create-account caches its action and redirects user to /verify
+                    // TODO: 4. on successful /verify action is$ performed and user is created, redirect to LOGIN
+                } else if (!isAccountCreated && isDups) {
+                    // TODO: Same as above until step 4. redirects to HANDLE_DUP
+                }
             });
         }).catch(err => {
             Logger.error(err);
