@@ -129,11 +129,20 @@ const SocketsProvider = (props: any) => {
             });
     };
 
-    const createAccount = (request) => {
+    const createAccount = (request, onComplete) => {
         axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.REGISTER, request)
             .then(({data}) => {
-                // console.log(data);
-                if (data.messageType != null) setNotif(data);
+                const {responseType, body} = data;
+                if (responseType === 'ack') {
+                    setNotif(body);
+                    onComplete();
+                }
+                if (responseType !== 'redirect') return;
+                const {ack, channel, dst} = body;
+                if (ack) setNotif(ack);
+                if (channel) setChannel(channel);
+                if (dst) router.push(dst).then(onComplete)
+                else onComplete();
             });
     };
 

@@ -30,7 +30,7 @@ const ChangePasswordContainer = () => {
 
     return <div className={styles.loginWrapper}>
         <div className={styles.loginDetails}>
-            <h1>Change password</h1>
+            <h1>Set password</h1>
             <input placeholder='Password' ref={passwordRef}  type="password"/>
             <input placeholder='Confirm password' ref={passwordConfirmRef} type="password"/>
             <div className={styles.buttons}>

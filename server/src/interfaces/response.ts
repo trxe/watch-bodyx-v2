@@ -1,3 +1,5 @@
+import { Ack } from "./ack";
+
 export class Response {
     responseType: 'redirect' | 'ack'
     body: Object

@@ -3,12 +3,13 @@ export const CLIENT_ROUTES = {
     LOGIN: '/login',
     REGISTER: '/register',
     FORGOT_PASSWORD: '/forgot-password',
-    VERIFY: '/verify',
 }
 
 export const SERVER_ROUTES = {
     LOGIN: '/auth',
     REGISTER: '/register',
+    VERIFY: '/verify',
+    CREATE_ACCOUNT: '/create-account',
     FORGOT_PASSWORD: '/forgot-password',
     CHANGE_PASSWORD: '/change-password',
 };
