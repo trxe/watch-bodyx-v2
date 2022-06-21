@@ -8,7 +8,7 @@ import { createNotif, INotif } from '../containers/Snackbar';
 import { Client, User } from '../containers/Clients';
 import { useChatRooms } from './chats.context';
 import { useRouter } from 'next/router';
-import { ROUTES } from '../config/routes';
+import { CLIENT_ROUTES, SERVER_ROUTES } from '../config/routes';
 
 /**
  * redirect: {location, data, ack?}
@@ -110,11 +110,12 @@ const SocketsProvider = (props: any) => {
         setSelectedClient(clientsMap.get(ticket));
     }
 
-    const loginInfo = (request) => {
+    const loginInfo = (request, onComplete) => {
         socket.emit(EVENTS.CLIENT.LOGIN, request, 
             (res) => { 
                 if (res.messageType === 'warning' || res.messageType === 'error') {
                     setNotif(res); 
+                    onComplete();
                 } else if (res.messageType === 'info') {
                     const client = JSON.parse(res.message);
                     setUser(client.user);
@@ -122,14 +123,14 @@ const SocketsProvider = (props: any) => {
                     const event = client.user.isAdmin 
                         ? EVENTS.CLIENT.REQUEST_ADMIN_INFO 
                         : EVENTS.CLIENT.REQUEST_VIEWER_INFO;
-                    socket.emit(event, client, (ack) => console.log(ack));
+                    socket.emit(event, client, ack => setNotif(ack));
+                    router.push(CLIENT_ROUTES.HOME).then(onComplete);
                 }
-                router.push(ROUTES.HOME);
             });
     };
 
     const createAccount = (request) => {
-        axios.post(process.env.NEXT_PUBLIC_URL + 'create-account', request)
+        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.REGISTER, request)
             .then(({data}) => {
                 // console.log(data);
                 if (data.messageType != null) setNotif(data);
@@ -137,33 +138,39 @@ const SocketsProvider = (props: any) => {
     };
 
     const changePassword = (request) => {
-        axios.post(process.env.NEXT_PUBLIC_URL + 'register', request)
-            .then(({data}) => {
-                if (data.type === 'ack') {
-                    const ack = data.body;
-                    if (ack.messageType != null) setNotif(data);
-                    if (ack.messageType === 'success') {
-                        router.push(ROUTES.HOME);
-                        setUser(null);
-                        setChannel(CHANNELS.LOGIN_ROOM);
-                    }
-                }
-            });
-    }
-
-    const loginRequest = (request) => {
-        axios.post(process.env.NEXT_PUBLIC_URL + "auth", request)
+        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.CHANGE_PASSWORD, request)
             .then(({data}) => {
                 const {responseType, body} = data;
                 if (responseType === 'ack') setNotif(body);
+                if (responseType !== 'redirect') return;
+                const {ack, channel, dst} = body;
+                if (ack) setNotif(ack);
+                if (channel) setChannel(channel);
+                if (dst) router.push(dst);
+            });
+    }
+
+    const loginRequest = (request, onComplete) => {
+        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.LOGIN, request)
+            .then(({data}) => {
+                const {responseType, body} = data;
+                if (responseType === 'ack') {
+                    setNotif(body);
+                    onComplete();
+                }
 
                 if (responseType !== 'redirect') return;
 
-                const {ack, dst, tempUser, replaceRequest} = body;
+                const {ack, channel, user, dst, tempUser, replaceRequest} = body;
                 if (ack) setNotif(ack);
+                if (user) setUser(user);
+                if (channel) setChannel(channel);
                 if (dst) router.push(dst);
                 
-                if (dst !== '/') return;
+                if (dst !== '/') {
+                    onComplete();
+                    return;
+                }
 
                 // For successfully connected
                 setConnectionState('connected');
@@ -173,6 +180,7 @@ const SocketsProvider = (props: any) => {
                     socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, replaceRequest, (res) => {
                         if (res.messageType === 'warning' || res.messageType === 'error') {
                             setNotif(res); 
+                            onComplete();
                         } else if (res.messageType === 'info') {
                             const client = JSON.parse(res.message);
                             setUser(client.user);
@@ -180,15 +188,20 @@ const SocketsProvider = (props: any) => {
                             const event = client.user.isAdmin 
                                 ? EVENTS.CLIENT.REQUEST_ADMIN_INFO 
                                 : EVENTS.CLIENT.REQUEST_VIEWER_INFO;
-                            socket.emit(event, client, (ack) => console.log(ack));
+                            socket.emit(event, client, onComplete);
                         }
                     });
                 } else if (tempUser) {
-                    loginInfo(tempUser);
+                    loginInfo(tempUser, onComplete);
                 }
             })
             .catch(err => {
-                setNotif(createNotif('error', 'Unknown Error', err));
+                if (err.code === 'ERR_NETWORK') {
+                    setNotif(createNotif('error', err.message, 'Please check your internet connection'));
+                } else {
+                    setNotif(createNotif('error', err.message, ''));
+                }
+                onComplete();
             })
     }
 
@@ -277,7 +290,7 @@ const SocketsProvider = (props: any) => {
             .once(EVENTS.SERVER.RECONNECTION, () => {
             // if alr have user, just replace my oldSocketId
             if (!user) return;
-            loginInfo({ticket: user.ticket, email: user.email});
+            loginInfo({ticket: user.ticket, email: user.email}, () => {});
             setConnectionState('connected');
             location.hash = '';
         });

@@ -58,13 +58,17 @@
     margin-bottom: 0.5em;
 }
 
+.buttons button:disabled {
+    background-color: var(--disabled);
+}
+
 .loginButton {
     background-color: var(--secondaryColor);
     color: var(--secondaryFont);
     font-size: larger;
     font-weight: 600;
     border: none;
-    transition: background-color 0.3s ease-in;
+    transition: background-color 0.1s ease-in;
     padding: 0.5em 1em 0.5em 1em ;
 }
 
