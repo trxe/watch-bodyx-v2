@@ -14,7 +14,7 @@ const LOGIN_EVENTS = {
         INVALID_LOGIN: new Ack('error', 'User not found', 'Invalid email/ticket.'),
         MULTIPLE_LOGIN: new Ack('warning', 'You are logged in on multiple instances', 
             'Other instances will be disconnected. Please login again.'),
-        VALID_LOGIN: new Ack('success', 'User found', ''),
+        LOADED_SUCCESS: new Ack('success', 'Login success!', 'Loading show info...'),
         UNKNOWN_ERROR: new Ack('error', 'Unknown error', '')
     }
 }
@@ -88,14 +88,14 @@ export const registerLoginHandlers = (io, socket) => {
         sendShow(socket);
         informSocketChatStatus(socket, Provider.getChatManager().isAudienceChatEnabled); sendClients(socket);
         sendClientToAdmin(io, client);
-        callback(new Ack('success', 'Loaded show info successfully').getJSON());
+        callback(LOGIN_EVENTS.ACKS.LOADED_SUCCESS.getJSON());
     }
 
     const viewerInfo = (client, callback) => {
         sendShow(socket);
         informSocketChatStatus(socket, Provider.getChatManager().isAudienceChatEnabled); sendClients(socket);
         sendClientToAdmin(io, client);
-        callback(new Ack('success', 'Loaded show info successfully').getJSON());
+        callback(LOGIN_EVENTS.ACKS.LOADED_SUCCESS.getJSON());
     }
 
     const logout = () => {

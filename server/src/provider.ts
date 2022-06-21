@@ -4,6 +4,7 @@ import { Poll } from "./interfaces/poll";
 import { Room } from "./interfaces/room";
 import { Show } from "./interfaces/show";
 import { User } from "./interfaces/users";
+import { VerifiedAction, VERIFY_TIMEOUT } from "./interfaces/verifiedAction";
 import { UserModel } from "./schemas/userSchema";
 import Logger from "./utils/logger";
 
@@ -13,6 +14,7 @@ import Logger from "./utils/logger";
 let show: Show;
 let clients: Map<string, Client>;
 let socketTicket: Map<string, string>;
+let emailVerify: Map<string, VerifiedAction>
 let chatManager: ChatManager;
 let poll: Poll;
 
@@ -27,6 +29,7 @@ const init = async () => {
     }
     clients = new Map<string, Client>();
     socketTicket = new Map<string, string>();
+    emailVerify = new Map<string, VerifiedAction>();
     chatManager = new ChatManager(show);
     try {
         poll = new Poll();
@@ -35,6 +38,48 @@ const init = async () => {
         Logger.error(err)
     }
 };
+
+/**
+ * Sets a verification code for this email. Also caches the timestamp it was 
+ * generated (to enable checking timeout) and the intended action.
+ * @param email 
+ * @returns Verification code generated
+ */
+const generateAndSetVerification = (email: string, action: Function): string => {
+    // generate verification code
+    const code = Array(6).fill(Math.floor(Math.random() * 10)).join('');
+    emailVerify.set(email, {action, timestamp: Date.now(), code});
+    return code;
+}
+
+/**
+ * Regenerate a verification code with a new timestamp
+ * @param email 
+ * @returns Verification code generated
+ */
+const regenerateVerification = (email: string): string => {
+    if (!emailVerify.has(email)) throw `No pending action for ${email}`;
+    // generate verification code
+    const code = Array(6).fill(Math.floor(Math.random() * 10)).join('');
+    const {action} = emailVerify.get(email);
+    emailVerify.set(email, {action, timestamp: Date.now(), code});
+    return code;
+}
+
+/**
+ * Performs cached action if code is correct and has not timed out.
+ * @param email 
+ * @param givenCode 
+ */
+const verifyCode = (email: string, givenCode: string) => {
+    if (!emailVerify.has(email)) throw `No pending action for ${email}`;
+    const {action, timestamp, code} = emailVerify.get(email);
+    if (code !== givenCode) throw `Invalid/Incorrect verification code.`
+    if (Date.now() - timestamp > VERIFY_TIMEOUT) 
+        throw `Verification code expired. Generate a new one.`
+    action();
+    emailVerify.delete(email);
+}
 
 /**
  * Gets a client by its socket.id 
@@ -48,6 +93,7 @@ const removeClientBySocketId = (clientSocketId: string): string => {
     socketTicket.delete(clientSocketId);
     return ticket;
 }
+
 /**
  * Sets a client with ticket and socketId to the list of connected clients.
  * @param clientSocketId 
@@ -230,6 +276,9 @@ const getChatManager = () => chatManager;
 const getPoll = () => poll;
 
 const Provider = {
+    generateAndSetVerification,
+    regenerateVerification,
+    verifyCode,
     setClient,
     getClientListJSON,
     setClientRoom,

@@ -12,17 +12,25 @@ const ChangePasswordContainer = () => {
   const handleChangePwd = () => {
       const email = user.email;
       const password = passwordRef.current.value;
+      if (!password) {
+          setNotif(createNotif('error', 'Password cannot be empty.', 'Enter the same password in both fields.'));
+          return;
+      }
+      if (!passwordConfirmRef.current.value) {
+          setNotif(createNotif('error', 'Enter your password again to confirm.', 'Enter the same password in both fields.'));
+          return;
+      }
       if (password !== passwordConfirmRef.current.value) {
           setNotif(createNotif('error', 'Passwords do not match.', 'Enter the same password in both fields.'));
           passwordConfirmRef.current.value = '';
           return;
       }
       changePassword({email, password});
-  }
+    }
 
     return <div className={styles.loginWrapper}>
         <div className={styles.loginDetails}>
-            <h1>Change password</h1>
+            <h1>Set password</h1>
             <input placeholder='Password' ref={passwordRef}  type="password"/>
             <input placeholder='Confirm password' ref={passwordConfirmRef} type="password"/>
             <div className={styles.buttons}>

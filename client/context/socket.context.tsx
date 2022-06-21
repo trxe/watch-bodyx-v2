@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
 import axios from 'axios'
 import EVENTS from '../config/events';
@@ -7,6 +7,16 @@ import { IRoom } from '../containers/Rooms';
 import { createNotif, INotif } from '../containers/Snackbar';
 import { Client, User } from '../containers/Clients';
 import { useChatRooms } from './chats.context';
+import { useRouter } from 'next/router';
+import { CLIENT_ROUTES, SERVER_ROUTES } from '../config/routes';
+
+/**
+ * redirect: {location, data, ack?}
+ */
+interface Response {
+    responseType: 'redirect' | 'ack'
+    body: Object // ack, dst, channel, tempUser, replaceClient
+}
 
 const emptyShow = {
     name: '',
@@ -88,9 +98,10 @@ const SocketsProvider = (props: any) => {
     const [notif, setNotif] =  useState(null);
     const [viewersTotal, setViewersTotal] = useState(0);
     const [viewersPresent, setViewersPresent] = useState(0);
-    const [connectionState, setConnectionState] = useState('');
+    const [connectionState, setConnectionState] = useState('disconnected');
     const [selectedClient, setSelectedClient] = useState(null);
     const {setChatRooms} = useChatRooms();
+    const router = useRouter();
 
     const [clientsMap, setClientsMap] = useState(new Map<string, Client>());
     const [clientsList, setClientsList] = useState(new Array<Client>());
@@ -99,12 +110,12 @@ const SocketsProvider = (props: any) => {
         setSelectedClient(clientsMap.get(ticket));
     }
 
-    const loginInfo = (request) => {
+    const loginInfo = (request, onComplete) => {
         socket.emit(EVENTS.CLIENT.LOGIN, request, 
             (res) => { 
-                // console.log("socket", socket.id);
                 if (res.messageType === 'warning' || res.messageType === 'error') {
                     setNotif(res); 
+                    onComplete();
                 } else if (res.messageType === 'info') {
                     const client = JSON.parse(res.message);
                     setUser(client.user);
@@ -112,56 +123,73 @@ const SocketsProvider = (props: any) => {
                     const event = client.user.isAdmin 
                         ? EVENTS.CLIENT.REQUEST_ADMIN_INFO 
                         : EVENTS.CLIENT.REQUEST_VIEWER_INFO;
-                    socket.emit(event, client, (ack) => console.log(ack));
+                    socket.emit(event, client, ack => setNotif(ack));
+                    router.push(CLIENT_ROUTES.HOME).then(onComplete);
                 }
             });
     };
 
-    const createAccount = (request) => {
-        axios.post(process.env.NEXT_PUBLIC_URL + 'create-account', request)
+    const createAccount = (request, onComplete) => {
+        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.REGISTER, request)
             .then(({data}) => {
-                // console.log(data);
-                if (data.messageType != null) setNotif(data);
+                const {responseType, body} = data;
+                if (responseType === 'ack') {
+                    setNotif(body);
+                    onComplete();
+                }
+                if (responseType !== 'redirect') return;
+                const {ack, channel, dst} = body;
+                if (ack) setNotif(ack);
+                if (channel) setChannel(channel);
+                if (dst) router.push(dst).then(onComplete)
+                else onComplete();
             });
     };
 
     const changePassword = (request) => {
-        axios.post(process.env.NEXT_PUBLIC_URL + 'change-password', request)
+        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.CHANGE_PASSWORD, request)
             .then(({data}) => {
-                // console.log(data);
-                if (data.messageType != null) setNotif(data);
-                if (data.messageType === 'success') {
-                    setUser(null);
-                    setChannel(CHANNELS.LOGIN_ROOM);
-                }
+                const {responseType, body} = data;
+                if (responseType === 'ack') setNotif(body);
+                if (responseType !== 'redirect') return;
+                const {ack, channel, dst} = body;
+                if (ack) setNotif(ack);
+                if (channel) setChannel(channel);
+                if (dst) router.push(dst);
             });
     }
 
-    const loginRequest = (request) => {
-        axios.post(process.env.NEXT_PUBLIC_URL + "auth", request)
+    const loginRequest = (request, onComplete) => {
+        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.LOGIN, request)
             .then(({data}) => {
-                // console.log(data);
-                if (data.messageType === 'error') {
-                    setNotif(data);
-                    return;
-                } else if (data.messageType === 'warning') {
-                    setNotif(createNotif('warning', 'Set a new password.', 'Log into your account again afterwards.'));
-                    setUser(JSON.parse(data.message));
-                    setChannel(CHANNELS.CHANGE_PASSWORD);
+                const {responseType, body} = data;
+                if (responseType === 'ack') {
+                    setNotif(body);
+                    onComplete();
+                }
+
+                if (responseType !== 'redirect') return;
+
+                const {ack, channel, user, dst, tempUser, replaceRequest} = body;
+                if (ack) setNotif(ack);
+                if (user) setUser(user);
+                if (channel) setChannel(channel);
+                if (dst) router.push(dst);
+                
+                if (dst !== '/') {
+                    onComplete();
                     return;
                 }
 
+                // For successfully connected
                 setConnectionState('connected');
+                // Initialize socket
                 socket = io(process.env.NEXT_PUBLIC_URL, {reconnection: false});
-                if (data.messageType === 'info') {
-                    const tempUserWithOldSocket = JSON.parse(data.message);
-                    setNotif(createNotif('warning', 
-                        'You are logged in on multiple instances',
-                        'Other instances will be disconnected.'));
-                    socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, tempUserWithOldSocket, (res) => {
-                        // console.log("socket", socket.id);
+                if (replaceRequest) {
+                    socket.emit(EVENTS.CLIENT.REPLACE_CLIENT, replaceRequest, (res) => {
                         if (res.messageType === 'warning' || res.messageType === 'error') {
                             setNotif(res); 
+                            onComplete();
                         } else if (res.messageType === 'info') {
                             const client = JSON.parse(res.message);
                             setUser(client.user);
@@ -169,18 +197,20 @@ const SocketsProvider = (props: any) => {
                             const event = client.user.isAdmin 
                                 ? EVENTS.CLIENT.REQUEST_ADMIN_INFO 
                                 : EVENTS.CLIENT.REQUEST_VIEWER_INFO;
-                            socket.emit(event, client, (ack) => console.log(ack));
+                            socket.emit(event, client, onComplete);
                         }
                     });
-                } else if (data.messageType === 'success') {
-                    const tempUser = JSON.parse(data.message);
-                    loginInfo(tempUser);
+                } else if (tempUser) {
+                    loginInfo(tempUser, onComplete);
                 }
-
             })
             .catch(err => {
-                console.log("error", err);
-                setNotif(err);
+                if (err.code === 'ERR_NETWORK') {
+                    setNotif(createNotif('error', err.message, 'Please check your internet connection'));
+                } else {
+                    setNotif(createNotif('error', err.message, ''));
+                }
+                onComplete();
             })
     }
 
@@ -189,7 +219,6 @@ const SocketsProvider = (props: any) => {
             setUser(user);
             setChannel(channelName);
             localStorage.setItem('email', user.email);
-            localStorage.setItem('ticket', user.ticket);
         });
 
         // Admin show info
@@ -242,7 +271,6 @@ const SocketsProvider = (props: any) => {
         socket.off(EVENTS.SERVER.CURRENT_ROOMS)
             .on(EVENTS.SERVER.CURRENT_ROOMS, (rooms, callback) => {
             setShow({...show, rooms});
-            console.log("setting rooms", rooms);
             setChatRooms(rooms);
             if (callback != null) callback(socket.id);
         });
@@ -269,7 +297,7 @@ const SocketsProvider = (props: any) => {
             .once(EVENTS.SERVER.RECONNECTION, () => {
             // if alr have user, just replace my oldSocketId
             if (!user) return;
-            loginInfo({ticket: user.ticket, email: user.email});
+            loginInfo({ticket: user.ticket, email: user.email}, () => {});
             setConnectionState('connected');
             location.hash = '';
         });
@@ -315,8 +343,7 @@ const SocketsProvider = (props: any) => {
             viewersPresent,
             viewersTotal
         }} 
-        {
-            ...props} 
+        {...props} 
     />
 }
 
