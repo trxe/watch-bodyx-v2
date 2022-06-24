@@ -1,6 +1,6 @@
 import axios from "axios";
 import bcrypt from "bcrypt";
-import { sendAuthDetailsTo } from "./emailer";
+import { sendConfirmation } from "./emailer";
 import { Ack } from "./interfaces/ack";
 import { Client } from "./interfaces/client";
 import { Response } from "./interfaces/response";
@@ -25,8 +25,20 @@ const REPLACE_CLIENT_ACK = new Ack('warning', 'Multiple instances detected', 'Yo
 
 const SALT_ROUNDS = 10;
 
-const createUser = (res, attendeeFound, eventId: string) => {
-    UserModel.create({
+const createPassword = async (email: string, password: string) => {
+    const user = await UserModel.findOne({email});
+    if (!user) {
+        throw `User ${email} not found`;
+    }
+    const salt = await bcrypt.genSalt(SALT_ROUNDS);
+    const hash = await bcrypt.hash(password, salt);
+    user.passwordHash = hash;
+    user.save();
+    Logger.info(`Changed password successfully for ${email}`);
+}
+
+const createTempUser = (res, attendeeFound, eventId: string) => {
+    return {
         name: attendeeFound.profile.name,
         email: attendeeFound.profile.email,
         ticket: attendeeFound.id,
@@ -35,20 +47,7 @@ const createUser = (res, attendeeFound, eventId: string) => {
         isPresent: false,
         hasAttended: false,
         eventIds: [eventId],
-    }).then(async () => {
-        Logger.info(`Attendee ${attendeeFound.profile.name} created`);
-        sendAuthDetailsTo(attendeeFound.profile.email, attendeeFound.id)
-            .then(() =>{
-                res.json(TICKET_REGISTERED_RES);
-                res.end();
-            })
-            .catch(err => {
-                UserModel.deleteOne({email: attendeeFound.profile.email});
-                Logger.error(err);
-                res.json(UNKNOWN_ERROR_RES);
-                res.end();
-            });
-    }).catch((err) => Logger.error(err));
+    };
 }
 
 const authUser = (res, user, password: string) => {
@@ -93,11 +92,27 @@ const authUser = (res, user, password: string) => {
 }
 
 const registerRouting = (app) => {
-    app.get('/', (req, res) => res.send('Hello World'));
-    app.get(SERVER_ROUTES.REGISTER, (req, res) => res.send('Create Account (provide {email, eventId}), \
-        if user found will create account and send password'))
 
-    app.post(SERVER_ROUTES.REGISTER, (req, res) => {
+    const loginPOST = (req, res) => {
+        const {email, password} = req.body;
+        Logger.info(`Login request from ${email}.`);
+        if (!email || !password) {
+            res.json(INVALID_USER_RES)
+            res.end();
+            return;
+        } 
+        UserModel.findOne({email}, (err, user) => {
+            if (err) {
+                Logger.error(err);
+                res.json(UNKNOWN_ERROR_RES);
+                res.end();
+                return;
+            }
+            authUser(res, user, password);
+        })
+    }
+
+    const registerPOST = (req, res) => {
         const {email, orderId} = req.body;
         Logger.info(`Account creation request from ${email} (order: ${orderId})`);
         if (!email || !orderId) {
@@ -122,6 +137,7 @@ const registerRouting = (app) => {
             const attendee = attendeesFound[0]
             let isAccountCreated = false;
             let isDups = false;
+            let tempUser;
             UserModel.findOne({email: attendee.profile.email}, (err, user) => {
                 if (err) throw err;
                 // if account exists already
@@ -137,8 +153,7 @@ const registerRouting = (app) => {
                     }
                 // account doesn't exist yet
                 } else {
-                    // TODO: Change to not add to the database yet.
-                    createUser(res, attendee, eventId);
+                    tempUser = createTempUser(res, attendeesFound[0], eventId);
                 }
                 if (attendeesFound.length > 1) isDups = true;
                 if (isAccountCreated && !isDups) {
@@ -147,13 +162,17 @@ const registerRouting = (app) => {
                     res.end();
                 } else if (isAccountCreated && isDups) {
                     // TODO: 1. Add channel, 2. Redirect to CHANNEL.HANDLE_DUP
-                } else if (!isAccountCreated && !isDups) {
+                } else if (!isAccountCreated) {
                     // TODO: 1. Redirect to CHANNEL.CREATE_ACCOUNT, which should send to server/create-account
+                    res.json(new Response('redirect', {
+                        channel: CHANNELS.CREATE_ACCOUNT,
+                        copies: attendeesFound.length,
+                        tempUser}));
+                    res.end();
                     // TODO: 2. attach tempUser together with the response, which should be passed to server/create-account
                     // TODO: 3. /create-account caches its action and redirects user to /verify
                     // TODO: 4. on successful /verify action is$ performed and user is created, redirect to LOGIN
-                } else if (!isAccountCreated && isDups) {
-                    // TODO: Same as above until step 4. redirects to HANDLE_DUP
+                    // TODO: If have duplicates
                 }
             });
         }).catch(err => {
@@ -162,32 +181,12 @@ const registerRouting = (app) => {
             res.json(PURCHASE_TIX_RES);
             res.end();
         });
-    })
+    };
 
-    app.get(SERVER_ROUTES.LOGIN, (req, res) => res.send('Authentication (provide {email, ticket})'));
+    const verifyPOST = (req, res) => {
+    };
 
-    app.post(SERVER_ROUTES.LOGIN, (req, res) => {
-        const {email, password} = req.body;
-        Logger.info(`Login request from ${email}.`);
-        if (!email || !password) {
-            res.json(INVALID_USER_RES)
-            res.end();
-            return;
-        } 
-        UserModel.findOne({email}, (err, user) => {
-            if (err) {
-                Logger.error(err);
-                res.json(UNKNOWN_ERROR_RES);
-                res.end();
-                return;
-            }
-            authUser(res, user, password);
-        })
-    });
-    
-    app.get(SERVER_ROUTES.CHANGE_PASSWORD, (req, res) => res.send('Reset password (provide {email, password})'));
-
-    app.post(SERVER_ROUTES.CHANGE_PASSWORD, (req, res) => {
+    const changePasswordPOST = (req, res) => {
         const {email, password} = req.body;
         Logger.info(`Changing password for ${email}`);
         if (!email || !password) {
@@ -195,36 +194,29 @@ const registerRouting = (app) => {
             res.end();
             return;
         } 
-        UserModel.findOne({email}, (err, user) => {
-            if (err) {
-                Logger.error(err);
-                res.json(UNKNOWN_ERROR_RES)
-                res.end();
-                return;
-            }
-            bcrypt.genSalt(SALT_ROUNDS, (err, salt) => {
-                if (err) {
-                    Logger.error(err);
-                    res.json(UNKNOWN_ERROR_RES)
-                    res.end();
-                    return;
-                }
-                bcrypt.hash(password, salt, (err, hash) => {
-                    if (err) {
-                        Logger.error(err);
-                        res.json(UNKNOWN_ERROR_RES)
-                        res.end();
-                        return;
-                    }
-                    Logger.info(`Changed password successfully for ${email}`);
-                    user.passwordHash = hash;
-                    user.save();
-                    res.json(new Response('redirect', {ack: PASSWORD_SET_RES, channel: CHANNELS.LOGIN_ROOM, dst: CLIENT_ROUTES.LOGIN}))
-                    res.end();
-                })
-            });
-        })
-    });
+        createPassword(email, password).then(() => {
+            res.json(PASSWORD_SET_RES);
+            res.end();
+        }).catch(err => {
+            Logger.error(err);
+            res.json(UNKNOWN_ERROR_RES);
+            res.end();
+        });
+    }
+
+    app.get('/', (req, res) => res.send('Hello World'));
+    app.get(SERVER_ROUTES.REGISTER, (req, res) => res.send('Create Account (provide {email, eventId}), \
+        if user found will create account and send password'))
+
+    app.post(SERVER_ROUTES.REGISTER, registerPOST);
+
+    app.get(SERVER_ROUTES.LOGIN, (req, res) => res.send('Authentication (provide {email, ticket})'));
+
+    app.post(SERVER_ROUTES.LOGIN, loginPOST);
+    
+    app.get(SERVER_ROUTES.CHANGE_PASSWORD, (req, res) => res.send('Reset password (provide {email, password})'));
+
+    app.post(SERVER_ROUTES.CHANGE_PASSWORD, changePasswordPOST);
 }
 
 export default registerRouting;

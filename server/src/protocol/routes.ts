@@ -12,4 +12,5 @@ export const SERVER_ROUTES = {
     CREATE_ACCOUNT: '/create-account',
     FORGOT_PASSWORD: '/forgot-password',
     CHANGE_PASSWORD: '/change-password',
+    REPLACE_ACCOUNTS: '/replace-accounts',
 };
