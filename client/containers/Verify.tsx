@@ -1,29 +1,39 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Login.module.css";
 import { createNotif } from "./Snackbar";
 
 
 const VerifyContainer = () => {
-  const {setNotif, user} = useSockets();
+  const {setNotif, user, verify, regenVerify} = useSockets();
+  const [isRegistering, setRegistering] = useState(false);
   const codeRef = useRef(null);
 
-  const handleVerify = () => {
+    const handleVerify = () => {
       const code = codeRef.current.value;
       if (!code) {
           setNotif(createNotif('error', 'Empty verification code', 'Enter the 6-digit verification code.'));
           return;
+    } else {
+        setRegistering(true);
+        verify({email: user.email, code}, () => setRegistering(false));
       }
-      // TODO: Verify action
+    }
+
+    const generateNewCode = () => {
+        setRegistering(true);
+        regenVerify({email: user.email}, () => setRegistering(false));
     }
 
     return <div className={styles.loginWrapper}>
         <div className={styles.loginDetails}>
             <h1>Verify</h1>
-            <p>The code has been sent to your email.</p>
+            The code has been sent to your email. 
+            <br/>Valid for: {30}
             <input placeholder="Verification Code" ref={codeRef}/>
             <div className={styles.buttons}>
-                <button className={styles.loginButton} onClick={handleVerify}>CHANGE</button>
+                <button className={styles.loginButton} onClick={handleVerify} disabled={isRegistering}>CHANGE</button>
+                <button className={styles.otherButton} onClick={generateNewCode}>Generate a new code</button>
             </div>
         </div>
     </div>;

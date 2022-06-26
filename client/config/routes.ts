@@ -9,6 +9,7 @@ export const SERVER_ROUTES = {
     LOGIN: '/auth',
     REGISTER: '/register',
     VERIFY: '/verify',
+    REGEN_VERIFY: '/regen-verify',
     CREATE_ACCOUNT: '/create-account',
     FORGOT_PASSWORD: '/forgot-password',
     CHANGE_PASSWORD: '/change-password',

@@ -7,11 +7,12 @@ import styles from "../styles/Login.module.css";
 import themes from '../styles/Themes.module.css'
 import { CLIENT_ROUTES } from "../config/routes";
 import { CHANNELS } from "../config/channels";
-import ChangePasswordContainer from "../containers/ChangePassword";
 import VerifyContainer from "../containers/Verify";
+import ReplaceAccountsContainer from "../containers/ReplaceAccounts";
+import CreateAccountContainer from "../containers/CreateAccount";
 
 const Register = () => {
-  const {channel, notif, setNotif, createAccount} = useSockets();
+  const {channel, notif, setNotif, register} = useSockets();
   const [isRegistering, setRegistering] = useState(false);
   const emailRef = useRef(null);
   const orderIdRef = useRef(null);
@@ -23,12 +24,13 @@ const Register = () => {
         setNotif(createNotif('error', "Missing email or order ID", "Please enter all details."));
     } else {
         setRegistering(true);
-        createAccount({email, orderId}, () => setRegistering(false));
+        register({email, orderId}, () => setRegistering(false));
     }
   }
 
   return <div className={classList(styles.loginWrapper, themes.default)}>
-    {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
+    {channel === CHANNELS.CREATE_ACCOUNT && <CreateAccountContainer />}
+    {channel === CHANNELS.REPLACE_ACCOUNTS && <ReplaceAccountsContainer />}
     {channel === CHANNELS.VERIFY && <VerifyContainer />}
     {(!channel || channel === CHANNELS.LOGIN_ROOM) && 
         <div className={styles.loginDetails}>

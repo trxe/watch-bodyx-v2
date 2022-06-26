@@ -41,22 +41,18 @@ export const sendConfirmation = async (receiver: string): Promise<boolean> => {
         Logger.error('Email server is not setup');
         return false;
     }
-    try {
-        let info = await transporter.sendMail({
-            from: `"${sender}" ${transporter.options.auth.user}`, // sender address
-            to: receiver, // list of receivers
-            subject: "BODYX: Successful registration", // Subject line
-            text: `Thanks for signing up for BODYX!`, // plain text body
-            html: `
-                <h1>You're almost ready to experience BODYX!</h1>
-                <p>Log into <a href="watch.bodyx.live">watch.bodyx.live</a> with your new account with username ${receiver}.</p>
-            `, // html body
-        });
-        Logger.info(`[${info.response}] Message sent: ${info.messageId}`);
-    } catch (err) {
-        Logger.error(`Error sending mail`);
-        return false;
-    }
+    let info = await transporter.sendMail({
+        from: `"${sender}" ${transporter.options.auth.user}`, // sender address
+        to: receiver, // list of receivers
+        subject: "BODYX: Successful registration", // Subject line
+        text: `Thanks for signing up for BODYX!`, // plain text body
+        html: `
+            <h1>You're almost ready to experience BODYX!</h1>
+            <p>Log into <a href="watch.bodyx.live">watch.bodyx.live</a> with your new account with username ${receiver}.</p>
+        `, // html body
+    });
+    Logger.info(`[${info.response}] Message sent: ${info.messageId}`);
+    return true;
 }
 
 export const sendVerificationCode = async (receiver: string, code: string): Promise<boolean> => {
@@ -64,20 +60,16 @@ export const sendVerificationCode = async (receiver: string, code: string): Prom
         Logger.error('Email server is not setup');
         return false;
     }
-    try {
-        let info = await transporter.sendMail({
-            from: `"${sender}" ${transporter.options.auth.user}`, // sender address
-            to: receiver, // list of receivers
-            subject: "Verification Code", // Subject line
-            text: `Your verification code is ${code}`, // plain text body
-            html: `
-                <h1>Your BODYX Verification Code</h1>
-                <p>Your verification code is ${code}</p>
-            `, // html body
-        });
-        Logger.info(`[${info.response}] Message sent: ${info.messageId}`);
-    } catch (err) {
-        Logger.error(`Error sending mail`);
-        return false;
-    }
+    let info = await transporter.sendMail({
+        from: `"${sender}" ${transporter.options.auth.user}`, // sender address
+        to: receiver, // list of receivers
+        subject: "Verification Code", // Subject line
+        text: `Your verification code is ${code}`, // plain text body
+        html: `
+            <h1>Your BODYX Verification Code</h1>
+            <p>Your verification code is ${code}</p>
+        `, // html body
+    });
+    Logger.info(`[${info.response}] Message sent: ${info.messageId}`);
+    return true;
 }

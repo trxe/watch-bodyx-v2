@@ -18,12 +18,12 @@ export interface User {
     isPresent: boolean,
     hasAttended: boolean,
     eventIds?: Array<string>,
+    copies?: number,
 }
 
 export interface Client {
     user: User,
     channelName: string,
-    // TODO: RENAME TO NAME or something less confusing
     roomName: string,
     socketId?: string
 }

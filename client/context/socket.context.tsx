@@ -38,6 +38,7 @@ interface ISocketContext {
         ticket: string,
         firstName: string,
         isAdmin: boolean,
+        copies?: number
     }
     setUser: Function,
     show?: {
@@ -56,6 +57,9 @@ interface ISocketContext {
     connectionState: 'connected' | 'reconnecting' | 'disconnected' | ''
     setConnectionState: Function,
     loginRequest: Function
+    register: Function
+    verify: Function
+    regenVerify: Function
     createAccount: Function
     changePassword: Function
     viewersTotal: number
@@ -81,6 +85,9 @@ const SocketContext = createContext<ISocketContext>({
     connectionState: '',
     setConnectionState: () => false,
     loginRequest: () => false,
+    register: () => false,
+    verify: () => false,
+    regenVerify: () => false,
     createAccount: () => false,
     changePassword: () => false,
     viewersPresent: 0,
@@ -129,7 +136,7 @@ const SocketsProvider = (props: any) => {
             });
     };
 
-    const createAccount = (request, onComplete) => {
+    const register = (request, onComplete) => {
         axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.REGISTER, request)
             .then(({data}) => {
                 const {responseType, body} = data;
@@ -138,13 +145,69 @@ const SocketsProvider = (props: any) => {
                     onComplete();
                 }
                 if (responseType !== 'redirect') return;
-                const {ack, channel, dst} = body;
+                const {ack, channel, dst, tempUser} = body;
                 if (ack) setNotif(ack);
                 if (channel) setChannel(channel);
-                if (dst) router.push(dst).then(onComplete)
+                if (tempUser) setUser(tempUser);
+                if (dst) router.push(dst).then(onComplete);
                 else onComplete();
             });
     };
+
+    const createAccount = (request, onComplete) => {
+        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.CREATE_ACCOUNT, request)
+            .then(({data}) => {
+                const {responseType, body} = data;
+                if (responseType === 'ack') {
+                    setNotif(body);
+                    onComplete();
+                }
+                if (responseType !== 'redirect') return;
+                console.log(' create account succ', body);
+                const {ack, channel, dst, tempUser} = body;
+                if (ack) setNotif(ack);
+                if (channel) setChannel(channel);
+                if (tempUser) setUser(tempUser);
+                if (dst) router.push(dst).then(onComplete);
+                else onComplete();
+            });
+    };
+
+    const verify = (request, onComplete) => {
+        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.VERIFY, request)
+            .then(({data}) => {
+                const {responseType, body} = data;
+                if (responseType === 'ack') {
+                    setNotif(body);
+                    onComplete();
+                }
+                if (responseType !== 'redirect') return;
+                const {ack, channel, dst, user} = body;
+                if (ack) setNotif(ack);
+                if (channel) setChannel(channel);
+                if (user) setUser(user);
+                if (dst) router.push(dst).then(onComplete);
+                else onComplete();
+            });
+    }
+
+    const regenVerify = (request, onComplete) => {
+        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.REGEN_VERIFY, request)
+            .then(({data}) => {
+                const {responseType, body} = data;
+                if (responseType === 'ack') {
+                    setNotif(body);
+                    onComplete();
+                }
+                if (responseType !== 'redirect') return;
+                const {ack, channel, dst, user} = body;
+                if (ack) setNotif(ack);
+                if (channel) setChannel(channel);
+                if (user) setUser(user);
+                if (dst) router.push(dst).then(onComplete);
+                else onComplete();
+            });
+    }
 
     const changePassword = (request) => {
         axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.CHANGE_PASSWORD, request)
@@ -338,6 +401,9 @@ const SocketsProvider = (props: any) => {
             selectedClient,
             setSelectedClient: selectClient,
             loginRequest,
+            register,
+            verify,
+            regenVerify,
             createAccount,
             changePassword,
             viewersPresent,
