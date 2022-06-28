@@ -33,11 +33,13 @@ const VerifyContainer = () => {
     return <div className={styles.loginWrapper}>
         <div className={styles.loginDetails}>
             <h1>Verify</h1>
-            The code has been sent to your email. 
+            <div style={{textAlign: 'center', padding: '1.5em'}}>
+                Please check your inbox and your spam folder for the verification code, which will be sent shortly.
+            </div>
             <input placeholder="Verification Code" ref={codeRef}/>
             <div className={styles.buttons}>
                 <button className={styles.loginButton} onClick={handleVerify} disabled={isRegistering}>CHANGE</button>
-                <button className={styles.otherButton} onClick={generateNewCode}>Generate a new code</button>
+                <button className={styles.otherButton} onClick={generateNewCode}>Timeout? Generate a new code</button>
             </div>
         </div>
     </div>;

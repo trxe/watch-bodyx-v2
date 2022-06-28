@@ -19,7 +19,7 @@ const UNKNOWN_ERROR_RES = new Response('ack', new Ack('error', 'Unknown error', 
 const ACCOUNT_EXIST_RES = new Response('ack', new Ack('warning', 'Account already exists', 'Please log in with password').getJSON());
 const INVALID_CREDS_RES = new Response('ack', new Ack('warning', 'Invalid username or password', 'Please try again').getJSON());
 const PASSWORD_SET_RES = new Response('redirect', {ack: new Ack('success', 'Password set', 'Log in again with your new password.').getJSON(), dst: CLIENT_ROUTES.LOGIN, channel: CHANNELS.LOGIN_ROOM});
-const CREATE_ACCT_SUCCESS_RES = new Response('redirect', {ack: new Ack('success', 'Verification success', 'Log in again to proceed.').getJSON(), dst: CLIENT_ROUTES.LOGIN, channel: CHANNELS.LOGIN_ROOM});
+const CREATE_ACCT_SUCCESS_RES = new Response('redirect', {ack: new Ack('success', 'Verification success', 'Log in again to proceed.').getJSON(), user: null , dst: CLIENT_ROUTES.LOGIN, channel: CHANNELS.LOGIN_ROOM});
 const TICKET_REGISTERED_RES = new Response('redirect', {ack: new Ack('success', 'Your ticket has been registered!', 'Check your email for further instructions.').getJSON(), dst: CLIENT_ROUTES.LOGIN});
 const VERIFY_REQUIRED_RES = new Response('redirect', {ack: new Ack('warning', 'Please enter the verification code sent to your email.').getJSON(), channel: CHANNELS.VERIFY});
 
@@ -204,7 +204,7 @@ const registerRouting = (app) => {
                 } else if (isAccountCreated && isDups) {
                     res.json(new Response('redirect', {
                         channel: CHANNELS.REPLACE_ACCOUNTS,
-                        tempUser: {...user, replacementTickets},
+                        tempUser: {...user._doc, replacementTickets},
                     }));
                 } else if (!isAccountCreated) {
                     res.json(new Response('redirect', {

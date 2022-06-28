@@ -109,7 +109,6 @@ const SocketsProvider = (props: any) => {
     const [connectionState, setConnectionState] = useState('disconnected');
     const [selectedClient, setSelectedClient] = useState(null);
     const {setChatRooms} = useChatRooms();
-    const router = useRouter();
 
     const [clientsMap, setClientsMap] = useState(new Map<string, Client>());
     const [clientsList, setClientsList] = useState(new Array<Client>());
@@ -184,7 +183,8 @@ const SocketsProvider = (props: any) => {
                 if (responseType !== 'redirect') return;
                 const {ack, channel, dst, user} = body;
                 if (ack) setNotif(ack);
-                if (user) setUser(user);
+                // if user exists, set user, otherwise remove
+                setUser(user);
                 onComplete(dst);
                 if (channel) setChannel(channel);
             });
@@ -215,7 +215,6 @@ const SocketsProvider = (props: any) => {
                 if (responseType !== 'redirect') return;
                 const {ack, channel, dst} = body;
                 if (ack) setNotif(ack);
-                console.log('pwd change dst', dst, channel, body);
                 onComplete(dst);
                 if (channel) setChannel(channel);
             });

@@ -24,9 +24,10 @@ const ReplaceAccountsContainer = () => {
     }
 
     const handleCreateAccount = () => {
+        console.log(user);
         const newEventId = user.eventIds[user.eventIds.length - 1];
         setRegistering(true);
-        createAccount({replacements, newEventId}, (dst) => {
+        createAccount({user, replacements, newEventId}, (dst) => {
             setRegistering(false)
             if (dst) router.push(dst);
         });
