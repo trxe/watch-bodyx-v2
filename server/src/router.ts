@@ -28,6 +28,8 @@ const REPLACE_CLIENT_ACK = new Ack('warning', 'Multiple instances detected', 'Yo
 
 const SALT_ROUNDS = 10;
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 const hashPassword = async (password: string) => {
     const salt = await bcrypt.genSalt(SALT_ROUNDS);
     const hash = await bcrypt.hash(password, salt);
@@ -75,7 +77,6 @@ const createOrModifyReplacements = async (emails: Array<string>, tickets:Array<s
         modifiedUsersEmails.add(user.email)
         Logger.info('User updated with event', user);
     })
-    console.log('emails', emails, 'tickets', tickets, 'newEventId', newEventId);
     emails.forEach((email, idx) => {
         if (modifiedUsersEmails.has(email)) return;
         UserModel.create({
@@ -223,6 +224,19 @@ const registerRouting = (app) => {
 
     const createAccountPOST = (req, res) => {
         const {user, password, replacements, newEventId} = req.body;
+        const emails = replacements.map(r => r.email);
+        for (let i = 0; i < emails.length; i++) {
+            const email = emails[i].trim();
+            if (email === user.email) {
+                res.json(new Response('ack', new Ack('error', 'Make sure none of the invited emails are the same as your own.')));
+                res.end();
+                return;
+            } else if (!EMAIL_REGEX.test(email)) {
+                res.json(new Response('ack', new Ack('error', `Invalid email ${email} detected.`)));
+                res.end();
+                return;
+            }
+        }
         const action = (res) => {
             if (user && password && user.email) {
                 Logger.info(`Setting password for ${user.email}`);
@@ -230,8 +244,8 @@ const registerRouting = (app) => {
                     user.firstName, user.eventIds, password);
             } 
             if (replacements && replacements.length > 0 && newEventId)  {
-                const tickets = replacements.map(r => r.ticket);
-                const emails = replacements.map(r => r.email);
+                const tickets = replacements.map(r => r.ticket.trim());
+                const emails = replacements.map(r => r.email.trim());
                 createOrModifyReplacements(emails, tickets, newEventId);
             }
             res.json(CREATE_ACCT_SUCCESS_RES);
@@ -294,7 +308,7 @@ const registerRouting = (app) => {
                 return;
             } 
             Logger.info(`Changing password for ${email}`);
-            createPasswordForUser(email, password).then(() => {
+            createPasswordForUser(email.trim(), password.trim()).then(() => {
                 res.json(PASSWORD_SET_RES);
                 res.end();
             }).catch(err => {

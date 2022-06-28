@@ -32,6 +32,7 @@ const CreateAccountContainer = () => {
         let newReps = [...replacements];
         newReps[idx] = {...newReps[idx], email};
         setReplacements(newReps);
+        console.log(replacements)
     }
 
     const handlePasswordSet = event => {
@@ -71,7 +72,7 @@ const CreateAccountContainer = () => {
                 <h1>Too many tickets detected</h1>
                 <p>Please email <a href="mailto:ticketing@bodyx.net">ticketing@bodyx.net</a> to create accounts.</p>
                 <div className={styles.buttons}>
-                    <button className={styles.other} onClick={() => router.push(CLIENT_ROUTES.LOGIN)}>Return to login</button>
+                    <button className={styles.otherButton} onClick={() => router.push(CLIENT_ROUTES.LOGIN)}>Return to login</button>
                 </div>
             </div>
         </div>;
@@ -84,21 +85,21 @@ const CreateAccountContainer = () => {
                 <div className={styles.buttons}>
                     <button className={styles.loginButton} 
                         onClick={replacements.length == 0 ? handleCreateAccount : nextPage} 
-                        disabled={isRegistering}>CHANGE</button>
+                        disabled={isRegistering}>{replacements.length == 0 ? 'CREATE': 'NEXT'}</button>
                 </div>
             </div>
         </div>;
     } else if (page == PAGES.REPLACE_ACCTS) {
-        console.log(replacements)
         return <div className={styles.loginWrapper}>
             <div className={styles.loginDetails}>
                 <h1>Invite attendees</h1>
+                <p>You have 3 accounts under your email in your order. Send invites to {replacements.length} other people!</p>
                 {replacements.map((replacement, idx) => {
                     return <input key={replacement.ticket} placeholder={`Email ${idx}`}
                         onChange={event => handleEditEmails(idx, event.target.value)}/>
                 })}
                 <div className={styles.buttons}>
-                    <button className={styles.loginButton} onClick={handleCreateAccount} disabled={isRegistering}>CHANGE</button>
+                    <button className={styles.loginButton} onClick={handleCreateAccount} disabled={isRegistering}>SEND</button>
                 </div>
             </div>
         </div>;
