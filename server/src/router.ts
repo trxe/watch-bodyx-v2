@@ -329,10 +329,10 @@ const registerRouting = (app) => {
     }
 
     app.get('/', (req, res) => res.send('Hello World'));
-    app.get(SERVER_ROUTES.REGISTER, (req, res) => res.send('Create Account (provide {email, eventId}), \
+    app.get(SERVER_ROUTES.REGISTER_TICKET, (req, res) => res.send('Create Account (provide {email, eventId}), \
         if user found will create account and send password'))
 
-    app.post(SERVER_ROUTES.REGISTER, registerPOST);
+    app.post(SERVER_ROUTES.REGISTER_TICKET, registerPOST);
 
     app.get(SERVER_ROUTES.LOGIN, (req, res) => res.send('Authentication (provide {email, ticket})'));
 

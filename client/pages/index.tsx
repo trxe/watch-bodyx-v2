@@ -21,7 +21,7 @@ export default function Home() {
     // resetting any hash fragments from poll
     history.pushState('', document.title, window.location.pathname);
     if (!user && connectionState === 'disconnected') router.push('/login');
-  }, [user, connectionState])
+  }, [router, user, connectionState])
 
   return (
     <div className={themes.default}>

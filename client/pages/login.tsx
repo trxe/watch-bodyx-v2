@@ -42,10 +42,10 @@ const Login = () => {
             <input placeholder='Password' ref={passwordRef} type='password'/>
             <div className={styles.buttons}>
                 <button className={styles.loginButton} onClick={handleSetTicket} disabled={isLoggingIn}>LOGIN</button>
-                <Link href={CLIENT_ROUTES.REGISTER} shallow>
+                <Link href={CLIENT_ROUTES.REGISTER} passHref shallow>
                     <button className={styles.otherButton}>Just purchased a ticket?</button>
                 </Link>
-                <Link href={CLIENT_ROUTES.FORGOT_PASSWORD} shallow>
+                <Link href={CLIENT_ROUTES.FORGOT_PASSWORD} passHref shallow>
                     <button className={styles.otherButton}>Forgot password?</button>
                 </Link>
             </div>

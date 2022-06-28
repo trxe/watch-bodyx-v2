@@ -44,7 +44,7 @@ const Register = () => {
             <input placeholder='Order ID' ref={orderIdRef}/>
             <div className={styles.buttons}>
                 <button className={styles.loginButton} onClick={handleCreateAcct} disabled={isRegistering}>REQUEST</button>
-                <Link href={CLIENT_ROUTES.LOGIN} shallow>
+                <Link href={CLIENT_ROUTES.LOGIN} passHref shallow>
                     <button className={styles.otherButton}>Already have an account?</button>
                 </Link>
             </div>
