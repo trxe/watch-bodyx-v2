@@ -32,7 +32,6 @@ const CreateAccountContainer = () => {
         let newReps = [...replacements];
         newReps[idx] = {...newReps[idx], email};
         setReplacements(newReps);
-        console.log(replacements)
     }
 
     const handlePasswordSet = event => {
@@ -61,7 +60,6 @@ const CreateAccountContainer = () => {
         setRegistering(true);
         createAccount({user, password, replacements, newEventId}, (dst) => {
             setRegistering(false)
-            console.log('create account dst', dst);
             if (dst) router.push(dst);
         });
     }
@@ -70,7 +68,9 @@ const CreateAccountContainer = () => {
         return <div className={styles.loginWrapper}>
             <div className={styles.loginDetails}>
                 <h1>Too many tickets detected</h1>
-                <p>Please email <a href="mailto:ticketing@bodyx.net">ticketing@bodyx.net</a> to create accounts.</p>
+                <div style={{textAlign: 'center', padding: '1.5em'}}>
+                    Please email <a href="mailto:ticketing@bodyx.net">ticketing@bodyx.net</a> to create accounts.
+                </div>
                 <div className={styles.buttons}>
                     <button className={styles.otherButton} onClick={() => router.push(CLIENT_ROUTES.LOGIN)}>Return to login</button>
                 </div>
@@ -93,7 +93,9 @@ const CreateAccountContainer = () => {
         return <div className={styles.loginWrapper}>
             <div className={styles.loginDetails}>
                 <h1>Invite attendees</h1>
-                <p>You have 3 accounts under your email in your order. Send invites to {replacements.length} other people!</p>
+                <div style={{textAlign: 'center', padding: '1.5em'}}>
+                    You have {replacements.length + 1} accounts under your email in your order. Send invites to {replacements.length} other people!
+                </div>
                 {replacements.map((replacement, idx) => {
                     return <input key={replacement.ticket} placeholder={`Email ${idx}`}
                         onChange={event => handleEditEmails(idx, event.target.value)}/>
