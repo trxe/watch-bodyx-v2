@@ -140,7 +140,7 @@ const SocketsProvider = (props: any) => {
     };
 
     const register = (request, onComplete) => {
-        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.REGISTER, request)
+        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.REGISTER_TICKET, request)
             .then(({data}) => {
                 const {responseType, body} = data;
                 if (responseType === 'ack') {
