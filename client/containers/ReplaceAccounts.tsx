@@ -1,18 +1,35 @@
-import { useEffect, useRef } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useRef, useState } from "react";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Login.module.css";
 
 
 const ReplaceAccountsContainer = () => {
-    const {setNotif, user} = useSockets();
-    let refs = [];
+  const {user, createAccount} = useSockets();
+  const [isRegistering, setRegistering] = useState(false);
+  const router = useRouter();
+  let refs = [];
 
     useEffect(() => {
-        if (!user.copies) refs = [];
-        else refs = Array[user.copies].map(() => useRef(null));
+        if (!user || !user.replacementTickets) refs = [];
+        else refs = user.replacementTickets.map(() => useRef(null));
     }, [user])
 
-    const handleReplaceAccounts = () => {
+
+    const handleCreateAccounts = () => {
+        const newEventId = user.eventIds[user.eventIds.length];
+        const replacements = refs.map((ref, idx) => {
+            return {
+                email: ref.current.value, 
+                ticket: user.replacementTickets[idx],
+            };
+        });
+        setRegistering(true);
+        createAccount({replacements, newEventId}, (dst) => {
+            setRegistering(false)
+            console.log('create account dst', dst);
+            if (dst) router.push(dst);
+        });
     }
 
     return <div className={styles.loginWrapper}>
@@ -22,7 +39,7 @@ const ReplaceAccountsContainer = () => {
                 <input key={idx} placeholder='Email' ref={ref}  type="password"/>
             })}
             <div className={styles.buttons}>
-                <button className={styles.loginButton} onClick={handleReplaceAccounts}>CHANGE</button>
+                <button className={styles.loginButton} onClick={handleCreateAccounts} disabled={isRegistering}>CHANGE</button>
             </div>
         </div>
     </div>;

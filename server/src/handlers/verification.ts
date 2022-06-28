@@ -42,13 +42,13 @@ const regenerateVerification = (email: string): string => {
  * @param email 
  * @param givenCode 
  */
-const verifyCode = (email: string, givenCode: string) => {
+const verifyCode = (email: string, givenCode: string, res) => {
     if (!emailVerify.has(email)) throw `No pending action for ${email}`;
     const {action, timestamp, code} = emailVerify.get(email);
     if (code !== givenCode) throw `Invalid/Incorrect verification code.`
     if (Date.now() - timestamp > VERIFY_TIMEOUT) 
         throw `Verification code expired. Generate a new one.`
-    action();
+    action(res);
     emailVerify.delete(email);
 }
 

@@ -55,6 +55,31 @@ export const sendConfirmation = async (receiver: string): Promise<boolean> => {
     return true;
 }
 
+export const sendAuthDetailsTo = async (receiver: string, password: string): Promise<boolean> => {
+    if (!transporter) {
+        Logger.error('Email server is not setup');
+        return false;
+    }
+    try {
+        let info = await transporter.sendMail({
+            from: `"${sender}" ${transporter.options.auth.user}`, // sender address
+            to: receiver, // list of receivers
+            subject: "Your BODYX Authentication Details", // Subject line
+            text: `Username: ${receiver}, Password: ${password}`, // plain text body
+            html: `
+                <h1>You've been invited to the BODYX experience!</h1>
+                <p>Log into <a href="watch.bodyx.live">watch.bodyx.live</a> with the following credentials. You will be prompted to change your password.</p>
+                <p><b>Username</b>: ${receiver}</p>
+                <p><b>Password</b>: ${password}</p>
+            `, // html body
+        });
+        Logger.info(`[${info.response}] Message sent: ${info.messageId}`);
+    } catch (err) {
+        Logger.error(`Error sending mail`);
+        return false;
+    }
+}
+
 export const sendVerificationCode = async (receiver: string, code: string): Promise<boolean> => {
     if (!transporter) {
         Logger.error('Email server is not setup');

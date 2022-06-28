@@ -8,14 +8,16 @@ import themes from '../styles/Themes.module.css'
 import { CLIENT_ROUTES } from "../config/routes";
 import { CHANNELS } from "../config/channels";
 import VerifyContainer from "../containers/Verify";
-import ReplaceAccountsContainer from "../containers/ReplaceAccounts";
 import CreateAccountContainer from "../containers/CreateAccount";
+import { useRouter } from "next/router";
+import ReplaceAccountsContainer from "../containers/ReplaceAccounts";
 
 const Register = () => {
   const {channel, notif, setNotif, register} = useSockets();
   const [isRegistering, setRegistering] = useState(false);
   const emailRef = useRef(null);
   const orderIdRef = useRef(null);
+  const router = useRouter();
 
   const handleCreateAcct = () => {
     const email = emailRef.current.value;
@@ -24,7 +26,10 @@ const Register = () => {
         setNotif(createNotif('error', "Missing email or order ID", "Please enter all details."));
     } else {
         setRegistering(true);
-        register({email, orderId}, () => setRegistering(false));
+        register({email, orderId}, (dst) => {
+            setRegistering(false);
+            if (dst) router.push(dst);
+        });
     }
   }
 

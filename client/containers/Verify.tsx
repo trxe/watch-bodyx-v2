@@ -1,3 +1,4 @@
+import { useRouter } from "next/router";
 import { useRef, useState } from "react";
 import { useSockets } from "../context/socket.context";
 import styles from "../styles/Login.module.css";
@@ -8,6 +9,7 @@ const VerifyContainer = () => {
   const {setNotif, user, verify, regenVerify} = useSockets();
   const [isRegistering, setRegistering] = useState(false);
   const codeRef = useRef(null);
+  const router = useRouter();
 
     const handleVerify = () => {
       const code = codeRef.current.value;
@@ -16,7 +18,10 @@ const VerifyContainer = () => {
           return;
     } else {
         setRegistering(true);
-        verify({email: user.email, code}, () => setRegistering(false));
+        verify({email: user.email, code}, (dst) => {
+            setRegistering(false);
+            if (dst) router.push(dst);
+        });
       }
     }
 
@@ -29,7 +34,6 @@ const VerifyContainer = () => {
         <div className={styles.loginDetails}>
             <h1>Verify</h1>
             The code has been sent to your email. 
-            <br/>Valid for: {30}
             <input placeholder="Verification Code" ref={codeRef}/>
             <div className={styles.buttons}>
                 <button className={styles.loginButton} onClick={handleVerify} disabled={isRegistering}>CHANGE</button>

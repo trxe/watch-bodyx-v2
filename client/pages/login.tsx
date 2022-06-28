@@ -6,14 +6,17 @@ import themes from '../styles/Themes.module.css'
 import styles from "../styles/Login.module.css";
 import { classList } from "../utils/utils";
 import { CLIENT_ROUTES } from "../config/routes";
+import { useRouter } from "next/router";
 import { CHANNELS } from "../config/channels";
 import ChangePasswordContainer from "../containers/ChangePassword";
+import VerifyContainer from "../containers/Verify";
 
 const Login = () => {
   const {channel, notif, setNotif, loginRequest} = useSockets();
   const [isLoggingIn, setLoggingIn] = useState(false);
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
+  const router = useRouter();
 
   const handleSetTicket = () => {
     const email = emailRef.current.value;
@@ -21,15 +24,18 @@ const Login = () => {
     if (!email || !password || email.length == 0 || password.length == 0) {
       setNotif(createNotif('error', "Missing email or password", "Please enter all details."));
     } else {
-      console.log('loggingin..');
       setLoggingIn(true);
-      loginRequest({email, password}, () => setLoggingIn(false));
+      loginRequest({email, password}, (dst) => {
+        setLoggingIn(false);
+        if (dst) router.push(dst);
+      });
     }
   }
 
   return <div className={classList(styles.loginWrapper, themes.default)}>
     {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
-    {channel !== CHANNELS.CHANGE_PASSWORD && 
+    {channel === CHANNELS.VERIFY && <VerifyContainer />}
+    {(!channel || channel === CHANNELS.LOGIN_ROOM) && 
         <div className={styles.loginDetails}>
             <h1>BODYX</h1>
             <input placeholder='Email' ref={emailRef}/>
