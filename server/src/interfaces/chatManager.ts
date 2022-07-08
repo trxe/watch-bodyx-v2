@@ -64,8 +64,9 @@ export class ChatManager {
     constructor(show: Show) {
         this.show = show;
         this.chatRooms = new Map<string, ChatRoom>();
-        show.rooms.forEach(room => this.chatRooms.set(room.roomName, new ChatRoom(room.roomName, room)));
         this.isAudienceChatEnabled = false;
+        if (!show.rooms) return;
+        show.rooms.forEach(room => this.chatRooms.set(room.roomName, new ChatRoom(room.roomName, room)));
     }
 
     public clearRooms(roomName?: string) {

@@ -36,6 +36,7 @@ const init = async () => {
     }
 };
 
+
 /**
  * Gets a client by its socket.id 
  * @param clientSocketId 
@@ -48,6 +49,7 @@ const removeClientBySocketId = (clientSocketId: string): string => {
     socketTicket.delete(clientSocketId);
     return ticket;
 }
+
 /**
  * Sets a client with ticket and socketId to the list of connected clients.
  * @param clientSocketId 
@@ -149,7 +151,7 @@ async function checkUsers() {
     const users = await UserModel.find({});
     users.forEach(user => {
         console.log(`[${user.isAdmin ? 'ADMIN' : 'VIEWER'}] ${user.name}: (email: ${user.email})
-        (${user.isAdmin ? '' : `event: ${user.eventId}, ` }ticket: ${user.ticket})\n`);
+        (${user.isAdmin ? '' : `event: ${user.eventIds}, ` }ticket: ${user.ticket})\n`);
     });
 }
 

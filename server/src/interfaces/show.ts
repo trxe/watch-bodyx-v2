@@ -4,7 +4,7 @@ import { RoomModel } from "../schemas/roomSchema";
 import { ShowModel } from "../schemas/showSchema";
 import { UserModel } from "../schemas/userSchema";
 import Logger from "../utils/logger";
-import { getEventBriteURL } from "../utils/utils";
+import { getEventAttendeesURL } from "../utils/utils";
 import { Room } from "./room";
 import { User } from "./users";
 
@@ -150,7 +150,7 @@ export class Show {
         const attendeeMap = new Map<string, User>();
         if (!this.eventId) return;
         if (this.eventId.length == 0) return;
-        await UserModel.find({eventId: this.eventId}, (err, users) => {
+        await UserModel.find({"events.eventId": this.eventId}, (err, users) => {
             if (err) Logger.error(err);
             if (!users && users.length == 0) return;
             users.map(u => {
@@ -163,7 +163,7 @@ export class Show {
             });
         }).clone();
         try {
-            const res = await axios.get(getEventBriteURL(this.eventId), 
+            const res = await axios.get(getEventAttendeesURL(this.eventId), 
                 {headers: {
                     'Authorization': `Bearer ${process.env.EVENTBRITE_API_KEY}`,
                     'Content-Type': 'application/json',
@@ -198,6 +198,6 @@ export class Show {
     }
 
     generateTempAttendee(email, name, firstName): User {
-        return { email, name, firstName, ticket: '', isAdmin: false, isPresent: false, hasAttended: false };
+        return { email, name, firstName, ticket: '', isAdmin: false, isPresent: false, hasAttended: false , eventIds: [this.eventId]};
     }
 }

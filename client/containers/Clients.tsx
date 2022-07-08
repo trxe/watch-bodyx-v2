@@ -17,13 +17,13 @@ export interface User {
     isAdmin: boolean
     isPresent: boolean,
     hasAttended: boolean,
-    eventId?: string,
+    eventIds?: Array<string>,
+    copies?: number,
 }
 
 export interface Client {
     user: User,
     channelName: string,
-    // TODO: RENAME TO NAME or something less confusing
     roomName: string,
     socketId?: string
 }

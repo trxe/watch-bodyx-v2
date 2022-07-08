@@ -5,7 +5,7 @@ import { UserModel } from "./schemas/userSchema";
 
 dotenv.config();
 
-export const mongoInit = () => {
+export const mongoInit = async () => {
     mongoose.connect(process.env.DB_URL, {
         dbName: process.env.DB_NAME,
     })
