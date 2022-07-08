@@ -15,10 +15,10 @@ const ForgotPassword = () => {
             <input placeholder='Email' ref={emailRef}/>
             <div className={styles.buttons}>
                 <button className={styles.loginButton}>REQUEST</button>
-                <Link href={CLIENT_ROUTES.REGISTER} shallow>
+                <Link href={CLIENT_ROUTES.REGISTER} passHref shallow>
                     <button className={styles.otherButton}>Just purchased a ticket?</button>
                 </Link>
-                <Link href={CLIENT_ROUTES.LOGIN} shallow>
+                <Link href={CLIENT_ROUTES.LOGIN} passHref shallow>
                     <button className={styles.otherButton}>Back</button>
                 </Link>
             </div>

@@ -20,9 +20,8 @@ export default function Home() {
   useEffect(() => {
     // resetting any hash fragments from poll
     history.pushState('', document.title, window.location.pathname);
-    console.log(user, connectionState)
     if (!user && connectionState === 'disconnected') router.push('/login');
-  }, [])
+  }, [router, user, connectionState])
 
   return (
     <div className={themes.default}>
@@ -33,7 +32,6 @@ export default function Home() {
       {channel === CHANNELS.WAITING_ROOM && <WaitingRoomContainer/>}
       {channel === CHANNELS.MAIN_ROOM && <AudienceViewContainer />}
       {channel === CHANNELS.DISCONNECTED && <DisconnectedContainer />}
-      {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
       {channel === CHANNELS.NON_ATTENDEES_ROOM && <NonAttendeesContainer />}
       {notif != null &&
         <Snackbar timer={4000} 

@@ -7,14 +7,18 @@ import styles from "../styles/Login.module.css";
 import themes from '../styles/Themes.module.css'
 import { CLIENT_ROUTES } from "../config/routes";
 import { CHANNELS } from "../config/channels";
-import ChangePasswordContainer from "../containers/ChangePassword";
 import VerifyContainer from "../containers/Verify";
+import CreateAccountContainer from "../containers/CreateAccount";
+import { useRouter } from "next/router";
+import ReplaceAccountsContainer from "../containers/ReplaceAccounts";
+import ChangePasswordContainer from "../containers/ChangePassword";
 
 const Register = () => {
-  const {channel, notif, setNotif, createAccount} = useSockets();
+  const {channel, notif, setNotif, register} = useSockets();
   const [isRegistering, setRegistering] = useState(false);
   const emailRef = useRef(null);
   const orderIdRef = useRef(null);
+  const router = useRouter();
 
   const handleCreateAcct = () => {
     const email = emailRef.current.value;
@@ -23,11 +27,16 @@ const Register = () => {
         setNotif(createNotif('error', "Missing email or order ID", "Please enter all details."));
     } else {
         setRegistering(true);
-        createAccount({email, orderId}, () => setRegistering(false));
+        register({email, orderId}, (dst) => {
+            setRegistering(false);
+            if (dst) router.push(dst);
+        });
     }
   }
 
   return <div className={classList(styles.loginWrapper, themes.default)}>
+    {channel === CHANNELS.CREATE_ACCOUNT && <CreateAccountContainer />}
+    {channel === CHANNELS.REPLACE_ACCOUNTS && <ReplaceAccountsContainer />}
     {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
     {channel === CHANNELS.VERIFY && <VerifyContainer />}
     {(!channel || channel === CHANNELS.LOGIN_ROOM) && 
@@ -37,7 +46,7 @@ const Register = () => {
             <input placeholder='Order ID' ref={orderIdRef}/>
             <div className={styles.buttons}>
                 <button className={styles.loginButton} onClick={handleCreateAcct} disabled={isRegistering}>REQUEST</button>
-                <Link href={CLIENT_ROUTES.LOGIN} shallow>
+                <Link href={CLIENT_ROUTES.LOGIN} passHref shallow>
                     <button className={styles.otherButton}>Already have an account?</button>
                 </Link>
             </div>
