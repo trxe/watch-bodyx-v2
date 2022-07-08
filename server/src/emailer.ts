@@ -95,6 +95,6 @@ export const sendVerificationCode = async (receiver: string, code: string): Prom
             <p>Your verification code is ${code}</p>
         `, // html body
     });
-    Logger.info(`[${info.response}] Message sent: ${info.messageId}`);
+    Logger.info(`[${info.response}] Message sent (code ${code}): ${info.messageId}`);
     return true;
 }

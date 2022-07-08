@@ -11,6 +11,7 @@ import VerifyContainer from "../containers/Verify";
 import CreateAccountContainer from "../containers/CreateAccount";
 import { useRouter } from "next/router";
 import ReplaceAccountsContainer from "../containers/ReplaceAccounts";
+import ChangePasswordContainer from "../containers/ChangePassword";
 
 const Register = () => {
   const {channel, notif, setNotif, register} = useSockets();
@@ -36,6 +37,7 @@ const Register = () => {
   return <div className={classList(styles.loginWrapper, themes.default)}>
     {channel === CHANNELS.CREATE_ACCOUNT && <CreateAccountContainer />}
     {channel === CHANNELS.REPLACE_ACCOUNTS && <ReplaceAccountsContainer />}
+    {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
     {channel === CHANNELS.VERIFY && <VerifyContainer />}
     {(!channel || channel === CHANNELS.LOGIN_ROOM) && 
         <div className={styles.loginDetails}>

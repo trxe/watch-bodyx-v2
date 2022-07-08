@@ -184,13 +184,19 @@ const registerRouting = (app) => {
                 // if account exists already
                 if (user) {
                     isAccountCreated = true;
+                    const hasPassword = user.passwordHash != null;
+                    console.log('hasPassword', hasPassword, user.passwordHash)
                     const hasEventId = user.eventIds.find(id => id === eventId) != null;
-                    if (hasEventId) {
-                        res.json(ACCOUNT_EXIST_RES);
+                    if (!hasEventId) {
+                        user.eventIds = [...user.eventIds, eventId];
+                    }
+                    if (!hasPassword) {
+                        user.save();
+                        tempUser = {email: user.email, ticket: user.ticket};
+                        Logger.warn(`Require ${user.name} to set new password.`);
+                        res.json(new Response('redirect', {ack: NEW_PASSWORD_ACK, channel: CHANNELS.CHANGE_PASSWORD, tempUser}))
                         res.end();
                         return;
-                    } else {
-                        user.eventIds = [...user.eventIds, eventId];
                     }
                 // account doesn't exist yet
                 } else {
