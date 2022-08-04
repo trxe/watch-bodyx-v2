@@ -32,7 +32,7 @@ const Login = () => {
     }
   }
 
-  return <div className={classList(styles.loginWrapper, themes.default)}>
+  return <div className={classList(styles.loginWrapper, themes.bodyx)}>
     {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
     {channel === CHANNELS.VERIFY && <VerifyContainer />}
     {(!channel || channel === CHANNELS.LOGIN_ROOM) && 

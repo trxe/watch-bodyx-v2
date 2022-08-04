@@ -9,7 +9,7 @@ import { CLIENT_ROUTES } from "../config/routes";
 const ForgotPassword = () => {
   const emailRef = useRef(null);
 
-    return <div className={classList(styles.loginWrapper, themes.default)}>
+    return <div className={classList(styles.loginWrapper, themes.bodyx)}>
         <div className={styles.loginDetails}>
             <h1>Forgot password?</h1>
             <input placeholder='Email' ref={emailRef}/>

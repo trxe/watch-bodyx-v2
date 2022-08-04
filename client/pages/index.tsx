@@ -24,7 +24,7 @@ export default function Home() {
   }, [router, user, connectionState])
 
   return (
-    <div className={themes.default}>
+    <div className={themes.bodyx}>
       <Head>
         <title>BODYX</title>
       </Head>

@@ -34,7 +34,7 @@ const Register = () => {
     }
   }
 
-  return <div className={classList(styles.loginWrapper, themes.default)}>
+  return <div className={classList(styles.loginWrapper, themes.bodyx)}>
     {channel === CHANNELS.CREATE_ACCOUNT && <CreateAccountContainer />}
     {channel === CHANNELS.REPLACE_ACCOUNTS && <ReplaceAccountsContainer />}
     {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
