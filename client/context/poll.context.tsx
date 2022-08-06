@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import EVENTS from "../config/events";
+import { LOCATIONS } from "../config/global_settings";
 import { useSockets } from "./socket.context";
 
 interface Option {
@@ -148,7 +149,7 @@ const PollProvider = (props: any) => {
                 setActiveStatus(isActive);
                 if (isResults != null) poll.isResults = isResults;
                 setIsResults(isResults);
-                if (isActive || isResults) location.hash = '#poll';
+                if (isActive || isResults) location.hash = LOCATIONS.POLL;
                 // console.log('poll', poll);
                 setPoll(poll);
             });
