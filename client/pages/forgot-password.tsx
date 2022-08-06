@@ -4,12 +4,13 @@ import styles from "../styles/Login.module.css";
 import themes from '../styles/Themes.module.css'
 import Link from "next/link";
 import { CLIENT_ROUTES } from "../config/routes";
+import { themeName } from "../config/global_settings";
 
 
 const ForgotPassword = () => {
   const emailRef = useRef(null);
 
-    return <div className={classList(styles.loginWrapper, themes.bodyx)}>
+    return <div className={classList(styles.loginWrapper, themeName)}>
         <div className={styles.loginDetails}>
             <h1>Forgot password?</h1>
             <input placeholder='Email' ref={emailRef}/>

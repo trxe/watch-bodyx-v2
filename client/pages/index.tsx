@@ -12,6 +12,7 @@ import ChangePasswordContainer from '../containers/ChangePassword'
 import NonAttendeesContainer from '../containers/NonAttendees'
 import AudienceViewContainer from '../containers/AudienceView'
 import { useRouter } from 'next/router'
+import { showName, themeName } from '../config/global_settings'
 
 export default function Home() {
   const {channel, user, notif, connectionState} = useSockets();
@@ -24,9 +25,9 @@ export default function Home() {
   }, [router, user, connectionState])
 
   return (
-    <div className={themes.bodyx}>
+    <div className={themeName}>
       <Head>
-        <title>BODYX</title>
+        <title>{showName}</title>
       </Head>
       {channel === CHANNELS.SM_ROOM && <DashboardContainer/>}
       {channel === CHANNELS.WAITING_ROOM && <WaitingRoomContainer/>}

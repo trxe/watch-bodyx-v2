@@ -10,6 +10,7 @@ import { useRouter } from "next/router";
 import { CHANNELS } from "../config/channels";
 import ChangePasswordContainer from "../containers/ChangePassword";
 import VerifyContainer from "../containers/Verify";
+import { themeName } from "../config/global_settings";
 
 const Login = () => {
   const {channel, notif, setNotif, loginRequest} = useSockets();
@@ -32,7 +33,7 @@ const Login = () => {
     }
   }
 
-  return <div className={classList(styles.loginWrapper, themes.bodyx)}>
+  return <div className={classList(styles.loginWrapper, themeName)}>
     {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
     {channel === CHANNELS.VERIFY && <VerifyContainer />}
     {(!channel || channel === CHANNELS.LOGIN_ROOM) && 

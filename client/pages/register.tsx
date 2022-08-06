@@ -12,6 +12,7 @@ import CreateAccountContainer from "../containers/CreateAccount";
 import { useRouter } from "next/router";
 import ReplaceAccountsContainer from "../containers/ReplaceAccounts";
 import ChangePasswordContainer from "../containers/ChangePassword";
+import { themeName } from "../config/global_settings";
 
 const Register = () => {
   const {channel, notif, setNotif, register} = useSockets();
@@ -34,7 +35,7 @@ const Register = () => {
     }
   }
 
-  return <div className={classList(styles.loginWrapper, themes.bodyx)}>
+  return <div className={classList(styles.loginWrapper, themeName)}>
     {channel === CHANNELS.CREATE_ACCOUNT && <CreateAccountContainer />}
     {channel === CHANNELS.REPLACE_ACCOUNTS && <ReplaceAccountsContainer />}
     {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
