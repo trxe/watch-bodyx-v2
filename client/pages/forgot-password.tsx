@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import { classList } from "../utils/utils";
 import styles from "../styles/Login.module.css";
-import themes from '../styles/Themes.module.css'
 import Link from "next/link";
 import { CLIENT_ROUTES } from "../config/routes";
 import { themeName } from "../config/global_settings";

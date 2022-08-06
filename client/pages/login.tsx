@@ -2,7 +2,6 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import Snackbar, { createNotif } from "../containers/Snackbar";
 import { useSockets } from "../context/socket.context";
-import themes from '../styles/Themes.module.css'
 import styles from "../styles/Login.module.css";
 import { classList } from "../utils/utils";
 import { CLIENT_ROUTES } from "../config/routes";

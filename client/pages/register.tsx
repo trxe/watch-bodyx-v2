@@ -4,7 +4,6 @@ import Snackbar, { createNotif } from "../containers/Snackbar";
 import { useSockets } from "../context/socket.context";
 import { classList } from "../utils/utils";
 import styles from "../styles/Login.module.css";
-import themes from '../styles/Themes.module.css'
 import { CLIENT_ROUTES } from "../config/routes";
 import { CHANNELS } from "../config/channels";
 import VerifyContainer from "../containers/Verify";
