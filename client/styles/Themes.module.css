@@ -1,3 +1,5 @@
+/* To change a theme, change it in all the files under .tsx pages*/
+
 .default {
     --bgColor: rgb(33, 54, 93);
     --bgLight: rgba(207, 225, 232, 0.3);
@@ -16,4 +18,25 @@
     --shadow: rgba(0, 0, 0, 0.8);
     --admin: rgb(207, 225, 232);
     --viewer: rgb(241, 241, 241);
+}
+
+.bodyx {
+    --bgColor: rgb(59, 49, 38);
+    --bgLight: rgba(232, 219, 207, 0.3);
+    --primaryColor: rgb(156, 109, 54);
+    --primaryTint: rgb(255, 161, 74);
+    --secondaryColor: rgb(246, 178, 68);
+    --secondaryTint: rgb(255, 233, 198);
+    --field: rgb(232, 223, 207);
+    --primaryFont: white;
+    --secondaryFont: black;
+    --success: rgb(62, 197, 118);
+    --error: rgb(210, 80, 80);
+    --notif: rgb(250, 50, 50);
+    --warning: rgb(234, 113, 0);
+    --disabled: rgb(99, 99, 99);
+    --shadow: rgba(0, 0, 0, 0.8);
+    --admin: rgb(207, 225, 232);
+    --viewer: rgb(241, 241, 241);
+
 }

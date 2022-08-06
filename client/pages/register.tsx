@@ -4,7 +4,6 @@ import Snackbar, { createNotif } from "../containers/Snackbar";
 import { useSockets } from "../context/socket.context";
 import { classList } from "../utils/utils";
 import styles from "../styles/Login.module.css";
-import themes from '../styles/Themes.module.css'
 import { CLIENT_ROUTES } from "../config/routes";
 import { CHANNELS } from "../config/channels";
 import VerifyContainer from "../containers/Verify";
@@ -12,6 +11,7 @@ import CreateAccountContainer from "../containers/CreateAccount";
 import { useRouter } from "next/router";
 import ReplaceAccountsContainer from "../containers/ReplaceAccounts";
 import ChangePasswordContainer from "../containers/ChangePassword";
+import { themeName } from "../config/global_settings";
 
 const Register = () => {
   const {channel, notif, setNotif, register} = useSockets();
@@ -34,7 +34,7 @@ const Register = () => {
     }
   }
 
-  return <div className={classList(styles.loginWrapper, themes.default)}>
+  return <div className={classList(styles.loginWrapper, themeName)}>
     {channel === CHANNELS.CREATE_ACCOUNT && <CreateAccountContainer />}
     {channel === CHANNELS.REPLACE_ACCOUNTS && <ReplaceAccountsContainer />}
     {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}

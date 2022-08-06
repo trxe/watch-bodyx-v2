@@ -9,6 +9,7 @@ import { Client, User } from '../containers/Clients';
 import { useChatRooms } from './chats.context';
 import { useRouter } from 'next/router';
 import { CLIENT_ROUTES, SERVER_ROUTES } from '../config/routes';
+import { LOCATIONS } from '../config/global_settings';
 
 /**
  * redirect: {location, data, ack?}
@@ -359,7 +360,7 @@ const SocketsProvider = (props: any) => {
 
         socket.on(EVENTS.reconnect_error, () => {
             setConnectionState('disconnected');
-            location.hash = '#disconnected';
+            location.hash = LOCATIONS.DISCONNECTED;
         })
 
         socket.off(EVENTS.disconnect)
@@ -369,7 +370,7 @@ const SocketsProvider = (props: any) => {
                 if (reason.indexOf('disconnect') >= 0) {
                     setChannel(CHANNELS.DISCONNECTED);
                 } else {
-                    location.hash = '#disconnected';
+                    location.hash = LOCATIONS.DISCONNECTED;
                 }
             });
     }

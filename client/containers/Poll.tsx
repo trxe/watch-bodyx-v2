@@ -9,6 +9,7 @@ import Modal from "../utils/modal";
 import PollBar from "../utils/pollbar";
 import EVENTS from "../config/events";
 import { classList } from "../utils/utils";
+import { LOCATIONS } from "../config/global_settings";
 
 const Field = ({index, type, placeholder, startEdit, editing, text, cancelling, saving, deleting}) => {
     const [isEdit, setEdit] = useState(startEdit);
@@ -66,8 +67,8 @@ export const PollViewContainer = ({isPreview, label}) => {
     }
 
     const openPoll = () => {
-        if (location.hash !== '#poll') location.hash = '#poll';
-        else location.hash = '';
+        if (location.hash !== LOCATIONS.POLL) location.hash = LOCATIONS.POLL;
+        else location.hash = LOCATIONS.HOME;
     }
 
     return <div className={styles.pollArea}>
@@ -85,7 +86,7 @@ export const PollViewContainer = ({isPreview, label}) => {
                     handleSelect={handleSelect} selected={selected}/>)}
             <div className={styles.pollFooter}>
                 <button disabled={vote != null || user.isAdmin} onClick={submit}>Vote</button>
-                <button onClick={() => location.hash = '#'}>Close</button>
+                <button onClick={() => location.hash = LOCATIONS.HOME}>Close</button>
             </div>
         </Modal>
     </div>
