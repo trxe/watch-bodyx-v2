@@ -139,6 +139,13 @@ const ChatContainer:FC<ChatContainerProps> = ({style, chatName, isPrivate, label
         scrollToBottom();
     }, [messages]);
 
+    const handleEnterButton = evt => {
+        if (evt.key === 'Enter' && !evt.shiftKey) {
+            evt.preventDefault();
+            handleSendMessage();
+        }
+    };
+
     // sends to a room
     const handleSendMessage = () => {
         if (newMessageRef.current.value.length == 0) return;
@@ -194,7 +201,7 @@ const ChatContainer:FC<ChatContainerProps> = ({style, chatName, isPrivate, label
         {(isPrivate || isViewerChatEnabled || user.isAdmin) &&
             <div className={styles.sendArea}>
                 <textarea rows={2} placeholder={`Send a message (max length ${maxCharCount})`} 
-                    maxLength={maxCharCount} ref={newMessageRef}/>
+                    maxLength={maxCharCount} ref={newMessageRef} onKeyDown={handleEnterButton}/>
                 <button onClick={handleSendMessage}>SEND</button>
             </div>
         }
