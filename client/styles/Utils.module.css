@@ -244,4 +244,5 @@ input:disabled + .toggleSlider:before {
 .optionChosen {
   background-color: var(--secondaryColor);
   color: var(--secondaryFont);
+  font-weight: 800;
 }
