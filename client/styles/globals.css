@@ -26,6 +26,11 @@ a {
   text-decoration: none;
 }
 
+input[type='radio'] { 
+  margin: 1em;
+  transform: scale(1.4); 
+}
+
 * {
   box-sizing: border-box;
   scrollbar-color: var(--secondaryColor) var(--bgColor);
