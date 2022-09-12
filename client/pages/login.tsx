@@ -19,7 +19,7 @@ const Login = () => {
   const router = useRouter();
 
   const handleSetTicket = () => {
-    const email = emailRef.current.value;
+    const email = emailRef.current.value.toLowerCase();
     const password = passwordRef.current.value;
     if (!email || !password || email.length == 0 || password.length == 0) {
       setNotif(createNotif('error', "Missing email or password", "Please enter all details."));
