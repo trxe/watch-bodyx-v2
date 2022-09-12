@@ -64,6 +64,7 @@ interface ISocketContext {
     regenVerify: Function
     createAccount: Function
     changePassword: Function
+    loadStartTime: Function
     viewersTotal: number
     viewersPresent: number
 }
@@ -92,6 +93,7 @@ const SocketContext = createContext<ISocketContext>({
     regenVerify: () => false,
     createAccount: () => false,
     changePassword: () => false,
+    loadStartTime: () => false,
     viewersPresent: 0,
     viewersTotal: 0,
 });
@@ -270,6 +272,17 @@ const SocketsProvider = (props: any) => {
             })
     }
 
+    const loadStartTime = (request, onComplete) => {
+        axios.post(process.env.NEXT_PUBLIC_URL + SERVER_ROUTES.LOAD_START_TIME, request)
+            .then(({data}) => {
+                if (data.responseType == 'ack') {
+                    console.log(data);
+                    console.log(data.body);
+                    onComplete(data.body);
+                }
+            });
+    }
+
     if (socket != null) {
         socket.on(EVENTS.SERVER.CLIENT_INFO, ({channelName, user}) => {
             setUser(user);
@@ -399,6 +412,7 @@ const SocketsProvider = (props: any) => {
             regenVerify,
             createAccount,
             changePassword,
+            loadStartTime,
             viewersPresent,
             viewersTotal
         }} 

@@ -7,7 +7,7 @@ import { classList } from "../utils/utils";
 import { CLIENT_ROUTES } from "../config/routes";
 import { useRouter } from "next/router";
 import { CHANNELS } from "../config/channels";
-import ChangePasswordContainer from "../containers/ChangePassword";
+import SetPasswordContainer from "../containers/ChangePassword";
 import VerifyContainer from "../containers/Verify";
 import { themeName } from "../config/global_settings";
 
@@ -33,7 +33,7 @@ const Login = () => {
   }
 
   return <div className={classList(styles.loginWrapper, themeName)}>
-    {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
+    {channel === CHANNELS.CHANGE_PASSWORD && <SetPasswordContainer />}
     {channel === CHANNELS.VERIFY && <VerifyContainer />}
     {(!channel || channel === CHANNELS.LOGIN_ROOM) && 
         <div className={styles.loginDetails}>

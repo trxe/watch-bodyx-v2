@@ -13,4 +13,5 @@ export const SERVER_ROUTES = {
     CREATE_ACCOUNT: '/create-account',
     FORGOT_PASSWORD: '/forgot-password',
     CHANGE_PASSWORD: '/change-password',
+    LOAD_START_TIME: '/load-start-time',
 };
