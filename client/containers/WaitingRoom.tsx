@@ -7,7 +7,7 @@ export const AdminChatContainer = () => {
 
     return <div className={styles.chatWrapper}>
         {socket != null && 
-            <ChatContainer chatName={socket.id} isPrivate={true} label={'Need assistance?'} />}
+            <ChatContainer chatName={socket.id} isPrivate={true} label={'Ask our Inspectors!'} />}
     </div>;
 }
 
@@ -17,7 +17,8 @@ const WaitingRoomContainer = () => {
     if (!user) return;
 
     return <div className={styles.waitingRoomWrapper}>
-        <h1>Waiting Room</h1>
+        <h1>Welcome {user.firstName}</h1>
+        <p>Patiently awaiting the Chief Inspector's arrival...</p>
         <AdminChatContainer />
     </div>
 }
