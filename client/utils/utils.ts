@@ -28,7 +28,24 @@ export const months = [
 ];
 
 export const timeFormat = (datetimeISO: string): string => {
-    const date = new Date(datetimeISO);
-    const time = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    const datetime = new Date(datetimeISO);
+    const time = `${datetime.getHours().toString().padStart(2, '0')}:${datetime.getMinutes().toString().padStart(2, '0')}`;
     return time;
+}
+
+export const dateFormat = (datetimeISO: string): string => {
+    const datetime = new Date(datetimeISO);
+    const day = dayOfWeek[datetime.getDay()];
+    const date = datetime.getDate();
+    const month = months[datetime.getMonth()];
+    const year = datetime.getFullYear();
+    return `${day}, ${date} ${month} ${year}`;
+}
+
+export const getTimeTo = (datetimeISO: string): string => {
+    const timeDiff = new Date(datetimeISO).getTime() - new Date().getTime();
+    const days = Math.round(timeDiff / (1000*60*60*24));
+    const hours = Math.round((timeDiff / (1000*60*60)) % 24);
+    const mins = Math.round((timeDiff / (1000*60)) % (60));
+    return `${days} days, ${hours} hours, ${mins} mins`;
 }
