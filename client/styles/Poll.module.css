@@ -31,6 +31,11 @@
   min-height: 2.5em;
 }
 
+.fieldChosen {
+  background-color: var(--secondaryTint);
+  color: var(--secondaryFont);
+}
+
 .field button {
   font-size: large;
 }
@@ -101,6 +106,12 @@
 
 .pollArea {
   color: var(--secondaryFont);
+}
+
+.pollArea h3 {
+  font-size: 28px;
+  margin-top: 0.2em;
+  margin-bottom: 0.5em;
 }
 
 .pollFooter {

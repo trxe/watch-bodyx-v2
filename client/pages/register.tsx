@@ -35,6 +35,7 @@ const Register = () => {
   }
 
   return <div className={classList(styles.loginWrapper, themeName)}>
+    <div className='splash-image'/>
     {channel === CHANNELS.CREATE_ACCOUNT && <CreateAccountContainer />}
     {channel === CHANNELS.REPLACE_ACCOUNTS && <ReplaceAccountsContainer />}
     {channel === CHANNELS.CHANGE_PASSWORD && <SetPasswordContainer />}

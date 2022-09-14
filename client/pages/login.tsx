@@ -33,6 +33,7 @@ const Login = () => {
   }
 
   return <div className={classList(styles.loginWrapper, themeName)}>
+    <div className='splash-image'/>
     {channel === CHANNELS.CHANGE_PASSWORD && <SetPasswordContainer />}
     {channel === CHANNELS.VERIFY && <VerifyContainer />}
     {(!channel || channel === CHANNELS.LOGIN_ROOM) && 

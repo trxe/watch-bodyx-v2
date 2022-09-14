@@ -2,6 +2,7 @@
 
 .default {
     --bgColor: rgb(33, 54, 93);
+    --bgColorAlpha: rgba(33, 54, 93, 0.4);
     --bgLight: rgba(207, 225, 232, 0.3);
     --primaryColor: rgb(61, 93, 152);
     --primaryTint: rgb(74, 138, 255);
@@ -22,6 +23,7 @@
 
 .bodyx {
     --bgColor: rgb(59, 49, 38);
+    --bgColorAlpha: rgb(59, 49, 38, 0.6);
     --bgLight: rgba(232, 219, 207, 0.3);
     --primaryColor: rgb(156, 109, 54);
     --primaryTint: rgb(255, 161, 74);

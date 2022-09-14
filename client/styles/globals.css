@@ -5,16 +5,32 @@ body {
   padding: 0;
   margin: 0;
   font-family: 'Inter', sans-serif;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.splash-image {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
   background-image: url(/bodyx_background.png);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
-  height: 100vh;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+input[type='radio'] { 
+  margin: 1em;
+  transform: scale(1.4); 
 }
 
 * {

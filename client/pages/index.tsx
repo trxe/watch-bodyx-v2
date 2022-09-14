@@ -28,6 +28,7 @@ export default function Home() {
       <Head>
         <title>{showName}</title>
       </Head>
+      <div className='splash-image'/>
       {channel === CHANNELS.SM_ROOM && <DashboardContainer/>}
       {channel === CHANNELS.WAITING_ROOM && <WaitingRoomContainer/>}
       {channel === CHANNELS.MAIN_ROOM && <AudienceViewContainer />}

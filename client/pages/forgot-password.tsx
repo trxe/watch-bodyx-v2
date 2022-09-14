@@ -10,6 +10,7 @@ const ForgotPassword = () => {
   const emailRef = useRef(null);
 
     return <div className={classList(styles.loginWrapper, themeName)}>
+        <div className='splash-image'/>
         <div className={styles.loginDetails}>
             <h1>Forgot password?</h1>
             <input placeholder='Email' ref={emailRef}/>
