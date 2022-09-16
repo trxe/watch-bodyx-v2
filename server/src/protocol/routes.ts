@@ -12,4 +12,5 @@ export const SERVER_ROUTES = {
     REGEN_VERIFY: '/regen-verify',
     CREATE_ACCOUNT: '/create-account',
     CHANGE_PASSWORD: '/change-password',
+    LOAD_START_TIME: '/load-start-time',
 };

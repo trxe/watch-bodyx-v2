@@ -10,7 +10,7 @@ import VerifyContainer from "../containers/Verify";
 import CreateAccountContainer from "../containers/CreateAccount";
 import { useRouter } from "next/router";
 import ReplaceAccountsContainer from "../containers/ReplaceAccounts";
-import ChangePasswordContainer from "../containers/ChangePassword";
+import SetPasswordContainer from "../containers/ChangePassword";
 import { themeName } from "../config/global_settings";
 
 const Register = () => {
@@ -21,7 +21,7 @@ const Register = () => {
   const router = useRouter();
 
   const handleCreateAcct = () => {
-    const email = emailRef.current.value;
+    const email = emailRef.current.value.toLowerCase();
     const orderId = orderIdRef.current.value;
     if (!email || !orderId || email.length == 0 || orderId.length == 0) {
         setNotif(createNotif('error', "Missing email or order ID", "Please enter all details."));
@@ -35,9 +35,10 @@ const Register = () => {
   }
 
   return <div className={classList(styles.loginWrapper, themeName)}>
+    <div className='splash-image'/>
     {channel === CHANNELS.CREATE_ACCOUNT && <CreateAccountContainer />}
     {channel === CHANNELS.REPLACE_ACCOUNTS && <ReplaceAccountsContainer />}
-    {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
+    {channel === CHANNELS.CHANGE_PASSWORD && <SetPasswordContainer />}
     {channel === CHANNELS.VERIFY && <VerifyContainer />}
     {(!channel || channel === CHANNELS.LOGIN_ROOM) && 
         <div className={styles.loginDetails}>

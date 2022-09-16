@@ -7,7 +7,7 @@ import { classList } from "../utils/utils";
 import { CLIENT_ROUTES } from "../config/routes";
 import { useRouter } from "next/router";
 import { CHANNELS } from "../config/channels";
-import ChangePasswordContainer from "../containers/ChangePassword";
+import SetPasswordContainer from "../containers/ChangePassword";
 import VerifyContainer from "../containers/Verify";
 import { themeName } from "../config/global_settings";
 
@@ -19,7 +19,7 @@ const Login = () => {
   const router = useRouter();
 
   const handleSetTicket = () => {
-    const email = emailRef.current.value;
+    const email = emailRef.current.value.toLowerCase();
     const password = passwordRef.current.value;
     if (!email || !password || email.length == 0 || password.length == 0) {
       setNotif(createNotif('error', "Missing email or password", "Please enter all details."));
@@ -33,7 +33,8 @@ const Login = () => {
   }
 
   return <div className={classList(styles.loginWrapper, themeName)}>
-    {channel === CHANNELS.CHANGE_PASSWORD && <ChangePasswordContainer />}
+    <div className='splash-image'/>
+    {channel === CHANNELS.CHANGE_PASSWORD && <SetPasswordContainer />}
     {channel === CHANNELS.VERIFY && <VerifyContainer />}
     {(!channel || channel === CHANNELS.LOGIN_ROOM) && 
         <div className={styles.loginDetails}>

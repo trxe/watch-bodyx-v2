@@ -5,7 +5,7 @@ import styles from "../styles/Login.module.css";
 import { createNotif } from "./Snackbar";
 
 
-const ChangePasswordContainer = () => {
+const SetPasswordContainer = () => {
   const {setNotif, user, changePassword} = useSockets();
   const [isRegistering, setRegistering] = useState(false);
   const passwordRef = useRef(null);
@@ -41,10 +41,10 @@ const ChangePasswordContainer = () => {
             <input placeholder='Password' ref={passwordRef}  type="password"/>
             <input placeholder='Confirm password' ref={passwordConfirmRef} type="password"/>
             <div className={styles.buttons}>
-                <button className={styles.loginButton} onClick={handleChangePwd} disabled={isRegistering}>CHANGE</button>
+                <button className={styles.loginButton} onClick={handleChangePwd} disabled={isRegistering}>SET PASSWORD</button>
             </div>
         </div>
     </div>;
 }
 
-export default ChangePasswordContainer;
+export default SetPasswordContainer;

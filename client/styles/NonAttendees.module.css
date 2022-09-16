@@ -2,4 +2,14 @@
 
 .nonAttendees {
     color: var(--primaryFont);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+}
+
+.nonAttendeesWrapper {
+    background-color: var(--bgColor);
+    padding: 4em;
+    border-radius: 20px;
 }

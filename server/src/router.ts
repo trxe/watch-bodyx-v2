@@ -10,7 +10,7 @@ import { CLIENT_ROUTES, SERVER_ROUTES } from "./protocol/routes";
 import Provider from "./provider";
 import { UserModel } from "./schemas/userSchema";
 import Logger from "./utils/logger";
-import { getOrderAttendeesURL } from "./utils/utils";
+import { getEventURL, getOrderAttendeesURL } from "./utils/utils";
 
 const PURCHASE_TIX_RES = new Response('ack', new Ack('error', 'Order not found', 'Purchase a ticket from our EventBrite page.').getJSON());
 const INVALID_TIX_EMAIL = new Response('ack', new Ack('error', 'Email not found under order', 'Purchase a ticket from our EventBrite page.').getJSON());
@@ -334,6 +334,25 @@ const registerRouting = (app) => {
         });
     }
 
+    const loadStartTimePOST = (req, res) => {
+        const {eventId} = req.body;
+        console.log('eventid', eventId);
+        axios.get(getEventURL(eventId),
+            {headers: {
+                'Authorization': `Bearer ${process.env.EVENTBRITE_API_KEY}`,
+                'Content-Type': 'application/json',
+            }}
+        ).then((eventbrite) => {
+            const startTime = eventbrite.data.start;
+            console.log('start at ', startTime);
+            res.json(new Response('ack', new Ack('info', 'event start at', JSON.stringify(startTime))));
+            res.end();
+        }).catch(err => {
+            res.json(new Response('ack', new Ack('error', 'no time available')));
+            res.end();
+        })
+    }
+
     app.get('/', (req, res) => res.send('Hello World'));
     app.get(SERVER_ROUTES.REGISTER_TICKET, (req, res) => res.send('Create Account (provide {email, eventId}), \
         if user found will create account and send password'))
@@ -353,6 +372,8 @@ const registerRouting = (app) => {
     app.get(SERVER_ROUTES.CHANGE_PASSWORD, (req, res) => res.send('Reset password (provide {email, password})'));
 
     app.post(SERVER_ROUTES.CHANGE_PASSWORD, changePasswordPOST);
+
+    app.post(SERVER_ROUTES.LOAD_START_TIME, loadStartTimePOST);
 }
 
 export default registerRouting;

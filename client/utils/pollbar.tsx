@@ -11,7 +11,7 @@ interface PollInfo {
 }
 
 const PollBar:FC<PollInfo> = ({option, index, value, maxValue, selected, handleSelect}) => {
-    return <div className={styles.optionBox}>
+    return <div className={`${styles.optionBox} ${selected == index ? styles.optionChosen : ''}`}>
         <div className={styles.optionLabel}>
             <input disabled={!handleSelect} checked={selected == index} value={index} onChange={handleSelect} type="radio" name="radio"/>
 			<span>{option}</span>
